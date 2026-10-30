@@ -24,38 +24,25 @@ export const settings = {
   id: 'settings',
   render() {
     const s = getState(); const lang = getLang();
+    const row = (title, desc, ctl, id = '') => html`<section class="set-row" ${id ? html`id="${id}"` : ''}><div class="set-label"><h2>${title}</h2>${desc ? html`<p>${desc}</p>` : ''}</div><div class="set-ctl">${ctl}</div></section>`;
     return html`${pageHead({ note: '09', title: t('settings.title'), sub: t('settings.sub') })}
-    <div class="bento">
-      <section class="card span-6"><p class="tag">${t('settings.language')}</p>
-        <div class="seg seg-wide" role="group" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<button aria-pressed="${lang === l.code}" data-act="set-lang" data-lang="${l.code}">${l.name}</button>`)}</div>
-        <p class="tag" style="margin-top:22px">${t('settings.theme')}</p>
-        <div class="seg seg-wide" role="group" aria-label="${t('settings.theme')}">${['light', 'dark'].map((m) => html`<button aria-pressed="${currentTheme() === m}" data-act="set-theme" data-theme="${m}">${icon(m === 'dark' ? 'moon' : 'sun', 16)} ${t(`settings.${m}`)}</button>`)}</div>
-      </section>
-      <section class="card span-6"><p class="tag">${t('settings.install')}</p>
-        <p class="muted">${isInstalled() ? t('settings.installedAlready') : t('settings.installBody')}</p>
-        <div class="btn-row"><button class="btn btn-primary" data-act="install" ${isInstalled() ? 'disabled' : ''}>${icon('install', 18)} ${t('actions.install')}</button>
-          <button class="btn btn-ghost" data-act="help">${icon('help', 18)} ${t('settings.openHelp')}</button></div>
-      </section>
-      <section class="card span-6"><p class="tag">${t('settings.ai')}</p>
-        <p class="muted">${t('settings.aiBody')}</p>
-        <label class="field"><span>${t('settings.aiSim')}</span><select data-in="ai-sim">${['off', 'timeout', 'error'].map((v) => html`<option value="${v}" ${s.aiSim === v ? 'selected' : ''}>${t(`settings.sim_${v}`)}</option>`)}</select></label>
-        <div class="btn-row"><button class="btn btn-secondary" data-act="transparency">${icon('eye', 18)} ${t('settings.transparency')}</button></div>
-      </section>
-      <section class="card span-6"><p class="tag">${t('settings.data')}</p>
-        <p class="muted">${t('settings.dataBody')}</p>
-        <div class="btn-row"><button class="btn btn-secondary" data-act="export-data">${icon('download', 18)} ${t('actions.exportData')}</button>
-          <button class="btn btn-secondary" data-act="seed-demo">${icon('sparkle', 18)} ${t('settings.loadComplete')}</button>
-          <button class="btn btn-ghost danger" data-act="reset-demo">${icon('trash', 18)} ${t('actions.resetDemo')}</button></div>
-      </section>
-      <section class="card span-12" id="connected"><p class="tag">${t('tag.signal')} · ${t('settings.connected')}</p>
-        <p class="muted">${t('settings.connectedBody')} ${demoBadge()}</p>
-        <div class="connectors">${CONNECTORS.map((c) => html`<article class="connector"><div><strong>${t(`conn.${c.id}`)}</strong><p class="small muted">${t(`conn.${c.id}Desc`)}</p>
-          <p class="small mono">${t('settings.permissions')}: ${c.perms}</p></div>
-          <div class="connector-side"><span class="badge badge-${c.ready ? 'live' : 'inference'}">${t(c.ready ? 'settings.statusReady' : 'settings.statusNotConnected')}</span>
-          <button class="btn btn-ghost btn-sm" data-act="connector-retry" data-id="${c.id}">${icon('refresh', 15)} ${t('actions.retry')}</button></div></article>`)}</div>
-        <div class="banner banner-ok">${icon('check', 18)} ${t('settings.demoAvailable')}</div>
-      </section>
-    </div>`;
+    <div class="set-list">
+      ${row(t('settings.language'), '', html`<div class="seg seg-wide" role="group" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<button aria-pressed="${lang === l.code}" data-act="set-lang" data-lang="${l.code}">${l.name}</button>`)}</div>`)}
+      ${row(t('settings.theme'), '', html`<div class="seg seg-wide" role="group" aria-label="${t('settings.theme')}">${['light', 'dark'].map((m) => html`<button aria-pressed="${currentTheme() === m}" data-act="set-theme" data-theme="${m}">${icon(m === 'dark' ? 'moon' : 'sun', 16)} ${t(`settings.${m}`)}</button>`)}</div>`)}
+      ${row(t('settings.install'), isInstalled() ? t('settings.installedAlready') : t('settings.installBody'), html`<div class="btn-row"><button class="btn btn-primary" data-act="install" ${isInstalled() ? 'disabled' : ''}>${icon('install', 18)} ${t('actions.install')}</button>
+          <button class="btn btn-ghost" data-act="help">${icon('help', 18)} ${t('settings.openHelp')}</button></div>`)}
+      ${row(t('settings.ai'), t('settings.aiBody'), html`<label class="field"><span>${t('settings.aiSim')}</span><select data-in="ai-sim">${['off', 'timeout', 'error'].map((v) => html`<option value="${v}" ${s.aiSim === v ? 'selected' : ''}>${t(`settings.sim_${v}`)}</option>`)}</select></label>
+          <div class="btn-row"><button class="btn btn-secondary" data-act="transparency">${icon('eye', 18)} ${t('settings.transparency')}</button></div>`)}
+      ${row(t('settings.data'), t('settings.dataBody'), html`<div class="btn-row"><button class="btn btn-secondary" data-act="export-data">${icon('download', 18)} ${t('actions.exportData')}</button>
+          <button class="btn btn-secondary" data-act="seed-demo">${icon('sparkle', 18)} ${t('settings.loadComplete')}</button></div>`)}
+      ${row(t('settings.connected'), html`${t('settings.connectedBody')} ${demoBadge()}`, html`<ul class="conn-list">${[...CONNECTORS].sort((a, b) => !!b.ready - !!a.ready).map((c) => html`<li>
+          <div class="conn-txt"><strong>${t(`conn.${c.id}`)}</strong><small>${t(`conn.${c.id}Desc`)}</small><small class="conn-perm">${t('settings.permissions')}: ${c.perms}</small></div>
+          <span class="badge badge-${c.ready ? 'live' : 'inference'}">${t(c.ready ? 'settings.statusReady' : 'settings.statusNotConnected')}</span>
+          <button class="btn btn-ghost btn-sm" data-act="connector-retry" data-id="${c.id}" aria-label="${t('actions.retry')}: ${t(`conn.${c.id}`)}">${icon('refresh', 15)}</button></li>`)}</ul>
+          <p class="conn-ok">${icon('check', 16)} ${t('settings.demoAvailable')}</p>`, 'connected')}
+    </div>
+    <section class="danger-zone"><div><h2>${t('actions.resetDemo')}</h2><p>${t('settings.resetBody')}</p></div>
+      <button class="btn btn-secondary danger" data-act="reset-demo">${icon('trash', 18)} ${t('actions.resetDemo')}</button></section>`;
   },
 };
 
