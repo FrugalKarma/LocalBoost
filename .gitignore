@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.shot-profile/
+android/build/
+android/app/build/
+android/.gradle/
+*.apk

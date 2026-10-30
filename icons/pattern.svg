@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+  <!-- LocalBoost mark -->
+  <g transform="translate(26 22) rotate(-8 30 30) scale(.62)" fill="#000" stroke="none">
+    <path d="M30 20C30 10 40 4 52 6C45 8 42 12 42 20V64H68C74 64 78 59 80 52C80 68 72 80 58 80H14C26 78 30 72 30 62Z"/>
+    <path d="M48 56L72 32H62V26H82V46H76V38L54 60Z"/><circle cx="60" cy="14" r="6"/>
+  </g>
+  <!-- trending arrow -->
+  <g transform="translate(130 28) rotate(6)"><path d="M0 34L16 18L26 28L44 8"/><path d="M32 8H44V20"/></g>
+  <!-- coffee cup -->
+  <g transform="translate(34 128) rotate(-10)"><path d="M0 6H28V24C28 31 22 36 14 36C6 36 0 31 0 24Z"/><path d="M28 10H33C37 10 37 22 33 22H28"/><path d="M8 -4C6 -8 10 -10 8 -15M17 -4C15 -8 19 -10 17 -15"/></g>
+  <!-- map pin -->
+  <g transform="translate(150 132) rotate(8)"><path d="M14 40S28 26 28 15A14 14 0 0 0 0 15C0 26 14 40 14 40Z"/><circle cx="14" cy="15" r="5"/></g>
+  <!-- bars -->
+  <g transform="translate(92 92) rotate(-4)"><path d="M0 34V22M12 34V8M24 34V16M36 34V2M-4 34H40"/></g>
+  <!-- sparkles and dots -->
+  <path d="M196 84V96M190 90H202" transform="rotate(10 196 90)"/><path d="M96 196V206M91 201H101"/><path d="M14 92V100M10 96H18"/>
+  <circle cx="186" cy="198" r="3" fill="#000" stroke="none"/><circle cx="108" cy="60" r="2.5" fill="#000" stroke="none"/><circle cx="196" cy="20" r="2.5" fill="#000" stroke="none"/><circle cx="62" cy="206" r="2.5" fill="#000" stroke="none"/>
+</svg>

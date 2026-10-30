@@ -1,0 +1,26 @@
+{
+  "name": "localboost",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LocalBoost - Signal-to-Action OS for local businesses (hackathon demo, zero dependencies)",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node server.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "check": "node scripts/check.mjs",
+    "build": "node scripts/build.mjs",
+    "serve:dist": "node server.mjs --dist",
+    "screenshots": "node scripts/screenshots.mjs",
+    "android:sync": "node scripts/build.mjs && npx cap sync android",
+    "android:open": "npx cap open android"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7.6.9",
+    "@capacitor/cli": "^7.6.9",
+    "@capacitor/core": "^7.6.9"
+  }
+}
