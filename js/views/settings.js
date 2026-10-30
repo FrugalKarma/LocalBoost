@@ -8,6 +8,7 @@ import { seedFullDemo } from '../seed.js';
 import { actions, inputs, rerender } from '../registry.js';
 import { pageHead } from './shared.js';
 import { currentTheme, applyTheme, themeTransition } from '../theme.js';
+import { apiBase, setApiBase } from '../api.js';
 
 const CONNECTORS = [
   { id: 'gbp', perms: 'read-business-info, read-reviews' },
@@ -33,6 +34,9 @@ export const settings = {
           <button class="btn btn-ghost" data-act="help">${icon('help', 18)} ${t('settings.openHelp')}</button></div>`)}
       ${row(t('settings.ai'), t('settings.aiBody'), html`<label class="field"><span>${t('settings.aiSim')}</span><select data-in="ai-sim">${['off', 'timeout', 'error'].map((v) => html`<option value="${v}" ${s.aiSim === v ? 'selected' : ''}>${t(`settings.sim_${v}`)}</option>`)}</select></label>
           <div class="btn-row"><button class="btn btn-secondary" data-act="transparency">${icon('eye', 18)} ${t('settings.transparency')}</button></div>`)}
+      ${row(t('chat.apiTitle'), t('chat.apiBody'), html`<form class="api-form" data-api-form novalidate><label class="field"><span>${t('chat.apiTitle')}</span>
+          <input id="api-base" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://your-app.vercel.app" value="${apiBase()}"></label>
+          <button type="submit" class="btn btn-secondary">${icon('check', 18)} ${t('chat.apiSave')}</button></form>`, 'ai-server')}
       ${row(t('settings.data'), t('settings.dataBody'), html`<div class="btn-row"><button class="btn btn-secondary" data-act="export-data">${icon('download', 18)} ${t('actions.exportData')}</button>
           <button class="btn btn-secondary" data-act="seed-demo">${icon('sparkle', 18)} ${t('settings.loadComplete')}</button></div>`)}
       ${row(t('settings.connected'), html`${t('settings.connectedBody')} ${demoBadge()}`, html`<ul class="conn-list">${[...CONNECTORS].sort((a, b) => !!b.ready - !!a.ready).map((c) => html`<li>
@@ -45,6 +49,13 @@ export const settings = {
       <button class="btn btn-secondary danger" data-act="reset-demo">${icon('trash', 18)} ${t('actions.resetDemo')}</button></section>`;
   },
 };
+
+document.addEventListener('submit', (e) => {
+  if (!e.target.matches('[data-api-form]')) return;
+  e.preventDefault();
+  const ok = setApiBase(document.getElementById('api-base')?.value || '');
+  toast(ok ? t('chat.apiSaved') : t('chat.apiInvalid'), ok ? 'success' : 'error');
+});
 
 actions['set-lang'] = (el) => { setLang(el.dataset.lang); };
 actions['set-theme'] = (el) => { if (currentTheme() === el.dataset.theme) return; themeTransition(el, () => { applyTheme(el.dataset.theme); rerender({ full: true }); }); };
