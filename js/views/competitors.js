@@ -4,11 +4,12 @@ import { getState, update } from '../store.js';
 import { COMPETITORS, YOU_BASE, reachOn } from '../data.js';
 import { getBiz, displayName } from '../business.js';
 import { actions, rerender } from '../registry.js';
-import { pageHead, aiNotice } from './shared.js';
+import { pageHead } from './shared.js';
 
 const STEPS = ['maps', 'social', 'web', 'offers'];
 const scan = { active: false, step: 0 };
 const METRICS = ['rating', 'reviews', 'visibility', 'reach', 'posts'];
+let metric = 'visibility'; // metric shown in the comparison chart
 
 /* ---------- data ---------- */
 function you() {
@@ -80,15 +81,32 @@ export const competitors = {
     if (!s.competitors.scanned) return html`${head}<section class="card empty-hero"><div class="empty-ic">${icon('compare', 34)}</div><h2>${t('comp.emptyTitle')}</h2><p class="muted">${t('comp.emptyBody')}</p>
       <button class="btn btn-primary btn-lg" data-act="scan-comp">${icon('sparkle', 18)} ${t('comp.scan')}</button></section>`;
     const me = you(); const list = rivals(); const all = [me, ...list]; const tips = insights(me, list);
-    return html`${head}${aiNotice()}
-    <div class="banner banner-warn" role="status">${icon('info', 18)} <span>${t('comp.sampleNote')}</span></div>
-    <h2 class="section-h">${t('comp.nearby')}</h2><div class="places">${all.map(placeCard)}</div>
-    <div class="bento"><section class="card span-7"><p class="tag">${t('tag.evidence')} · ${t('comp.compare')}</p><div class="cmp-grid">${METRICS.map((k) => barGroup(k, all))}</div></section>
-      <section class="card span-5"><p class="tag">${t('tag.signal')} · ${t('comp.radar')}</p><div class="has-src" tabindex="0" data-src="compare">${radar(me, list)}</div>
+    const rank = [...all].sort((a, b) => b.visibility - a.visibility).findIndex((c) => c.you) + 1;
+    const fixes = tips.filter((x) => x.kind === 'improve'); const wins = tips.filter((x) => x.kind === 'strength');
+    return html`${head}
+    <details class="sig-about"><summary>${icon('info', 16)} ${t('ledger.aboutData')}</summary>
+      <p><strong>${t('ai.noticeTitle')}</strong> ${t('ai.notice')}</p><p>${t('comp.sampleNote')}</p></details>
+    <div class="cmp-top">
+      <section class="cmp-fix"><p class="tag">${t('comp.improve')}</p>
+        <h2>${t('ledger.rankOf', { n: rank, total: all.length })}</h2>
+        ${fixes.length ? html`<ol class="fix-list">${fixes.map((x) => html`<li>${t(`comp.imp.${x.key}`, x.v)}</li>`)}</ol>` : html`<p>${t('comp.noGaps')}</p>`}
+        ${wins.length ? html`<ul class="win-list">${wins.map((x) => html`<li>${icon('check', 16)} ${t(`comp.imp.${x.key}`, x.v)}</li>`)}</ul>` : ''}
+        <p class="small fix-note">${t('comp.honest')}</p></section>
+      <section class="card cmp-radar"><p class="tag">${t('comp.radar')}</p><div class="has-src" tabindex="0" data-src="compare">${radar(me, list)}</div>
         <p class="radar-legend"><span><i class="y"></i>${t('comp.you')}</span><span><i class="g"></i>${t('comp.avg')}</span></p></section>
-      <section class="card card-accent span-12"><p class="tag">${t('tag.action')} · ${t('comp.improve')}</p>
-        ${tips.length ? html`<ul class="tips">${tips.map((x) => html`<li class="tip tip-${x.kind}"><span class="tip-ic">${icon(x.kind === 'improve' ? 'next' : 'check', 16)}</span><span>${t(`comp.imp.${x.key}`, x.v)}</span></li>`)}</ul>` : html`<p>${t('comp.noGaps')}</p>`}
-        <p class="muted small">${t('comp.honest')}</p></section></div>`;
+    </div>
+    <section class="card cmp-chart"><div class="cmp-chart-head"><h2 class="card-title">${t('comp.compare')}</h2>
+      <div class="seg" role="group" aria-label="${t('comp.compare')}">${METRICS.map((k) => html`<button aria-pressed="${metric === k}" data-act="comp-metric" data-k="${k}">${t(`comp.m.${k}`)}</button>`)}</div></div>
+      ${barGroup(metric, all)}</section>
+    <h2 class="section-h">${t('comp.nearby')}</h2>
+    <div class="place-table" role="table" aria-label="${t('comp.nearby')}">
+      <div class="pt-row pt-head" role="row"><span role="columnheader">${t('comp.nearby')}</span>${METRICS.map((k) => html`<span role="columnheader">${t(`comp.m.${k}`)}</span>`)}<span role="columnheader">${t('comp.booking')}</span><span role="columnheader">${t('comp.afternoon')}</span><span></span></div>
+      ${all.map((c) => html`<div class="pt-row ${c.you ? 'is-you' : ''}" role="row">
+        <span class="pt-name" role="cell"><strong>${c.name}</strong>${c.you ? html`<span class="badge badge-live">${t('comp.you')}</span>` : html`<small>${c.dist || t('comp.yourInput')}${c.custom ? html` · ${t('comp.estimated')}` : ''}</small>`}</span>
+        ${METRICS.map((k) => html`<span role="cell" data-l="${t(`comp.m.${k}`)}">${k === 'rating' ? '★ ' : ''}${fmt(k, c[k])}</span>`)}
+        <span role="cell" data-l="${t('comp.booking')}">${yn(c.booking)}</span><span role="cell" data-l="${t('comp.afternoon')}">${yn(c.afternoon)}</span>
+        <span role="cell" class="pt-x">${c.custom ? html`<button class="icon-btn" data-act="remove-comp" data-id="${c.id}" aria-label="${t('comp.remove')}">${icon('x', 16)}</button>` : ''}</span></div>`)}
+    </div>`;
   },
 };
 
@@ -100,6 +118,8 @@ actions['scan-comp'] = async () => {
   update((st) => ({ competitors: { ...st.competitors, scanned: true } }));
   toast(t('comp.scanned'), 'success'); rerender();
 };
+
+actions['comp-metric'] = (el) => { metric = el.dataset.k; rerender(); };
 
 actions['remove-comp'] = (el) => {
   update((st) => ({ competitors: { ...st.competitors, custom: st.competitors.custom.filter((c) => c.id !== el.dataset.id) } }));
