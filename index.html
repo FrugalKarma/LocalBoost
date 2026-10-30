@@ -16,7 +16,7 @@
   <meta name="apple-mobile-web-app-title" content="LocalBoost">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&family=Archivo:wdth,wght@112,600;112,700;112,800&display=swap">
   <style>
     /* opening screen: inline so it paints before anything else loads */
     #splash{position:fixed;inset:0;z-index:1000;background:#7E041D;color:#FFF3C4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-family:Lexend,system-ui,sans-serif;transition:opacity .35s ease,visibility .35s}
@@ -32,6 +32,7 @@
     @media (prefers-reduced-motion:reduce){#splash *{animation:none!important}}
   </style>
   <link rel="stylesheet" href="/css/styles.css">
+  <link rel="stylesheet" href="/css/ledger.css">
   <script>
     // set the saved theme before first paint (no flash)
     try { var m = localStorage.getItem('localboost.theme'); if (m) document.documentElement.dataset.theme = m; else if (matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.dataset.theme = 'dark'; } catch (e) {}

@@ -11,7 +11,8 @@ export default {
     copy: 'Másolás', copyReco: 'Javaslat másolása', retry: 'Újra', reset: 'Visszaállítás', resetDemo: 'Demó visszaállítása', exportData: 'Projektadatok exportálása', install: 'LocalBoost telepítése',
     restart: 'Újraindítás', startPresentation: 'Bemutató indítása', generateAssets: 'Akciócsomag készítése', regenerateAll: 'Összes újragenerálása',
   },
-  nav: { overview: 'Áttekintés', signals: 'Jelek', competitors: 'Versenytársak', diagnosis: 'AI-diagnózis', mission: 'Mission Control', website: 'Ideiglenes weboldal', pack: 'Akciócsomag', proof: 'Proof Board', settings: 'Beállítások', account: 'Fiók' },
+  nav: { home: "Kezdőlap", overview: 'Áttekintés', signals: 'Jelek', competitors: 'Versenytársak', diagnosis: 'AI-diagnózis', mission: 'Mission Control', website: 'Ideiglenes weboldal', pack: 'Akciócsomag', proof: 'Proof Board', settings: 'Beállítások', account: 'Fiók' },
+  ledger: {"hello":"Szia, {name}","stepOf":"{n}. lépés / {total}","nextStep":"következő lépés","lookFirst":"Előbb nézd meg a jeleket","mapAria":"Illusztratív térkép a környékedről, a vállalkozásoddal és a közeli helyekkel","mapLabel":"Az utcád · {n} hely a közelben","mapNoComp":"Az utcád · szkenneld a versenytársakat, hogy itt lásd őket","bizTitle":"A vállalkozásod","body":{"analysis":"Az MI elolvassa az értékeléseket, a vendégek kérdéseit és a helyi kereséseket, majd kiválaszt egy dolgot, amit a következő 48 órában javíthatsz.","mission":"Alakítsd a lehetőséget 48 órás tervvé ajánlattal, poszttal és egyértelmű céllal.","website":"Tegyél közzé egy egyoldalas weboldalt az ajánlattal és foglalás gombbal.","proof":"Jegyezd fel, mi történt, hogy lásd, működött-e a misszió."}},
   tag: { signal: 'jel', evidence: 'bizonyíték', action: 'akció', checkpoint: 'ellenőrzőpont' },
   status: { demo: 'Demó', live: 'Élő', inference: 'Következtetés' },
   journey: {

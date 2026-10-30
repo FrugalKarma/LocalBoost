@@ -20,3 +20,10 @@ export function seedFullDemo() {
   });
   updateSite({ generated: true });
 }
+
+/** "Signals collected, nothing analysed yet" - used by ?seed=signals for rehearsal and screenshots of Home at step 3. */
+export function seedSignalsDemo() {
+  saveBiz(EXAMPLE);
+  update({ signalsCollected: true, competitors: { scanned: true, custom: [] }, diagnosis: null, mission: null, assets: null, checkpoint: null, names: null, bookings: [] });
+  updateSite({ generated: false });
+}

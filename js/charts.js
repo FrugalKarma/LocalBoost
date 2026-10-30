@@ -69,3 +69,18 @@ export function fieldMap() {
 export function meter(value, label) {
   return html`<div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${value}" aria-label="${label}"><i style="width:${value}%"></i></div>`;
 }
+
+/** Illustrative street map for the Home screen (not real geography). Colours come from CSS tokens so both themes work. */
+export function streetMap() {
+  return html`<svg class="street" viewBox="0 0 760 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <path class="m-water" d="M-10 470 C140 440 260 510 420 480 S640 420 780 450 L780 580 L-10 580Z"/>
+    <path class="m-park" d="M470 40 C560 10 690 50 710 130 C730 210 640 250 560 230 C480 210 420 110 470 40Z"/>
+    <path class="m-park" d="M60 70 C130 50 190 90 175 150 C160 200 80 200 55 160 C35 125 40 85 60 70Z"/>
+    <g class="m-road"><path d="M-10 300 L780 210" stroke-width="18"/><path d="M340 -10 L390 580" stroke-width="13"/>
+      <path d="M-10 140 C180 180 320 120 780 370" stroke-width="8"/><path d="M180 -10 L230 450" stroke-width="6"/>
+      <path d="M560 -10 L530 460" stroke-width="6"/><path d="M-10 400 L780 330" stroke-width="6"/></g>
+    <g class="m-block"><rect x="250" y="180" width="70" height="46" rx="5"/><rect x="410" y="250" width="90" height="56" rx="5"/>
+      <rect x="250" y="320" width="76" height="46" rx="5"/><rect x="600" y="270" width="78" height="42" rx="5"/></g>
+    <text class="m-label" x="525" y="125">Parcul Copou</text>
+    <text class="m-label" x="610" y="232" transform="rotate(-6 610 232)">Bd. Carol I</text></svg>`;
+}

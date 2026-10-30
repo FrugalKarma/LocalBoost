@@ -11,7 +11,8 @@ export default {
     copy: 'Kopieren', copyReco: 'Empfehlung kopieren', retry: 'Erneut versuchen', reset: 'Zurücksetzen', resetDemo: 'Demo zurücksetzen', exportData: 'Projektdaten exportieren', install: 'LocalBoost installieren',
     restart: 'Neustart', startPresentation: 'Präsentation starten', generateAssets: 'Aktionspaket erzeugen', regenerateAll: 'Alles neu erzeugen',
   },
-  nav: { overview: 'Übersicht', signals: 'Signale', competitors: 'Konkurrenz', diagnosis: 'KI-Diagnose', mission: 'Mission Control', website: 'Temporäre Website', pack: 'Aktionspaket', proof: 'Proof Board', settings: 'Einstellungen', account: 'Konto' },
+  nav: { home: "Start", overview: 'Übersicht', signals: 'Signale', competitors: 'Konkurrenz', diagnosis: 'KI-Diagnose', mission: 'Mission Control', website: 'Temporäre Website', pack: 'Aktionspaket', proof: 'Proof Board', settings: 'Einstellungen', account: 'Konto' },
+  ledger: {"hello":"Hallo, {name}","stepOf":"Schritt {n} von {total}","nextStep":"nächster Schritt","lookFirst":"Erst die Signale ansehen","mapAria":"Illustrative Karte der Umgebung mit deinem Betrieb und Orten in der Nähe","mapLabel":"Deine Straße · {n} Orte in der Nähe","mapNoComp":"Deine Straße · scanne die Konkurrenz, um sie hier zu sehen","bizTitle":"Dein Betrieb","body":{"analysis":"Die KI liest Bewertungen, Gästefragen und lokale Suchtrends und wählt eine Sache, die in den nächsten 48 Stunden verbessert werden soll.","mission":"Mach aus der Chance einen 48-Stunden-Plan mit Angebot, Post und klarem Ziel.","website":"Veröffentliche eine einseitige Website mit dem Angebot und einem Buchungsknopf.","proof":"Halte fest, was passiert ist, damit du siehst, ob die Mission gewirkt hat."}},
   tag: { signal: 'signal', evidence: 'beleg', action: 'aktion', checkpoint: 'checkpoint' },
   status: { demo: 'Demo', live: 'Live', inference: 'Schluss' },
   journey: {

@@ -11,7 +11,8 @@ export default {
     copy: 'Copy', copyReco: 'Copy recommendation', retry: 'Retry', reset: 'Reset', resetDemo: 'Reset demo', exportData: 'Export project data', install: 'Install LocalBoost',
     restart: 'Restart', startPresentation: 'Start presentation', generateAssets: 'Generate action pack', regenerateAll: 'Regenerate all',
   },
-  nav: { overview: 'Overview', signals: 'Signals', competitors: 'Competitors', diagnosis: 'AI Diagnosis', mission: 'Mission Control', website: 'Temporary Website', pack: 'Action Pack', proof: 'Proof Board', settings: 'Settings', account: 'Account' },
+  nav: { home: "Home", overview: 'Overview', signals: 'Signals', competitors: 'Competitors', diagnosis: 'AI Diagnosis', mission: 'Mission Control', website: 'Temporary Website', pack: 'Action Pack', proof: 'Proof Board', settings: 'Settings', account: 'Account' },
+  ledger: {"hello":"Hello, {name}","stepOf":"Step {n} of {total}","nextStep":"next step","lookFirst":"Look at signals first","mapAria":"Illustrative map of your neighbourhood with your business and nearby places","mapLabel":"Your street · {n} places nearby","mapNoComp":"Your street · scan competitors to see them here","bizTitle":"Your business","body":{"analysis":"The AI reads your reviews, guest questions and search trends, then picks one thing to fix in the next 48 hours.","mission":"Turn the opportunity into a 48-hour plan with an offer, a post and a clear target.","website":"Publish a one-page website that shows the offer and a booking button.","proof":"Log what happened so you can see whether the mission worked."}},
   tag: { signal: 'signal', evidence: 'evidence', action: 'action', checkpoint: 'checkpoint' },
   status: { demo: 'Demo', live: 'Live', inference: 'Inference' },
   journey: {

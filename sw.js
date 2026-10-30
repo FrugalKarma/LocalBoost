@@ -3,7 +3,7 @@
 const VERSION = 'localboost-dev';
 const CACHE = `lb-shell-${VERSION}`;
 const FONTS = 'lb-fonts-v1';
-const SHELL = ['/', '/index.html', '/preview.html', '/manifest.json', '/css/styles.css',
+const SHELL = ['/', '/index.html', '/preview.html', '/manifest.json', '/css/styles.css', '/css/ledger.css',
   '/icons/favicon.svg', '/icons/logo.png', '/icons/pattern.svg', '/icons/favicon-32.png', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png',
   '/js/app.js', '/js/ai.js', '/js/business.js', '/js/charts.js', '/js/collect.js', '/js/core.js', '/js/data.js', '/js/i18n.js', '/js/mission.js', '/js/names.js', '/js/prompts.js',
   '/js/pwa.js', '/js/registry.js', '/js/seed.js', '/js/siteTemplate.js', '/js/store.js', '/js/theme.js', '/js/website.js',

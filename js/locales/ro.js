@@ -11,7 +11,8 @@ export default {
     copy: 'Copiază', copyReco: 'Copiază recomandarea', retry: 'Reîncearcă', reset: 'Resetează', resetDemo: 'Resetează demo', exportData: 'Exportă datele proiectului', install: 'Instalează LocalBoost',
     restart: 'Repornește', startPresentation: 'Începe prezentarea', generateAssets: 'Generează pachetul de acțiune', regenerateAll: 'Regenerează tot',
   },
-  nav: { overview: 'Overview', signals: 'Semnale', competitors: 'Concurență', diagnosis: 'Diagnostic AI', mission: 'Mission Control', website: 'Website temporar', pack: 'Pachet de acțiune', proof: 'Proof Board', settings: 'Setări', account: 'Cont' },
+  nav: { home: "Acasă", overview: 'Overview', signals: 'Semnale', competitors: 'Concurență', diagnosis: 'Diagnostic AI', mission: 'Mission Control', website: 'Website temporar', pack: 'Pachet de acțiune', proof: 'Proof Board', settings: 'Setări', account: 'Cont' },
+  ledger: {"hello":"Salut, {name}","stepOf":"Pasul {n} din {total}","nextStep":"pasul următor","lookFirst":"Vezi întâi semnalele","mapAria":"Hartă ilustrativă a cartierului, cu afacerea ta și localurile din apropiere","mapLabel":"Strada ta · {n} localuri în apropiere","mapNoComp":"Strada ta · scanează concurenții ca să apară aici","bizTitle":"Afacerea ta","body":{"analysis":"AI-ul citește recenziile, întrebările clienților și căutările locale, apoi alege un singur lucru de rezolvat în următoarele 48 de ore.","mission":"Transformă oportunitatea într-un plan de 48 de ore, cu ofertă, postare și o țintă clară.","website":"Publică un site de o pagină care arată oferta și un buton de rezervare.","proof":"Notează ce s-a întâmplat, ca să vezi dacă misiunea a funcționat."}},
   tag: { signal: 'semnal', evidence: 'dovadă', action: 'acțiune', checkpoint: 'checkpoint' },
   status: { demo: 'Demo', live: 'Live', inference: 'Inferență' },
   journey: {

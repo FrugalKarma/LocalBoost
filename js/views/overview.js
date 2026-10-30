@@ -2,8 +2,8 @@ import { html, icon, toast, limit } from '../core.js';
 import { t, fmtNumber } from '../i18n.js';
 import { getState, update } from '../store.js';
 import { getDiagnosis } from '../ai.js';
-import { BUSINESS, THEMES, reachStats, resolveRange } from '../data.js';
-import { scoreRing, hourlyChart, reachChart, fieldMap } from '../charts.js';
+import { BUSINESS, THEMES, COMPETITORS, reachStats, resolveRange } from '../data.js';
+import { hourlyChart, reachChart, streetMap } from '../charts.js';
 import { scan } from '../collect.js';
 import { actions, inputs, rerender } from '../registry.js';
 import { CATEGORIES, GOALS, EXAMPLE, emptyDraft, getBiz, displayName, validate, saveBiz } from '../business.js';
@@ -89,6 +89,50 @@ function rangeBar(stats) {
     ${cur === 'custom' ? html`<div class="range-dates"><label class="field"><span>${t('range.from')}</span><input type="date" data-in="range-date" data-field="from" value="${ymd(stats.from)}" max="${ymd(new Date())}"></label>
       <label class="field"><span>${t('range.to')}</span><input type="date" data-in="range-date" data-field="to" value="${ymd(stats.to)}" max="${ymd(new Date())}"></label></div>` : ''}</div>`;
 }
+/* ---------- Home: map + next-step card ---------- */
+// The six steps of the demo flow, in order; used for "Step n of 6" and the progress dots.
+const stepList = (s) => [s.business.loaded, s.signalsCollected, !!s.diagnosis, s.mission?.status === 'active', !!s.site?.generated, !!s.checkpoint];
+const STAGE_OF_NEXT = { analysis: 'diagnose', mission: 'act', website: 'act', proof: 'measure' };
+// pin spots on the illustrative map (percent of width / height)
+const PIN_SPOTS = [['34%', '33%'], ['62%', '46%'], ['84%', '51%']];
+const SIG_SPOTS = { atmosphere: ['50%', '11%', ''], hours: ['5%', '57%', ''], seats: ['55%', '64%', 'hide-sm'], coffee: null };
+
+function mapCard(stats) {
+  const s = getState();
+  const comps = s.competitors?.scanned ? COMPETITORS.slice(0, 3) : [];
+  return html`<section class="map-card" aria-label="${t('ledger.mapAria')}">${streetMap()}
+    ${comps.length ? html`<span class="map-chip">${icon('pin', 15)} ${t('ledger.mapLabel', { n: comps.length })}</span>`
+      : html`<a class="map-chip" href="#/competitors">${icon('compare', 15)} ${t('ledger.mapNoComp')}</a>`}
+    ${THEMES.filter((th) => SIG_SPOTS[th.id]).map((th) => { const [x, y, cls] = SIG_SPOTS[th.id];
+      return html`<span class="map-sig ${th.tone === 'pos' ? 'pos' : 'gap'} ${cls}" style="left:${x};top:${y}"><i aria-hidden="true">${th.tone === 'pos' ? '+' : '?'}</i>${t(`overview.theme.${th.id}`)} · ${th.mentions}</span>`; })}
+    ${comps.map((c, i) => html`<span class="pin pin-other" style="left:${PIN_SPOTS[i][0]};top:${PIN_SPOTS[i][1]}">${c.name}<span>${c.visibility}</span></span>`)}
+    <span class="pin-ring" style="left:47%;top:43%" aria-hidden="true"></span>
+    <span class="pin pin-you" style="left:47%;top:43%"><b>${displayName()}<em>${BUSINESS.visibility}</em></b></span>
+    <div class="map-stats">
+      <div class="map-stat has-src" tabindex="0" data-src="score"><strong class="brand">${BUSINESS.visibility}</strong><span>${t('overview.score')}</span></div>
+      <div class="map-stat has-src" tabindex="0" data-src="rating"><strong>${fmtNumber(BUSINESS.rating, { minimumFractionDigits: 1 })}</strong><span>${t('overview.rating')}</span></div>
+      <div class="map-stat has-src" tabindex="0" data-src="reach" data-dyn="1"><strong>${fmtNumber(stats.end / 1000, { maximumFractionDigits: 1 })}k</strong><span>${t('overview.reach')}</span></div>
+      <div class="map-stat has-src" tabindex="0" data-src="trend" data-dyn="1"><strong class="${stats.changePct >= 0 ? 'up' : ''}">${pct(stats.changePct)}</strong><span>${t('overview.trend')}</span></div>
+    </div></section>`;
+}
+
+function deckCard(na, steps) {
+  const key = na.key.split('.')[1];
+  const stage = STAGE_OF_NEXT[key] || 'diagnose';
+  const done = steps.filter(Boolean).length;
+  return html`<div class="deck"><article class="deck-card" style="--sc:var(--st-${stage})">
+    <div class="deck-top"><i aria-hidden="true"></i>${t(`journey.${stage}`)} · ${t('ledger.nextStep')}<small>${t('ledger.stepOf', { n: Math.min(done + 1, steps.length), total: steps.length })}</small></div>
+    <div class="progress-dots" aria-hidden="true">${steps.map((d) => html`<i class="${d ? 'on' : ''}"></i>`)}</div>
+    <h2>${t(na.key)}</h2>
+    <p>${t(`ledger.body.${key}`)}</p>
+    ${key === 'analysis' ? html`<div class="deck-chips">${THEMES.map((th) => html`<span class="${th.tone === 'pos' ? 'pos' : 'gap'}">${t(`overview.theme.${th.id}`)} · ${th.mentions}</span>`)}</div>` : ''}
+    <div class="deck-actions">${key === 'analysis'
+      ? html`<button class="btn btn-primary btn-lg" data-act="run-analysis-go">${icon('sparkle', 18)} ${t('actions.runAnalysis')}</button>
+        <button class="btn btn-secondary" data-act="go" data-route="signals">${t('ledger.lookFirst')}</button>`
+      : html`<button class="btn btn-primary btn-lg" data-act="go" data-route="${na.route}">${t('common.open')} ${icon('next', 18)}</button>`}</div>
+  </article></div>`;
+}
+
 export const overview = {
   id: 'overview',
   render() {
@@ -100,20 +144,21 @@ export const overview = {
     const na = nextAction();
     const maxM = Math.max(...THEMES.map((x) => x.mentions));
     const stats = reachStats(s.range);
+    const first = String(s.profile?.name || '').split(' ')[0];
+    const steps = stepList(s); const done = steps.filter(Boolean).length;
     return html`
-    <section class="hero-card">
-      <div class="hero-copy">
-        ${heroHead()}
-        <p class="hero-lede">${t('overview.lede')}</p>
-        <div class="kpis">
-          <div class="kpi has-src" tabindex="0" data-src="rating"><span class="kpi-v">${fmtNumber(BUSINESS.rating, { minimumFractionDigits: 1 })}</span><span class="kpi-l">${t('overview.rating')}</span></div>
-          <div class="kpi has-src" tabindex="0" data-src="reach" data-dyn="1"><span class="kpi-v">${fmtNumber(stats.end / 1000, { maximumFractionDigits: 1 })}k</span><span class="kpi-l">${t('overview.reach')}</span></div>
-          <div class="kpi has-src" tabindex="0" data-src="trend" data-dyn="1"><span class="kpi-v ${stats.changePct >= 0 ? 'kpi-up' : ''}">${pct(stats.changePct)}</span><span class="kpi-l">${t('overview.trend')}</span></div>
-        </div>
-        <div class="hero-cta"><button class="btn btn-primary btn-lg" data-act="go" data-route="mission">${t('actions.startMission')} ${icon('next', 18)}</button></div>
+    <header class="home-head">
+      <div><h1>${first ? t('ledger.hello', { name: first }) : displayName()}</h1>
+        <p class="home-step">${t('ledger.stepOf', { n: Math.min(done + 1, steps.length), total: steps.length })} · ${t(na.key)}</p></div>
+      <p class="muted home-lede">${t('overview.lede')}</p>
+    </header>
+    <div class="home-grid">
+      ${mapCard(stats)}
+      <div class="home-side">${deckCard(na, steps)}
+        <section class="biz-card"><p class="tag">${t('ledger.bizTitle')}</p><h2 class="card-title">${displayName()}</h2>
+          <p class="muted small">${icon('pin', 15)} ${getBiz().city} · ${t(`biz.cat.${getBiz().category}`)}</p>${summary()}</section>
       </div>
-      <div class="hero-art">${fieldMap()}<div class="hero-score has-src" tabindex="0" data-src="score"><p class="label-mono">${t('overview.score')}</p>${scoreRing(BUSINESS.visibility)}</div></div>
-    </section>
+    </div>
 
     <div class="bento">
       <article class="card span-7 self-start">
@@ -135,9 +180,7 @@ export const overview = {
         ${opp
           ? html`<h2 class="card-title">${opp.title}</h2><p>${opp.impact}</p><p class="mono small has-src" tabindex="0" data-src="confidence">${t('common.confidence')} ${opp.confidence}%</p>`
           : html`<h2 class="card-title">${t('overview.noOpportunity')}</h2><p class="muted">${t('overview.noOpportunityBody')}</p>`}
-        <div class="next-action"><span class="label-mono">${t('overview.nextAction')}</span>
-          <strong>${t(na.key)}</strong>
-          <button class="btn btn-secondary" data-act="go" data-route="${na.route}">${t('common.open')} ${icon('next', 16)}</button></div>
+        ${opp ? html`<div class="btn-row"><button class="btn btn-secondary" data-act="go" data-route="diagnosis">${t('common.open')} ${icon('next', 16)}</button></div>` : ''}
       </article>
 
       <article class="card span-7">

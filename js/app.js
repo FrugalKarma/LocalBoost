@@ -1,10 +1,10 @@
-import { html, icon, $, $$, toast, demoBadge, closeModal } from './core.js';
+import { html, raw, icon, $, $$, toast, demoBadge, closeModal } from './core.js';
 import { t, initLang, setLang, onLang, LANGS, getLang } from './i18n.js';
 import { initTheme, toggleTheme, currentTheme, themeTransition } from './theme.js';
 import { getState, update } from './store.js';
 import { actions, inputs, setRerender, ROUTES, go } from './registry.js';
 import { registerSW, onInstallChange } from './pwa.js';
-import { seedFullDemo } from './seed.js';
+import { seedFullDemo, seedSignalsDemo } from './seed.js';
 import { getSiteFrames } from './views/website.js';
 import { overview } from './views/overview.js';
 import { signals } from './views/signals.js';
@@ -16,6 +16,8 @@ import { proof } from './views/proof.js';
 import { settings } from './views/settings.js';
 import { account } from './views/account.js';
 import { competitors } from './views/competitors.js';
+import { journeyState } from './views/shared.js';
+import { displayName, getBiz } from './business.js';
 
 const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, pack, proof, settings, account].map((v) => [v.id, v]));
 let route = 'overview';
@@ -23,28 +25,46 @@ let pendingAnchor = null;
 
 const parseRoute = () => { const r = (location.hash.replace(/^#\/?/, '') || 'overview').split('?')[0]; return views[r] ? r : 'overview'; };
 
-function navItem(r, i, mobile) {
-  const label = t(`nav.${r.id}`);
-  return html`<a class="nav-item" href="#/${r.id}" data-nav="${r.id}" ${route === r.id ? 'aria-current="page"' : ''} title="${label}">
-    ${icon(r.icon, 22)}<span class="nav-label">${label}</span></a>`;
+/* ---------- journey navigation: Home + the four stages, each with its own colour ---------- */
+// Settings and Account are reached from the account menu; they belong to no stage.
+const STAGES = [
+  { id: 'home', routes: ['overview'], n: '' },
+  { id: 'observe', routes: ['signals', 'competitors'], n: '01' },
+  { id: 'diagnose', routes: ['diagnosis'], n: '02' },
+  { id: 'act', routes: ['mission', 'website', 'pack'], n: '03' },
+  { id: 'measure', routes: ['proof'], n: '04' },
+];
+const stageOf = (r) => STAGES.find((s) => s.routes.includes(r)) || null;
+const stageLabel = (s) => (s.id === 'home' ? t('nav.home') : t(`journey.${s.id}`));
+
+function stageTab(s) {
+  const cur = stageOf(route)?.id === s.id;
+  const done = s.id !== 'home' && journeyState()[s.id];
+  const mark = s.id === 'home' ? icon('pin', 16) : done ? icon('check', 14) : s.n;
+  return html`<a class="stage-tab" data-stage="${s.id}" href="#/${s.routes[0]}" ${raw(cur ? 'aria-current="page"' : '')} title="${stageLabel(s)}">
+    <span class="stage-n" aria-hidden="true">${mark}</span><span class="stage-label">${stageLabel(s)}</span></a>`;
+}
+
+function subnav() {
+  const s = stageOf(route);
+  if (!s || s.routes.length < 2) return html``;
+  return html`<nav class="subnav" data-stage="${s.id}" aria-label="${stageLabel(s)}">${s.routes.map((r) => html`<a class="subnav-item" href="#/${r}" ${raw(r === route ? 'aria-current="page"' : '')}>${icon(ROUTES.find((x) => x.id === r)?.icon || 'next', 18)}${t(`nav.${r}`)}</a>`)}</nav>`;
+}
+
+function updateChrome() {
+  const tabs = $('.stage-tabs'); if (tabs) tabs.innerHTML = html`${STAGES.map(stageTab)}`.s;
+  const sub = $('#subnav-slot'); if (sub) sub.innerHTML = subnav().s;
+  const biz = $('#top-biz'); const b = getState().business;
+  if (biz) biz.textContent = b.loaded ? `${displayName()} · ${getBiz().city || ''}` : '';
 }
 
 function shell() {
-  const mobileRoutes = ROUTES.filter((r) => r.mobile);
   return html`
   <a class="skip" href="#main">${t('common.skip')}</a>
-  <div class="side-hot" aria-hidden="true"></div>
-  <aside class="sidebar" id="sidebar" aria-label="${t('common.navigation')}">
-    <div class="brand"><img class="brand-logo" src="/icons/logo.png" alt="" width="40" height="40"><div><strong>LocalBoost</strong><small class="mono">Signal-to-Action OS</small></div></div>
-    <nav class="nav">${ROUTES.map((r, i) => navItem(r, i))}</nav>
-    <div class="side-foot"><p class="mono small">${t('common.demoData')}</p><p class="small">${t('common.sideNote')}</p></div>
-  </aside>
-  <div class="overlay" id="overlay" data-act="close-drawer" hidden></div>
   <div class="content">
     <header class="topbar">
-      <button class="icon-btn menu-toggle" data-act="toggle-side" aria-label="${t('common.menu')}" title="${t('common.menu')}">${icon('menu', 22)}</button>
-      <span class="top-brand" aria-hidden="true"><img class="brand-logo" src="/icons/logo.png" alt="" width="28" height="28"><strong>LocalBoost</strong></span>
-      <h2 class="topbar-title" id="topbar-title">${t(`nav.${route}`)}</h2>
+      <a class="top-brand" href="#/overview"><img class="brand-logo" src="/icons/logo.png" alt="" width="34" height="34"><strong>LocalBoost</strong></a>
+      <span class="top-biz" id="top-biz"></span>
       <span class="spacer"></span>
       <span class="badge badge-offline" id="offline-badge" hidden>${t('common.offline')}</span>
       ${demoBadge('hide-sm')}
@@ -56,10 +76,10 @@ function shell() {
           <a role="menuitem" href="#/account">${icon('account', 16)} ${t('nav.account')}</a><a role="menuitem" href="#/settings">${icon('settings', 16)} ${t('nav.settings')}</a>
           <button role="menuitem" data-act="help">${icon('help', 16)} ${t('settings.openHelp')}</button></div></div>
     </header>
+    <div id="subnav-slot"></div>
     <main id="main" tabindex="-1"></main>
   </div>
-  <nav class="bottom-nav" aria-label="${t('common.navigation')}">${mobileRoutes.map((r) => navItem(r, 0, true))}
-    <button class="nav-item" data-act="open-drawer" aria-label="${t('common.menu')}">${icon('menu', 22)}<span class="nav-label">${t('common.menu')}</span></button></nav>`;
+  <nav class="stage-tabs" aria-label="${t('common.navigation')}">${STAGES.map(stageTab)}</nav>`;
 }
 
 function renderView(keepScroll = false) {
@@ -69,20 +89,17 @@ function renderView(keepScroll = false) {
   document.body.dataset.route = route;
   try { main.innerHTML = v.render().s; v.mount?.(); }
   catch (e) { console.error('[LocalBoost] render failed', e); main.innerHTML = html`<div class="card empty-hero"><h2>${t('common.errorGeneric')}</h2><button class="btn btn-primary" data-act="go" data-route="overview">${t('nav.overview')}</button></div>`.s; }
-  $('#topbar-title').textContent = t(`nav.${route}`);
-  $$('[data-nav]').forEach((a) => (a.dataset.nav === route ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
+  updateChrome();
   document.title = `${t(`nav.${route}`)} · LocalBoost`;
   if (keepScroll) window.scrollTo(0, y);
   if (pendingAnchor) { document.getElementById(pendingAnchor)?.scrollIntoView(); pendingAnchor = null; }
 }
 
-let spinTheme = false; let sideCollapsed = false; let pinnedOpen = false; let suppressPeek = false; let peekTimer = null;
-const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+let spinTheme = false;
 
 function renderAll() {
   const app = document.getElementById('app');
   app.innerHTML = shell().s;
-  app.classList.toggle('side-collapsed', sideCollapsed);
   renderView(true);
   updateOnline();
 }
@@ -92,13 +109,11 @@ setRerender((o) => (o?.full ? renderAll() : rerender()));
 
 function onRoute() {
   route = parseRoute();
-  closeDrawer();
   $('#account-menu') && ($('#account-menu').hidden = true);
   renderView();
   if (!pendingAnchor) { window.scrollTo(0, 0); $('#main')?.focus({ preventScroll: true }); }
 }
 
-function closeDrawer() { $('#sidebar')?.classList.remove('open'); const o = $('#overlay'); if (o) o.hidden = true; }
 // navigator.onLine can be wrong (some browsers report false on localhost), so confirm with a real request.
 async function updateOnline() {
   const b = $('#offline-badge'); if (!b) return;
@@ -112,14 +127,6 @@ document.addEventListener('click', (e) => {
   const menu = $('#account-menu');
   if (menu && !menu.hidden && !e.target.closest('.menu-wrap')) menu.hidden = true;
   if (e.target.closest('#account-menu a, #account-menu button')) menu && (menu.hidden = true);
-  if (e.target.closest('.nav-item[href]')) {
-    closeDrawer();
-    if (!isMobile() && e.target.closest('#sidebar')) { // desktop: hide the sidebar after a selection; hover the left edge to bring it back
-      sideCollapsed = true; pinnedOpen = false; suppressPeek = true;
-      $('#app').classList.add('side-collapsed'); $('#app').classList.remove('peek');
-      if (e.detail > 0) document.activeElement?.blur?.();
-    }
-  }
   if (!el) return;
   const fn = actions[el.dataset.act];
   if (!fn) { console.warn('[LocalBoost] no handler for', el.dataset.act); return; }
@@ -136,31 +143,6 @@ actions.go = (el) => {
   const target = `#/${el.dataset.route}`;
   if (location.hash === target) onRoute(); else location.hash = target;
 };
-actions['open-drawer'] = () => { $('#sidebar').classList.add('open'); $('#overlay').hidden = false; $('#sidebar a')?.focus(); };
-actions['close-drawer'] = closeDrawer;
-actions['toggle-side'] = () => {
-  if (isMobile()) return actions['open-drawer']();
-  pinnedOpen = !pinnedOpen; suppressPeek = false;
-  if (pinnedOpen) setPeek(true); else { $('#sidebar').blur(); $('#app').classList.remove('peek'); }
-};
-
-/* desktop sidebar: slides in on hover over the left edge and the page shrinks aside to stay visible */
-function setPeek(on) {
-  clearTimeout(peekTimer);
-  const app = $('#app'); const sb = $('#sidebar');
-  if (!app || !sb || isMobile() || !app.classList.contains('side-collapsed')) return;
-  if (on) {
-    app.style.setProperty('--push', String(Math.max(0.7, (window.innerWidth - sb.offsetWidth) / window.innerWidth)));
-    app.classList.add('peek');
-  } else {
-    peekTimer = setTimeout(() => { if (!pinnedOpen && !sb.matches(':focus-within')) app.classList.remove('peek'); }, 160);
-  }
-}
-const inSide = (el) => el instanceof Element && el.closest('.side-hot, #sidebar');
-document.addEventListener('mouseover', (e) => { if (!suppressPeek && inSide(e.target)) setPeek(true); });
-document.addEventListener('mouseout', (e) => { if (inSide(e.target) && !inSide(e.relatedTarget)) { suppressPeek = false; setPeek(false); } });
-document.addEventListener('focusin', (e) => { if (inSide(e.target) && !suppressPeek) setPeek(true); });
-document.addEventListener('focusout', (e) => { if (inSide(e.target) && !inSide(e.relatedTarget)) setPeek(false); });
 actions['account-menu'] = (el) => {
   const m = $('#account-menu'); m.hidden = !m.hidden; el.setAttribute('aria-expanded', String(!m.hidden));
   if (!m.hidden) $('a', m).focus();
@@ -169,7 +151,7 @@ actions['toggle-theme'] = (el) => { themeTransition(el, () => { spinTheme = true
 inputs['lang-select'] = (el) => setLang(el.value);
 
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeDrawer(); const m = $('#account-menu'); if (m && !m.hidden) { m.hidden = true; $('[data-act="account-menu"]')?.focus(); } }
+  if (e.key === 'Escape') { const m = $('#account-menu'); if (m && !m.hidden) { m.hidden = true; $('[data-act="account-menu"]')?.focus(); } }
 });
 
 window.addEventListener('message', (e) => {
@@ -227,6 +209,7 @@ function boot() {
   if (q.get('lang') && LANGS.some((l) => l.code === q.get('lang'))) { setLang(q.get('lang')); }
   if (q.get('theme') === 'dark' || q.get('theme') === 'light') { document.documentElement.dataset.theme = q.get('theme'); }
   if (q.get('seed') === 'full') seedFullDemo();
+  if (q.get('seed') === 'signals') seedSignalsDemo();
   route = parseRoute();
   renderAll();
   registerSW();
