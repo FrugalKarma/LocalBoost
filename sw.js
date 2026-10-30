@@ -5,7 +5,7 @@ const CACHE = `lb-shell-${VERSION}`;
 const FONTS = 'lb-fonts-v1';
 const SHELL = ['/', '/index.html', '/preview.html', '/manifest.json', '/css/styles.css', '/css/ledger.css',
   '/icons/favicon.svg', '/icons/logo.png', '/icons/pattern.svg', '/icons/favicon-32.png', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png',
-  '/js/app.js', '/js/ai.js', '/js/business.js', '/js/charts.js', '/js/collect.js', '/js/core.js', '/js/data.js', '/js/i18n.js', '/js/mission.js', '/js/names.js', '/js/prompts.js',
+  '/js/app.js', '/js/ai.js', '/js/api.js', '/js/chat.js', '/js/business.js', '/js/charts.js', '/js/collect.js', '/js/core.js', '/js/data.js', '/js/i18n.js', '/js/mission.js', '/js/names.js', '/js/prompts.js',
   '/js/pwa.js', '/js/registry.js', '/js/seed.js', '/js/siteTemplate.js', '/js/store.js', '/js/theme.js', '/js/website.js',
   '/js/locales/en.js', '/js/locales/ro.js', '/js/locales/fr.js', '/js/locales/de.js', '/js/locales/hu.js',
   '/js/views/account.js', '/js/views/competitors.js', '/js/views/diagnosis.js', '/js/views/mission.js', '/js/views/overview.js', '/js/views/pack.js',

@@ -1,4 +1,4 @@
-// AI layer: role-separated calls to /api/ai (server-side key), 8 s deadline, JSON repair,
+// AI layer: role-separated calls to /api/ai (server-side key), 16 s per call / 25 s per step, JSON repair,
 // schema validation and a deterministic local fallback so the demo can never block.
 import { t, ta, getLang } from './i18n.js';
 import { getState, update } from './store.js';
@@ -6,8 +6,19 @@ import { BUSINESS, SIGNALS, BASELINE, TARGET } from './data.js';
 import { limit } from './core.js';
 import { getBiz, cleanHandle, socialSignals } from './business.js';
 import { localNames } from './names.js';
+import { apiUrl, onApiBaseChange } from './api.js';
 
-export const AI_TIMEOUT_MS = 8000;
+export const AI_TIMEOUT_MS = 25000; // total budget for one step (the analysis makes two calls)
+const CALL_TIMEOUT_MS = 16000; // budget for a single call; the server has its own 15 s upstream limit
+
+/** Abort when either the step budget or the single-call budget runs out. */
+function withTimeout(signal, ms) {
+  const t = AbortSignal.timeout(ms);
+  if (AbortSignal.any) return AbortSignal.any([signal, t]);
+  const c = new AbortController(); const stop = () => c.abort();
+  signal.addEventListener('abort', stop, { once: true }); t.addEventListener('abort', stop, { once: true });
+  return c.signal;
+}
 export const aiTrace = []; // developer-facing transparency log (no secrets)
 
 /* ---------- JSON repair + validation ---------- */
@@ -85,9 +96,11 @@ export class AiError extends Error { constructor(kind, msg) { super(msg || kind)
 
 // One cheap probe per page load: static hosting or a key-less server means "no AI", with no repeated failing requests.
 let availability = null;
-async function aiAvailable() {
+export const resetAiAvailability = () => { availability = null; };
+onApiBaseChange(resetAiAvailability);
+export async function aiAvailable() {
   if (availability === null) {
-    availability = fetch('/api/health', { signal: AbortSignal.timeout(2500) }).then((r) => (r.ok ? r.json() : { ai: false })).then((j) => !!j.ai).catch(() => false);
+    availability = fetch(apiUrl('/api/health'), { signal: AbortSignal.timeout(4000) }).then((r) => (r.ok ? r.json() : { ai: false })).then((j) => !!j.ai).catch(() => false);
   }
   return availability;
 }
@@ -104,10 +117,11 @@ async function callRole(role, payload, signal) {
     if (sim === 'error') throw new AiError('simulated', 'Simulated provider error');
     if (!(await aiAvailable())) throw new AiError('not_configured');
     let res;
+    const callSignal = withTimeout(signal, CALL_TIMEOUT_MS);
     try {
-      res = await fetch('/api/ai', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ role, lang: getLang(), payload }), signal });
+      res = await fetch(apiUrl('/api/ai'), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ role, lang: getLang(), payload }), signal: callSignal });
     } catch (e) {
-      if (signal.aborted) throw new AiError('timeout');
+      if (callSignal.aborted) throw new AiError('timeout');
       throw new AiError('unreachable', e.message);
     }
     if (!res.ok) throw new AiError('http', `HTTP ${res.status}`);

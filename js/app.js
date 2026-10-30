@@ -18,6 +18,7 @@ import { account } from './views/account.js';
 import { competitors } from './views/competitors.js';
 import { journeyState } from './views/shared.js';
 import { displayName, getBiz } from './business.js';
+import './chat.js'; // "Ask LocalBoost" panel (registers its own actions)
 
 const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, pack, proof, settings, account].map((v) => [v.id, v]));
 let route = 'overview';
@@ -68,6 +69,7 @@ function shell() {
       <span class="spacer"></span>
       <span class="badge badge-offline" id="offline-badge" hidden>${t('common.offline')}</span>
       ${demoBadge('hide-sm')}
+      <button class="btn btn-ask" data-act="chat-open" aria-label="${t('chat.title')}">${icon('sparkle', 18)}<span class="hide-sm">${t('chat.open')}</span></button>
       <label class="lang"><span class="sr-only">${t('settings.language')}</span>${icon('globe', 16)}<select data-in="lang-select" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<option value="${l.code}" ${getLang() === l.code ? 'selected' : ''}>${l.label}</option>`)}</select></label>
       <button class="icon-btn ${spinTheme ? 'spin-once' : ''}" data-act="toggle-theme" aria-label="${t('settings.theme')}" title="${t('settings.theme')}">${icon(currentTheme() === 'dark' ? 'sun' : 'moon', 20)}</button>
       <div class="menu-wrap"><button class="icon-btn" data-act="account-menu" aria-haspopup="true" aria-expanded="false" aria-label="${t('nav.account')}">${icon('account', 20)}</button>

@@ -32,6 +32,7 @@ const defaults = () => ({
   site: defaultSite(),
   bookings: [],
   checkpoint: null,
+  chat: [], // "Ask LocalBoost" conversation (last 30 messages, this browser only)
   profile: { name: 'Ana Demo' },
 });
 

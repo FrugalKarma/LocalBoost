@@ -77,7 +77,8 @@ export const diagnosis = {
         <li><span class="chain-k">${t('diagnosis.impact')}</span><p>${o.impact}</p></li>
       </ol>
       <div class="btn-row"><button class="btn btn-primary btn-lg" data-act="go" data-route="mission">${t('actions.startMission')} ${icon('next', 18)}</button>
-        <button class="btn btn-secondary" data-act="copy-reco">${icon('copy', 18)} ${t('actions.copyReco')}</button></div>
+        <button class="btn btn-secondary" data-act="copy-reco">${icon('copy', 18)} ${t('actions.copyReco')}</button>
+        <button class="btn btn-secondary" data-act="chat-open" data-q="${t('chat.qDiagnosis')}">${icon('sparkle', 18)} ${t('chat.askDiagnosis')}</button></div>
     </section>
 
     <div class="dia-grid">
