@@ -24,7 +24,8 @@ export const signals = {
   render() {
     const st = getState();
     const collected = st.business.loaded && st.signalsCollected;
-    const list = allSignals().filter((s) => filter === 'all' || s.type === filter);
+    const every = allSignals();
+    const list = every.filter((s) => filter === 'all' || s.type === filter);
     if (!collected && !list.length) {
       const head = pageHead({ note: '02', title: t('signals.title'), sub: t('signals.sub'),
         actions: html`<button class="btn btn-secondary" data-act="csv-import">${icon('upload', 18)} ${t('signals.importCsv')}</button>` });
@@ -39,20 +40,24 @@ export const signals = {
     ${pageHead({ note: '02', title: t('signals.title'), sub: t('signals.sub'),
       actions: html`<button class="btn btn-secondary" data-act="csv-import">${icon('upload', 18)} ${t('signals.importCsv')}</button>
         <button class="btn btn-ghost" data-act="go" data-route="settings" data-hash="connected">${icon('plug', 18)} ${t('signals.connect')}</button>` })}
-    <div class="chips" role="group" aria-label="${t('signals.filter')}">
-      ${['all', ...SIGNAL_TYPES].map((k) => html`<button class="chip" aria-pressed="${filter === k}" data-act="filter-signals" data-type="${k}">${t(`signals.type.${k}`)}</button>`)}
+    <div class="sig-filters" role="group" aria-label="${t('signals.filter')}">
+      ${['all', ...SIGNAL_TYPES].map((k) => { const n = k === 'all' ? every.length : every.filter((s) => s.type === k).length;
+        return html`<button class="sig-filter" aria-pressed="${filter === k}" data-act="filter-signals" data-type="${k}" ${n ? '' : 'disabled'}>${k === 'all' ? '' : icon(TYPE_ICON[k], 16)}${t(`signals.type.${k}`)}<b>${n}</b></button>`; })}
     </div>
-    <p class="muted small">${t('signals.legend')}</p>
-    <div class="notice" role="note">${icon('info', 18)}<p>${t('signals.socialNote')}${socialSignals().skipped.length ? html` ${t('signals.socialMissing', { nets: socialSignals().skipped.map((n) => ({ instagram: 'Instagram', tiktok: 'TikTok', facebook: 'Facebook' }[n])).join(', ') })}` : ''}</p></div>
-    ${list.length ? html`<div class="signal-list">${list.map((s, i) => html`
-      <article class="signal ${s.user ? 'signal-user' : ''}" style="--i:${i}">
-        <div class="signal-ic">${icon(TYPE_ICON[s.type] || 'signals', 22)}</div>
-        <div class="signal-body">
-          <div class="signal-top"><span class="tag">${t(`signals.type.${s.type}`)} · ${s.source}</span>${statusBadge(s.status)}${s.user ? html`<span class="badge badge-user">${t('signals.userData')}</span>` : ''}</div>
-          <p class="evidence">“${s.evidence}”</p>
-          <div class="signal-conf has-src" tabindex="0" data-src="confidence"><span class="label-mono">${t('common.confidence')} ${s.confidence ?? 60}%</span>${meter(s.confidence ?? 60, t('common.confidence'))}</div>
-        </div></article>`)}</div>`
-      : html`<div class="empty"><p>${t('signals.empty')}</p><button class="btn btn-secondary" data-act="filter-signals" data-type="all">${t('signals.showAll')}</button></div>`}`;
+    <details class="sig-about"><summary>${icon('info', 16)} ${t('ledger.aboutSignals')}</summary>
+      <p>${t('signals.legend')}</p>
+      <p>${t('signals.socialNote')}${socialSignals().skipped.length ? html` ${t('signals.socialMissing', { nets: socialSignals().skipped.map((n) => ({ instagram: 'Instagram', tiktok: 'TikTok', facebook: 'Facebook' }[n])).join(', ') })}` : ''}</p></details>
+    ${list.length ? html`<div class="sig-board">${list.map((s, i) => html`
+      <article class="sig-card" data-type="${s.type}" style="--i:${i}">
+        <div class="sig-top"><span class="sig-type">${icon(TYPE_ICON[s.type] || 'signals', 16)}${t(`signals.type.${s.type}`)}</span>${statusBadge(s.status)}${s.user ? html`<span class="badge badge-user">${t('signals.userData')}</span>` : ''}</div>
+        <blockquote class="sig-quote">${s.evidence}</blockquote>
+        <div class="sig-foot"><span class="sig-src">${s.source}</span>
+          <span class="sig-conf has-src" tabindex="0" data-src="confidence">${t('common.confidence')} <b>${s.confidence ?? 60}%</b>${meter(s.confidence ?? 60, t('common.confidence'))}</span></div>
+      </article>`)}</div>`
+      : html`<div class="empty"><p>${t('signals.empty')}</p><button class="btn btn-secondary" data-act="filter-signals" data-type="all">${t('signals.showAll')}</button></div>`}
+    <section class="next-bar"><div><p class="tag">${t('journey.diagnose')} · ${t('ledger.nextStep')}</p><strong>${st.diagnosis ? t('diagnosis.title') : t('next.analysis')}</strong></div>
+      ${st.diagnosis ? html`<button class="btn btn-primary btn-lg" data-act="go" data-route="diagnosis">${t('common.open')} ${icon('next', 18)}</button>`
+        : html`<button class="btn btn-primary btn-lg" data-act="run-analysis-go">${icon('sparkle', 18)} ${t('actions.runAnalysis')}</button>`}</section>`;
   },
 };
 
