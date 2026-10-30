@@ -399,3 +399,26 @@ details.dd { position: relative; border: 0; padding: 0; margin: 0; background: n
 .controls2 .regen-row .label-mono { width: 100%; }
 @media (max-width: 1100px) { .site-layout2 { grid-template-columns: minmax(0, 1fr); } .controls2 { position: static; max-height: none; } }
 @media (max-width: 767px) { .browser-bar .urlbar { order: 3; flex-basis: 100%; } .browser-actions { margin-left: auto; } }
+
+/* ---------- Action Pack ---------- */
+.offer-hero { display: flex; gap: 20px 32px; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; margin: 10px 0 18px; padding: clamp(20px, 3vw, 30px); border-radius: 24px;
+  background: color-mix(in srgb, var(--st-act) 28%, var(--card)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--st-act) 50%, transparent); position: relative; overflow: hidden; }
+.offer-hero::after { content: ''; position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; border-radius: 50%; border: 18px solid color-mix(in srgb, var(--st-act) 45%, transparent); pointer-events: none; }
+.offer-hero.pack-card { height: auto; }
+.offer-copy { max-width: 62ch; position: relative; z-index: 1; }
+.offer-copy .tag { display: flex; align-items: center; gap: 8px; }
+.offer-copy h2 { font-size: clamp(1.7rem, 3.4vw, 2.6rem); line-height: 1.02; margin: 0 0 10px; }
+.offer-copy p { margin: 0 0 12px; line-height: 1.55; }
+.offer-cta { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px; background: var(--burgundy-800); color: var(--cream-50); font-weight: 600; }
+:root[data-theme='dark'] .offer-cta { background: var(--yellow-400); color: var(--burgundy-950); }
+.offer-actions { display: flex; gap: 6px; position: relative; z-index: 1; }
+.pack-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.pack-row .pack-card { display: flex; flex-direction: column; }
+.pack-row .pack-card > .btn-row { margin-top: auto; padding-top: 14px; }
+.pack-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pack-top .tag { margin: 0; }
+.merch-col { display: grid; justify-items: center; gap: 10px; text-align: center; } .merch-col p { margin: 0; color: var(--muted); }
+.post-mock { background: var(--bg-2); border-radius: 16px; }
+.cta-line { display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--tag); }
+.headlines li { padding: 6px 0; border-bottom: 1px solid var(--line); } .headlines li:last-child { border-bottom: 0; }
+@media (max-width: 1000px) { .pack-row { grid-template-columns: minmax(0, 1fr); } }

@@ -18,8 +18,8 @@ export function stickerSvg(text, size = 200, place = '') {
     <text font-family="Lexend, sans-serif" font-size="12" font-weight="500" fill="#FFE39A" letter-spacing="1.5"><textPath href="#stk-${size}" startOffset="0">${label} · ${place && label.length < 20 ? `${esc(place.toUpperCase().slice(0, 16))} ·` : ''}</textPath></text></svg>`);
 }
 
-const card = (kind, title, bodyHtml, copy) => html`<article class="card pack-card pack-${kind}">
-  <div class="pack-top"><p class="tag">${t('tag.action')} · ${title}</p><span class="badge badge-inference">${t('pack.draft')}</span></div>
+const card = (kind, title, bodyHtml, ready = false) => html`<article class="card pack-card pack-${kind}">
+  <div class="pack-top"><p class="tag">${title}</p><span class="badge badge-${ready ? 'live' : 'inference'}">${ready ? t('common.ready') : t('pack.draft')}</span></div>
   ${bodyHtml}
   <div class="btn-row"><button class="btn btn-secondary btn-sm" data-act="copy-asset" data-kind="${kind}">${icon('copy', 16)} ${t('actions.copy')}</button>
     <button class="btn btn-ghost btn-sm" data-act="regen-asset" data-kind="${kind}">${icon('refresh', 16)} ${t('website.regen')}</button>
@@ -33,15 +33,24 @@ export const pack = {
     const a = getAssets();
     if (!a) return html`${head}<section class="card empty-hero"><div class="empty-ic">${icon('pack', 34)}</div><h2>${t('pack.emptyTitle')}</h2><p class="muted">${t('pack.emptyBody')}</p>
       <button class="btn btn-primary btn-lg" data-act="gen-assets">${icon('sparkle', 18)} ${t('actions.generateAssets')}</button></section>`;
-    return html`${head}${aiNotice()}
-    <div class="banner ${a.mode === 'ai' ? 'banner-ok' : 'banner-warn'}" role="status">${icon('info', 18)} ${t(a.mode === 'ai' ? 'pack.modeAi' : 'pack.modeLocal')} ${demoBadge()}</div>
-    <div class="bento">
-      <div class="span-7">${card('offer', t('pack.offer'), html`<h2 class="card-title">${a.offer.title}</h2><p>${a.offer.body}</p><p class="cta-line">→ ${a.offer.cta}</p>`)}</div>
-      <div class="span-5">${card('merch', t('pack.merch'), html`<div class="merch-row">${stickerSvg(a.merch.stickerText, 150, getBiz().city.split(',')[0])}<div><p>${a.merch.concept}</p><p class="mono small">${a.merch.stickerText}</p></div></div>`)}</div>
-      <div class="span-6">${card('post', t('pack.post'), html`<div class="post-mock"><div class="post-head"><i></i><div><strong>${displayName()}</strong><small>${t('pack.postMeta')}</small></div></div><p>${a.post.text}</p><p class="cta-line">→ ${a.post.cta}</p></div>`)}</div>
-      <div class="span-6">${card('headlines', t('pack.headlines'), html`<ol class="headlines">${a.headlines.map((h) => html`<li>${h}</li>`)}</ol>`)}</div>
+    const approved = !!getState().assets?.approved?.post;
+    return html`${head}
+    <div class="engine-bar ${a.mode === 'ai' ? 'is-ai' : 'is-local'}" role="status"><span class="engine-dot" aria-hidden="true"></span>
+      <span class="engine-text">${t(a.mode === 'ai' ? 'pack.modeAi' : 'pack.modeLocal')}</span>${demoBadge()}</div>
+    <details class="sig-about"><summary>${icon('info', 16)} ${t('ai.noticeTitle')}</summary><p>${t('ai.notice')}</p><p>${t('pack.noAutoPublish')}</p></details>
+    <section class="offer-hero pack-card">
+      <div class="offer-copy"><p class="tag">${t('pack.offer')} <span class="badge badge-inference">${t('pack.draft')}</span></p>
+        <h2>${a.offer.title}</h2><p>${a.offer.body}</p><span class="offer-cta">${a.offer.cta} ${icon('next', 16)}</span></div>
+      <div class="offer-actions"><button class="btn btn-secondary btn-sm" data-act="copy-asset" data-kind="offer">${icon('copy', 16)} ${t('actions.copy')}</button>
+        <button class="btn btn-ghost btn-sm" data-act="regen-asset" data-kind="offer">${icon('refresh', 16)} ${t('website.regen')}</button></div>
+    </section>
+    <div class="pack-row">
+      ${card('post', t('pack.post'), html`<div class="post-mock"><div class="post-head"><i></i><div><strong>${displayName()}</strong><small>${t('pack.postMeta')}</small></div></div><p>${a.post.text}</p><p class="cta-line">${icon('next', 14)} ${a.post.cta}</p></div>`, approved)}
+      ${card('headlines', t('pack.headlines'), html`<ol class="headlines">${a.headlines.map((h) => html`<li>${h}</li>`)}</ol>`)}
+      ${card('merch', t('pack.merch'), html`<div class="merch-col">${stickerSvg(a.merch.stickerText, 150, getBiz().city.split(',')[0])}<p>${a.merch.concept}</p></div>`)}
     </div>
-    <p class="muted small">${t('pack.noAutoPublish')}</p>`;
+    <section class="next-bar"><div><p class="tag">${t('journey.measure')} · ${t('ledger.nextStep')}</p><strong>${t('next.proof')}</strong></div>
+      <button class="btn btn-primary btn-lg" data-act="go" data-route="proof">${t('common.open')} ${icon('next', 18)}</button></section>`;
   },
 };
 
@@ -73,4 +82,5 @@ actions['publish-asset'] = async () => {
   update((s) => ({ assets: { ...s.assets, approved: { ...s.assets.approved, post: true } } }));
   await copyText(assetText('post'));
   toast(t('pack.toastApproved'), 'success');
+  rerender();
 };
