@@ -25,24 +25,29 @@ export const proof = {
     return html`
     ${pageHead({ note: '07', title: t('proof.title'), sub: t('proof.sub'),
       actions: html`<button class="btn btn-primary" data-act="record-checkpoint">${icon('check', 18)} ${cp ? t('proof.update') : t('proof.record')}</button>` })}
-    <div class="status-strip"><span class="badge badge-proof-${statusKey}">${t(`proof.status.${statusKey}`)}</span>
-      ${s.mission?.checkpointAt ? html`<span class="mono small">${t('proof.due')} ${fmtDate(s.mission.checkpointAt)}</span>` : ''}
-      ${cp ? html`<span class="mono small">${t('proof.recorded')} ${fmtDate(cp.recordedAt)} · ${t(cp.demo ? 'proof.sourceDemo' : 'proof.sourceOwner')}</span>` : ''}</div>
-    <div class="bento">
-      <section class="card span-7"><p class="tag">${t('tag.checkpoint')} · ${t('proof.metrics')}</p>
-        <div class="table-wrap"><table class="table table-proof"><thead><tr><th></th><th>${t('mission.baseline')}</th><th>${t('mission.target')}</th><th>${t('proof.current')}</th></tr></thead><tbody>
-          ${rows.map((r) => html`<tr><th scope="row">${t(`proof.${r.k}`)}</th><td class="has-src" tabindex="0" data-src="baseline">${r.base}</td><td class="has-src" tabindex="0" data-src="target">${r.target}</td><td class="has-src" tabindex="0" data-src="checkpointVal"><strong>${r.cur}</strong>${meter(r.pct, t(`proof.${r.k}`))}</td></tr>`)}
-        </tbody></table></div>
-        <p class="muted small">${t('proof.demoRequests', { n: demoReq })} ${demoBadge()}</p>
-      </section>
-      <section class="card card-accent span-5"><p class="tag">${t('tag.checkpoint')} · ${t('proof.whatNext')}</p>
-        <h3>${t('proof.ifWorks')}</h3><p>${t('proof.ifWorksBody')}</p>
-        <h3>${t('proof.ifNot')}</h3>
+    <section class="verdict verdict-${statusKey}">
+      <div><p class="verdict-k">${t('mission.checkpoint')}</p><h2>${t(`proof.status.${statusKey}`)}</h2>
+        <p class="verdict-meta">${s.mission?.checkpointAt ? html`<span>${t('proof.due')} ${fmtDate(s.mission.checkpointAt)}</span>` : ''}
+          ${cp ? html`<span>${t('proof.recorded')} ${fmtDate(cp.recordedAt)} · ${t(cp.demo ? 'proof.sourceDemo' : 'proof.sourceOwner')}</span>` : ''}</p></div>
+      <span class="verdict-mark" aria-hidden="true">${icon(statusKey === 'success' ? 'check' : statusKey === 'miss' ? 'x' : 'clock', 40)}</span>
+    </section>
+    <div class="result-grid">${rows.map((r) => html`<article class="result ${r.pct >= 100 ? 'met' : ''}">
+      <div class="result-top"><span>${t(`proof.${r.k}`)}</span>${r.pct >= 100 ? html`<span class="result-ok">${icon('check', 14)}</span>` : ''}</div>
+      <strong class="has-src" tabindex="0" data-src="checkpointVal">${r.cur}</strong>
+      <p class="result-sub"><span class="has-src" tabindex="0" data-src="baseline">${t('mission.baseline')} ${r.base}</span><span class="has-src" tabindex="0" data-src="target">${t('mission.target')} ${r.target}</span></p>
+      ${meter(r.pct, t(`proof.${r.k}`))}</article>`)}</div>
+    <p class="muted small">${t('proof.demoRequests', { n: demoReq })} ${demoBadge()}</p>
+
+    <div class="next-grid">
+      <section class="branch ${statusKey === 'success' ? 'is-now' : ''}"><h3>${icon('check', 18)} ${t('proof.ifWorks')}</h3><p>${t('proof.ifWorksBody')}</p></section>
+      <section class="branch ${statusKey === 'partial' || statusKey === 'miss' ? 'is-now' : ''}"><h3>${icon('refresh', 18)} ${t('proof.ifNot')}</h3>
         <ol class="plain">${[1, 2, 3].map((n) => html`<li>${t(`proof.fix${n}`)}</li>`)}</ol></section>
-      <section class="card span-12"><p class="tag">${t('tag.evidence')} · ${t('proof.timeline')}</p>
-        <ol class="timeline">${['start', 'measure', 'return', 'decide'].map((k, i) => html`<li class="${i === 0 && s.mission ? 'done' : ''}"><span class="mono">${i + 1}</span><strong>${t(`proof.tl.${k}`)}</strong><small>${t(`proof.tl.${k}Sub`)}</small></li>`)}</ol>
-        <p class="muted small">${t('proof.honest')}</p></section>
-    </div>`;
+    </div>
+
+    <section class="card"><h2 class="card-title">${t('proof.timeline')}</h2>
+      <ol class="steps-h">${['start', 'measure', 'return', 'decide'].map((k, i) => { const done = [!!s.mission, !!cp, !!cp, false][i];
+        return html`<li class="${done ? 'done' : ''}"><span class="steps-h-dot">${done ? icon('check', 14) : i + 1}</span><strong>${t(`proof.tl.${k}`)}</strong><small>${t(`proof.tl.${k}Sub`)}</small></li>`; })}</ol>
+      <p class="muted small">${t('proof.honest')}</p></section>`;
   },
 };
 

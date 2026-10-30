@@ -422,3 +422,42 @@ details.dd { position: relative; border: 0; padding: 0; margin: 0; background: n
 .cta-line { display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--tag); }
 .headlines li { padding: 6px 0; border-bottom: 1px solid var(--line); } .headlines li:last-child { border-bottom: 0; }
 @media (max-width: 1000px) { .pack-row { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Proof Board ---------- */
+.verdict { --vc: var(--st-measure); --vi: var(--st-measure-ink); display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: clamp(20px, 3vw, 30px); border-radius: 24px; margin-bottom: 18px; background: var(--vc); color: var(--vi); }
+.verdict-partial { --vc: var(--st-act); --vi: var(--st-act-ink); }
+.verdict-miss { --vc: var(--st-observe); --vi: var(--st-observe-ink); }
+.verdict-waiting, .verdict-notStarted { --vc: var(--bg-2); --vi: var(--head); box-shadow: inset 0 0 0 1px var(--line); }
+.verdict h2 { color: inherit; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1; margin: 2px 0 10px; }
+.verdict-k { margin: 0; font-weight: 600; font-size: .85rem; opacity: .8; }
+.verdict-meta { margin: 0; display: flex; gap: 6px 18px; flex-wrap: wrap; font-size: .88rem; opacity: .85; }
+.verdict-mark { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .45); flex: none; }
+:root[data-theme='dark'] .verdict-waiting .verdict-mark, :root[data-theme='dark'] .verdict-notStarted .verdict-mark { background: rgba(255, 255, 255, .06); }
+.result-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 8px; }
+.result { background: var(--card); border-radius: 18px; padding: 16px 18px; box-shadow: inset 0 0 0 1px var(--line), var(--shadow); display: flex; flex-direction: column; gap: 6px; }
+.result.met { box-shadow: inset 0 0 0 2px var(--st-measure), var(--shadow); }
+.result-top { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; color: var(--muted); font-weight: 500; }
+.result-ok { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--st-measure); color: var(--st-measure-ink); }
+.result strong { font: 800 2rem/1 var(--f-display); font-stretch: 112%; color: var(--head); font-variant-numeric: tabular-nums; }
+.result-sub { margin: 0; display: flex; flex-direction: column; font-size: .8rem; color: var(--muted); }
+.result .meter i { background: #4C9A6A; }
+.next-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 18px 0; }
+.branch { border-radius: 20px; padding: 18px 20px; background: var(--card); box-shadow: inset 0 0 0 1px var(--line); opacity: .75; }
+.branch.is-now { opacity: 1; background: var(--burgundy-800); color: var(--cream-50); box-shadow: 0 20px 36px -26px rgba(61, 14, 29, .9); }
+:root[data-theme='dark'] .branch.is-now { background: #3A1724; }
+.branch h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; } .branch.is-now h3 { color: var(--yellow-400); }
+.branch p, .branch ol { margin: 0; }
+.steps-h { list-style: none; margin: 8px 0 12px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; position: relative; }
+.steps-h li { position: relative; display: flex; flex-direction: column; gap: 4px; padding-top: 4px; }
+.steps-h li:not(:last-child)::after { content: ''; position: absolute; left: 40px; right: -4px; top: 20px; height: 2px; background: var(--line); }
+.steps-h li.done:not(:last-child)::after { background: var(--st-measure); }
+.steps-h-dot { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--bg-2); color: var(--muted); font-weight: 600; font-size: .85rem; }
+.steps-h li.done .steps-h-dot { background: var(--st-measure); color: var(--st-measure-ink); }
+.steps-h small { color: var(--muted); }
+@media (max-width: 1000px) { .result-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 767px) {
+  .next-grid { grid-template-columns: minmax(0, 1fr); }
+  .steps-h { grid-template-columns: minmax(0, 1fr); } .steps-h li { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+  .steps-h li small { width: 100%; padding-left: 44px; } .steps-h li:not(:last-child)::after { display: none; }
+  .verdict-mark { width: 56px; height: 56px; } .result strong { font-size: 1.6rem; }
+}
