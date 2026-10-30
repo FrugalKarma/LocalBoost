@@ -43,7 +43,8 @@ export const diagnosis = {
     if (run.active) {
       return html`${head}<section class="card loading-card" aria-live="polite"><p class="tag">${t('diagnosis.running')}</p>
         <ol class="steps">${STEPS.map((k, i) => html`<li class="${i < run.step ? 'done' : i === run.step ? 'now' : ''}"><span class="dot"></span>${t(`diagnosis.step.${k}`)}</li>`)}</ol>
-        <p class="muted small">${t('diagnosis.timeoutNote', { s: AI_TIMEOUT_MS / 1000 })}</p><div class="bar-indet"><i></i></div></section>`;
+        <p class="muted small">${t('diagnosis.timeoutNote', { s: AI_TIMEOUT_MS / 1000 })}</p><div class="bar-indet"><i></i></div></section>
+        <div class="skel-opp" aria-hidden="true"><i class="skel w40"></i><i class="skel w80 tall"></i><div class="skel-row"><i class="skel"></i><i class="skel"></i><i class="skel"></i></div></div>`;
     }
     if (!d && !getState().signalsCollected) {
       return html`${head}<section class="card empty-hero"><div class="empty-ic">${icon('signals', 34)}</div><h2>${t('start.needSignalsTitle')}</h2><p class="muted">${t(getState().business.loaded ? 'start.needSignals' : 'start.needBusiness')}</p>
@@ -54,30 +55,44 @@ export const diagnosis = {
         <button class="btn btn-primary btn-lg" data-act="run-analysis">${icon('sparkle', 18)} ${t('actions.runAnalysis')}</button></section>`;
     }
     const o = d.data.opportunity; const isAi = d.mode === 'ai';
-    return html`${head}${aiNotice()}
-    ${isAi ? '' : html`<div class="banner banner-warn" role="status"><div>${icon('info', 18)} <strong>${t('diagnosis.fallbackTitle')}</strong> ${t(reasonKey(d.reason))}</div>
-      <button class="btn btn-secondary btn-sm" data-act="run-analysis">${icon('refresh', 16)} ${t('actions.retry')}</button></div>`}
-    <section class="opp card card-accent">
-      <p class="tag">${t('tag.action')} · ${t('diagnosis.opportunity')}</p>
-      <h2 class="opp-title">${o.title}</h2>
-      <div class="opp-grid">
-        <div><p class="label-mono">${t('diagnosis.why')}</p><p>${o.why}</p></div>
-        <div><p class="label-mono">${t('diagnosis.hypothesis')}</p><p>${o.hypothesis}</p></div>
-        <div><p class="label-mono">${t('diagnosis.impact')}</p><p>${o.impact}</p></div>
-        <div class="has-src" tabindex="0" data-src="confidence"><p class="label-mono">${t('common.confidence')}</p><p class="big-num sm">${o.confidence}%</p>${meter(o.confidence, t('common.confidence'))}</div>
-      </div>
-      <div class="btn-row"><button class="btn btn-primary" data-act="go" data-route="mission">${t('actions.startMission')} ${icon('next', 18)}</button>
+    const C = 2 * Math.PI * 40;
+    return html`${head}
+    <div class="engine-bar ${isAi ? 'is-ai' : 'is-local'}" role="status">
+      <span class="engine-dot" aria-hidden="true"></span>
+      <span class="engine-text"><strong>${isAi ? t('diagnosis.engineAi') : t('diagnosis.fallbackTitle')}</strong>${isAi ? '' : html` ${t(reasonKey(d.reason))}`}</span>
+      <span class="engine-meta">${fmtDate(d.timestamp)} · ${(d.durationMs / 1000).toFixed(1)} s</span>
+      ${isAi ? '' : html`<button class="btn btn-secondary btn-sm" data-act="run-analysis">${icon('refresh', 16)} ${t('actions.retry')}</button>`}
+    </div>
+    <details class="sig-about"><summary>${icon('info', 16)} ${t('ai.noticeTitle')}</summary><p>${t('ai.notice')}</p></details>
+
+    <section class="opp2">
+      <div class="opp2-head"><div><p class="tag">${t('diagnosis.opportunity')}</p><h2 class="opp2-title">${o.title}</h2></div>
+        <div class="opp2-ring has-src" tabindex="0" data-src="confidence"><svg viewBox="0 0 100 100" width="104" height="104" role="img" aria-label="${t('common.confidence')}: ${o.confidence}%">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-width="9"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="var(--yellow-400)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - o.confidence / 100)).toFixed(1)}" transform="rotate(-90 50 50)"/>
+          <text x="50" y="56" text-anchor="middle" class="ring-num">${o.confidence}%</text></svg><span>${t('common.confidence')}</span></div></div>
+      <ol class="chain">
+        <li><span class="chain-k">${t('diagnosis.why')}</span><p>${o.why}</p></li>
+        <li><span class="chain-k">${t('diagnosis.hypothesis')}</span><p>${o.hypothesis}</p></li>
+        <li><span class="chain-k">${t('diagnosis.impact')}</span><p>${o.impact}</p></li>
+      </ol>
+      <div class="btn-row"><button class="btn btn-primary btn-lg" data-act="go" data-route="mission">${t('actions.startMission')} ${icon('next', 18)}</button>
         <button class="btn btn-secondary" data-act="copy-reco">${icon('copy', 18)} ${t('actions.copyReco')}</button></div>
     </section>
 
-    <h2 class="section-h">${t('diagnosis.problems')}</h2>
-    <div class="grid-3">${d.data.problems.map((p, i) => html`<article class="card" style="--i:${i}">
-      <div class="signal-top"><span class="tag">${t('tag.signal')} ${i + 1}</span><span class="badge badge-${p.kind === 'fact' ? 'live' : 'inference'}">${t(`diagnosis.kind.${p.kind}`)}</span></div>
-      <h3>${p.title}</h3>${p.evidence.map((e) => html`<p class="evidence small">“${e}”</p>`)}
-      <p class="mono small has-src" tabindex="0" data-src="confidence">${t('common.confidence')} ${p.confidence}%</p>${meter(p.confidence, t('common.confidence'))}</article>`)}</div>
+    <div class="dia-grid">
+      <section><h2 class="section-h">${t('diagnosis.problems')}</h2>
+        <div class="prob-list">${d.data.problems.map((p, i) => html`<article class="prob" style="--i:${i}">
+          <span class="prob-n" aria-hidden="true">${i + 1}</span>
+          <div class="prob-body"><div class="prob-top"><h3>${p.title}</h3><span class="badge badge-${p.kind === 'fact' ? 'live' : 'inference'}">${t(`diagnosis.kind.${p.kind}`)}</span></div>
+            ${p.evidence.map((e) => html`<p class="prob-ev">${e}</p>`)}
+            <span class="sig-conf has-src" tabindex="0" data-src="confidence">${t('common.confidence')} <b>${p.confidence}%</b>${meter(p.confidence, t('common.confidence'))}</span></div></article>`)}</div></section>
+      <aside class="confirm-card"><h2>${t('diagnosis.needsOwner')}</h2>
+        <ul>${d.data.needsOwner.map((x) => html`<li><span class="confirm-box" aria-hidden="true"></span>${x}</li>`)}</ul></aside>
+    </div>
 
-    <section class="card explain">
-      <p class="tag">${t('tag.evidence')} · ${t('diagnosis.explain')}</p>
+    <details class="card explain">
+      <summary><span class="tag">${t('diagnosis.explain')}</span></summary>
       <div class="explain-meta">
         <div><span class="label-mono">${t('diagnosis.engine')}</span><strong>${isAi ? t('diagnosis.engineAi') : t('diagnosis.engineLocal')}</strong></div>
         <div><span class="label-mono">${t('diagnosis.timestamp')}</span><strong>${fmtDate(d.timestamp)}</strong></div>
@@ -85,15 +100,14 @@ export const diagnosis = {
         <div><span class="label-mono">${t('diagnosis.duration')}</span><strong>${(d.durationMs / 1000).toFixed(1)} s</strong></div>
       </div>
       ${isAi && d.lang !== document.documentElement.lang ? html`<p class="muted small">${t('diagnosis.langNote')}</p>` : ''}
-      <div class="grid-3">
+      <div class="grid-2">
         <div><h4>${t('diagnosis.facts')}</h4>${list(d.data.facts)}</div>
         <div><h4>${t('diagnosis.inferences')}</h4>${list(d.data.inferences)}</div>
-        <div><h4>${t('diagnosis.needsOwner')}</h4>${list(d.data.needsOwner)}</div>
       </div>
       <h4>${t('diagnosis.sources')}</h4>
       <div class="chips">${[...SIGNALS.map((s) => s.source + ' · ' + s.id), ...getState().userSignals.map((s) => s.source)].map((s) => html`<span class="chip chip-static">${s}</span>`)}</div>
       <p class="muted small">${t('diagnosis.noRealData')}</p>
-    </section>`;
+    </details>`;
   },
 };
 
