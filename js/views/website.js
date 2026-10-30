@@ -11,6 +11,7 @@ import { needSignals } from '../collect.js';
 const ACCENTS = ['#F59E0B', '#14B8A6', '#2563EB', '#EF4444', '#8B5CF6', '#10B981'];
 let device = 'desktop';
 let busy = null; // 'gen' | 'hero' | 'offer' | 'faq'
+let tab = 'text'; // controls panel tab: text | look | sections
 
 const field = (label, name, value, { area = false, max = 200 } = {}) => html`<label class="field"><span>${label}</span>
   ${area ? html`<textarea data-in="site-field" data-field="${name}" maxlength="${max}" rows="3">${value}</textarea>`
@@ -35,36 +36,34 @@ export const website = {
     }
     const c = resolveCopy(); const lang = c.lang;
     const rb = (sec) => html`<button class="btn btn-ghost btn-sm" data-act="regen" data-section="${sec}" ${busy ? 'disabled' : ''}>${busy === sec ? html`<i class="spin"></i>` : icon('refresh', 15)} ${t('website.regen')} · ${t(`website.sec_${sec}`)}</button>`;
-    return html`${head}${aiNotice()}
-    <div class="site-toolbar">
-      <div class="seg" role="group" aria-label="${t('website.device')}">${['desktop', 'tablet', 'phone'].map((d) => html`<button aria-pressed="${device === d}" data-act="device" data-device="${d}">${t(`website.${d}`)}</button>`)}</div>
-      <div class="urlbar mono" title="${t('website.internalUrl')}">${icon('globe', 15)} ${PREVIEW_PATH}</div>
-      <div class="btn-row">
-        <button class="btn btn-secondary btn-sm" data-act="share-site">${icon('share', 16)} ${t('actions.share')}</button>
-        <button class="btn btn-secondary btn-sm" data-act="open-public">${icon('external', 16)} ${t('actions.openPublic')}</button>
-        <button class="btn btn-secondary btn-sm" data-act="export-zip">${icon('download', 16)} ZIP</button>
-        <button class="btn btn-ghost btn-sm" data-act="export-html">HTML</button>
-        <button class="btn btn-ghost btn-sm" data-act="export-card">${icon('download', 16)} PNG</button>
-        <button class="btn btn-ghost btn-sm" data-act="reset-site">${icon('trash', 16)} ${t('actions.reset')}</button>
+    const tabBtn = (k) => html`<button role="tab" id="wtab-${k}" aria-selected="${tab === k}" aria-controls="wpanel" data-act="site-tab" data-tab="${k}">${t(`ledger.tab_${k}`)}</button>`;
+    return html`${head}
+    <details class="sig-about"><summary>${icon('info', 16)} ${t('ai.noticeTitle')}</summary><p>${t('ai.notice')}</p></details>
+    <div class="site-layout site-layout2">
+      <div class="browser">
+        <div class="browser-bar">
+          <div class="seg seg-sm" role="group" aria-label="${t('website.device')}">${['desktop', 'tablet', 'phone'].map((d) => html`<button aria-pressed="${device === d}" data-act="device" data-device="${d}">${t(`website.${d}`)}</button>`)}</div>
+          <div class="urlbar" title="${t('website.internalUrl')}">${icon('globe', 15)} <span>${PREVIEW_PATH}</span></div>
+          <div class="browser-actions">
+            <button class="btn btn-secondary btn-sm" data-act="share-site">${icon('share', 16)} ${t('actions.share')}</button>
+            <button class="btn btn-secondary btn-sm" data-act="open-public">${icon('external', 16)} <span class="hide-sm">${t('actions.openPublic')}</span></button>
+            <details class="dd"><summary class="btn btn-secondary btn-sm">${icon('download', 16)} ${t('ledger.export')}</summary>
+              <div class="dd-menu" role="menu"><button role="menuitem" data-act="export-zip">${icon('download', 16)} ZIP</button><button role="menuitem" data-act="export-html">${icon('download', 16)} HTML</button><button role="menuitem" data-act="export-card">${icon('download', 16)} PNG</button></div></details>
+            <details class="dd"><summary class="btn btn-ghost btn-sm" aria-label="${t('ledger.more')}">${icon('more', 18)}</summary>
+              <div class="dd-menu dd-right" role="menu"><button role="menuitem" class="danger" data-act="reset-site">${icon('trash', 16)} ${t('actions.reset')}</button></div></details>
+          </div>
+        </div>
+        <div class="preview-stage"><div class="device device-${device}"><iframe id="site-frame" title="${t('website.previewTitle')}" sandbox="allow-scripts allow-forms"></iframe></div></div>
+        <p class="muted small browser-note">${t('website.previewNote')}</p>
       </div>
-    </div>
-    <div class="site-layout">
-      <div class="preview-stage"><div class="device device-${device}"><iframe id="site-frame" title="${t('website.previewTitle')}" sandbox="allow-scripts allow-forms"></iframe></div>
-        <p class="muted small">${t('website.previewNote')}</p></div>
-      <aside class="card controls" aria-label="${t('website.controls')}">
+      <aside class="card controls controls2" aria-label="${t('website.controls')}">
         <h2 class="card-title">${t('website.controls')}</h2>
+        <div class="wtabs" role="tablist" aria-label="${t('website.controls')}">${['text', 'look', 'sections'].map(tabBtn)}</div>
+        <div id="wpanel" role="tabpanel" aria-labelledby="wtab-${tab}">
+        ${tab === 'text' ? html`
         ${field(t('website.headline'), 'headline', c.headline, { max: 110 })}
         ${field(t('website.subheadline'), 'sub', c.sub, { area: true, max: 240 })}
         ${field(t('website.cta'), 'cta', c.cta, { max: 40 })}
-        <div class="field"><span>${t('website.accent')}</span><div class="swatches">${ACCENTS.map((a) => html`<button class="swatch" style="background:${a}" aria-label="${a}" aria-pressed="${site.accent === a}" data-act="accent" data-color="${a}"></button>`)}
-          <input type="color" data-in="site-accent" value="${site.accent}" aria-label="${t('website.accent')}"></div></div>
-        <label class="field"><span>${t('website.layout')}</span><select data-in="site-select" data-field="layout">${LAYOUTS.map((l) => html`<option value="${l}" ${site.layout === l ? 'selected' : ''}>${t(`website.layout_${l}`)}</option>`)}</select></label>
-        <div class="field"><span>${t('website.theme')}</span><div class="theme-grid" role="group" aria-label="${t('website.theme')}">${THEMES.map((l) => html`<button class="theme-chip theme-${l}" aria-pressed="${site.theme === l}" data-act="set-site-theme" data-theme="${l}" title="${t(`wx.theme_${l}`)}"><i></i><span>${t(`wx.theme_${l}`)}</span></button>`)}</div></div>
-        <label class="field"><span>${t('wx.font')}</span><select data-in="site-select" data-field="font">${FONTS_LIST.map((l) => html`<option value="${l}" ${site.font === l ? 'selected' : ''}>${t(`wx.font_${l}`)}</option>`)}</select></label>
-        <label class="field"><span>${t('wx.radius')}</span><select data-in="site-select" data-field="radius">${RADII.map((l) => html`<option value="${l}" ${site.radius === l ? 'selected' : ''}>${t(`wx.radius_${l}`)}</option>`)}</select></label>
-        <label class="field"><span>${t('website.language')}</span><select data-in="site-select" data-field="lang">${LANGS.map((l) => html`<option value="${l.code}" ${lang === l.code ? 'selected' : ''}>${l.name}</option>`)}</select></label>
-        <fieldset class="toggles"><legend>${t('website.sections')}</legend>
-          ${[['showBooking', 'website.showBooking'], ['showReviews', 'website.showReviews'], ['showLocation', 'website.showLocation']].map(([k, label]) => html`<label class="check"><input type="checkbox" data-in="site-toggle" data-field="${k}" ${site[k] ? 'checked' : ''}><span>${t(label)}</span></label>`)}</fieldset>
         <div class="regen-row"><span class="label-mono">${t('website.regenTitle')}</span>${rb('hero')}${rb('offer')}${rb('faq')}</div>
         <details class="more"><summary>${t('website.moreContent')}</summary>
           ${field(t('website.offerTitle'), 'offerTitle', c.offerTitle, { max: 80 })}
@@ -73,7 +72,19 @@ export const website = {
           ${field(t('website.hours'), 'hours', c.hours, { area: true, max: 300 })}
           ${c.services.map((s, i) => html`<div class="pair"><p class="label-mono">${t('website.service')} ${i + 1}</p>${field(t('website.name'), `svc-${i}-n`, s.n, { max: 50 })}${field(t('website.desc'), `svc-${i}-d`, s.d, { max: 160 })}</div>`)}
           ${c.faq.map((f, i) => html`<div class="pair"><p class="label-mono">FAQ ${i + 1}</p>${field(t('website.question'), `faq-${i}-q`, f.q, { max: 140 })}${field(t('website.answer'), `faq-${i}-a`, f.a, { area: true, max: 300 })}</div>`)}
-        </details>
+        </details>` : ''}
+        ${tab === 'look' ? html`
+        <div class="field"><span>${t('website.theme')}</span><div class="theme-grid" role="group" aria-label="${t('website.theme')}">${THEMES.map((l) => html`<button class="theme-chip theme-${l}" aria-pressed="${site.theme === l}" data-act="set-site-theme" data-theme="${l}" title="${t(`wx.theme_${l}`)}"><i></i><span>${t(`wx.theme_${l}`)}</span></button>`)}</div></div>
+        <div class="field"><span>${t('website.accent')}</span><div class="swatches">${ACCENTS.map((a) => html`<button class="swatch" style="background:${a}" aria-label="${a}" aria-pressed="${site.accent === a}" data-act="accent" data-color="${a}"></button>`)}
+          <input type="color" data-in="site-accent" value="${site.accent}" aria-label="${t('website.accent')}"></div></div>
+        <label class="field"><span>${t('website.layout')}</span><select data-in="site-select" data-field="layout">${LAYOUTS.map((l) => html`<option value="${l}" ${site.layout === l ? 'selected' : ''}>${t(`website.layout_${l}`)}</option>`)}</select></label>
+        <label class="field"><span>${t('wx.font')}</span><select data-in="site-select" data-field="font">${FONTS_LIST.map((l) => html`<option value="${l}" ${site.font === l ? 'selected' : ''}>${t(`wx.font_${l}`)}</option>`)}</select></label>
+        <label class="field"><span>${t('wx.radius')}</span><select data-in="site-select" data-field="radius">${RADII.map((l) => html`<option value="${l}" ${site.radius === l ? 'selected' : ''}>${t(`wx.radius_${l}`)}</option>`)}</select></label>` : ''}
+        ${tab === 'sections' ? html`
+        <label class="field"><span>${t('website.language')}</span><select data-in="site-select" data-field="lang">${LANGS.map((l) => html`<option value="${l.code}" ${lang === l.code ? 'selected' : ''}>${l.name}</option>`)}</select></label>
+        <fieldset class="toggles"><legend>${t('website.sections')}</legend>
+          ${[['showBooking', 'website.showBooking'], ['showReviews', 'website.showReviews'], ['showLocation', 'website.showLocation']].map(([k, label]) => html`<label class="check"><input type="checkbox" data-in="site-toggle" data-field="${k}" ${site[k] ? 'checked' : ''}><span>${t(label)}</span></label>`)}</fieldset>` : ''}
+        </div>
       </aside>
     </div>`;
   },
@@ -102,6 +113,11 @@ inputs['site-accent'] = (el) => { updateSite({ accent: el.value }); refreshSoon(
 actions['set-site-theme'] = (el) => { updateSite({ theme: el.dataset.theme, accent: THEME_ACCENT[el.dataset.theme] }); rerender(); };
 actions.accent = (el) => { updateSite({ accent: el.dataset.color }); rerender(); };
 actions.device = (el) => { device = el.dataset.device; rerender(); };
+actions['site-tab'] = (el) => { tab = el.dataset.tab; rerender(); $(`#wtab-${tab}`)?.focus(); };
+// drop-down menus (<details class="dd">): close after picking an item or clicking elsewhere
+document.addEventListener('click', (e) => {
+  document.querySelectorAll('details.dd[open]').forEach((d) => { if (!d.contains(e.target) || e.target.closest('.dd-menu button')) d.removeAttribute('open'); });
+});
 
 export async function generateSite() {
   if (busy || needSignals()) return; busy = 'gen'; rerender();
