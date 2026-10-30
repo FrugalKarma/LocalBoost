@@ -31,50 +31,56 @@ export const mission = {
     ${pageHead({ note: '04', title: t('mission.title'), sub: t('mission.sub'),
       actions: html`${m ? html`<button class="btn btn-ghost" data-act="reset-mission" ${busy ? 'disabled' : ''}>${icon('refresh', 18)} ${t('actions.resetMission')}</button>` : ''}
         <button class="btn btn-primary btn-lg" data-act="start-mission" ${busy ? 'disabled' : ''}>${icon('play', 18)} ${m?.status === 'active' ? t('actions.restartMission') : t('actions.startMission')}</button>` })}
-    ${aiNotice()}
-    <div class="status-strip"><span class="badge badge-mission-${label}">${t(`mission.status.${label}`)}</span>
-      ${m?.startedAt ? html`<span class="mono small">${t('mission.started')} ${fmtDate(m.startedAt)}</span>` : ''}
-      ${m?.fallbacks?.length ? html`<span class="badge badge-inference">${t('mission.usedFallback')}</span>` : ''}</div>
+    <details class="sig-about"><summary>${icon('info', 16)} ${t('ai.noticeTitle')}</summary><p>${t('ai.notice')}</p></details>
 
-    <div class="bento">
-      <section class="card span-5" aria-live="polite">
-        <p class="tag">${t('tag.action')} · ${t('mission.agents')}</p>
-        <ul class="agents">${missionAgents().map((a) => { const st = m?.agents?.[a] || 'waiting'; return html`<li class="agent agent-${st}">
-          <span class="agent-ic">${icon(AGENT_ICON[a], 20)}</span>
-          <span class="agent-txt"><strong>${t(`agents.${a}`)}</strong><small>${t(`agents.${a}Role`)}</small></span>
-          <span class="agent-st">${st === 'running' ? html`<i class="spin" aria-hidden="true"></i>` : st === 'complete' || st === 'fallback' ? icon('check', 16) : ''}${t(`mission.agent.${st}`)}</span></li>`; })}</ul>
-      </section>
+    <section class="clock" aria-label="${t('mission.checkpoint')}">
+      <div class="clock-top">
+        <div><div class="clock-badges"><span class="badge badge-mission-${label}">${t(`mission.status.${label}`)}</span>
+          ${m?.fallbacks?.length ? html`<span class="badge badge-inference">${t('mission.usedFallback')}</span>` : ''}</div>
+          <p class="clock-big">${m?.checkpointAt ? t('ledger.hoursLeft', { h: hoursLeft }) : `${MISSION_HOURS} h`}</p>
+          <p class="clock-sub">${m?.checkpointAt ? t('mission.checkpointAt', { date: fmtDate(m.checkpointAt) }) : t('mission.checkpointHint')}</p></div>
+        ${o ? html`<div class="clock-offer"><span>${t('mission.offer')}</span><strong>${assets?.offer.title || o.title}</strong></div>` : ''}
+      </div>
+      <div class="clock-track" role="img" aria-label="${m?.checkpointAt ? t('ledger.hoursLeft', { h: hoursLeft }) : `${MISSION_HOURS} h`}">
+        <i class="clock-fill" style="width:${m?.checkpointAt ? Math.round(((MISSION_HOURS - hoursLeft) / MISSION_HOURS) * 100) : 0}%"></i>
+        ${[0, 12, 24, 36, 48].map((h) => html`<span class="clock-tick" style="left:${(h / MISSION_HOURS) * 100}%"><b>${h} h</b></span>`)}
+      </div>
+      <div class="clock-ends"><span>${m?.startedAt ? `${t('mission.started')} ${fmtDate(m.startedAt)}` : ''}</span><span>${t('mission.checkpoint')}</span></div>
+      <p class="clock-note">${t('mission.honest')}</p>
+    </section>
 
-      <section class="card span-7">
-        <p class="tag">${t('tag.evidence')} · ${t('mission.plan')}</p>
+    <div class="mis-grid">
+      <section class="card">
+        <h2 class="card-title">${t('mission.plan')}</h2>
         ${o ? html`<dl class="plan">
           <div><dt>${t('mission.hypothesis')}</dt><dd>${o.hypothesis}</dd></div>
           <div><dt>${t('mission.audience')}</dt><dd>${o.audience}</dd></div>
-          <div><dt>${t('mission.offer')}</dt><dd>${assets?.offer.title || o.title}</dd></div>
         </dl>` : html`<p class="muted">${t('mission.noPlan')}</p>`}
-        <div class="table-wrap"><table class="table"><thead><tr><th></th><th>${t('mission.baseline')}</th><th>${t('mission.target')}</th></tr></thead><tbody>
-          <tr><th scope="row">${t('proof.reach')}</th><td class="has-src" tabindex="0" data-src="baseline">${fmtNumber(p.baseline.reach)}</td><td class="has-src" tabindex="0" data-src="target">${fmtNumber(reachGoal)} <small>(+${p.target.reachPct}%)</small></td></tr>
-          <tr><th scope="row">${t('proof.requests')}</th><td class="has-src" tabindex="0" data-src="baseline">${p.baseline.requests}</td><td class="has-src" tabindex="0" data-src="target">≥ ${p.target.requests}</td></tr>
-          <tr><th scope="row">${t('proof.visibility')}</th><td class="has-src" tabindex="0" data-src="baseline">${p.baseline.visibility}/100</td><td class="has-src" tabindex="0" data-src="target">↑</td></tr>
-          <tr><th scope="row">${t('proof.ctaClicks')}</th><td>0</td><td>↑</td></tr></tbody></table></div>
+        <div class="goal-grid">
+          <div class="goal has-src" tabindex="0" data-src="target"><span>${t('proof.reach')}</span><p><s>${fmtNumber(p.baseline.reach)}</s>${icon('next', 16)}<b>${fmtNumber(reachGoal)}</b></p><small>+${p.target.reachPct}%</small></div>
+          <div class="goal has-src" tabindex="0" data-src="target"><span>${t('proof.requests')}</span><p><s>${p.baseline.requests}</s>${icon('next', 16)}<b>≥ ${p.target.requests}</b></p><small>${t('mission.target')}</small></div>
+          <div class="goal has-src" tabindex="0" data-src="baseline"><span>${t('proof.visibility')}</span><p><s>${p.baseline.visibility}</s>${icon('next', 16)}<b>↑</b></p><small>/100</small></div>
+          <div class="goal"><span>${t('proof.ctaClicks')}</span><p><s>0</s>${icon('next', 16)}<b>↑</b></p><small>${t('mission.target')}</small></div>
+        </div>
       </section>
+      <section class="card" aria-live="polite">
+        <h2 class="card-title">${t('mission.agents')}</h2>
+        <ol class="pipe">${missionAgents().map((a) => { const st = m?.agents?.[a] || 'waiting'; return html`<li class="pipe-${st}">
+          <span class="pipe-dot">${st === 'running' ? html`<i class="spin" aria-hidden="true"></i>` : st === 'complete' || st === 'fallback' ? icon('check', 14) : icon(AGENT_ICON[a], 14)}</span>
+          <span class="pipe-txt"><strong>${t(`agents.${a}`)}</strong><small>${t(`agents.${a}Role`)}</small></span>
+          <span class="pipe-st">${t(`mission.agent.${st}`)}</span></li>`; })}</ol>
+      </section>
+    </div>
 
-      <section class="card span-7">
-        <p class="tag">${t('tag.action')} · ${t('mission.assets')}</p>
-        <ul class="asset-links">
-          <li><span>${icon('website', 18)} ${t('nav.website')}</span><span class="badge badge-${getState().site.generated ? 'live' : 'inference'}">${t(getState().site.generated ? 'common.ready' : 'common.pending')}</span><button class="btn btn-ghost btn-sm" data-act="go" data-route="website">${t('common.open')}</button></li>
-          <li><span>${icon('pack', 18)} ${t('nav.pack')}</span><span class="badge badge-${assets ? 'live' : 'inference'}">${t(assets ? 'common.ready' : 'common.pending')}</span><button class="btn btn-ghost btn-sm" data-act="go" data-route="pack">${t('common.open')}</button></li>
-          <li><span>${icon('proof', 18)} ${t('nav.proof')}</span><span class="badge badge-${getState().checkpoint ? 'live' : 'inference'}">${t(getState().checkpoint ? 'common.ready' : 'common.pending')}</span><button class="btn btn-ghost btn-sm" data-act="go" data-route="proof">${t('common.open')}</button></li>
-        </ul>
-      </section>
-
-      <section class="card card-accent span-5">
-        <p class="tag">${t('tag.checkpoint')} · ${t('mission.checkpoint')}</p>
-        ${m?.checkpointAt ? html`<p class="big-num sm">${hoursLeft} h</p><p>${t('mission.checkpointAt', { date: fmtDate(m.checkpointAt) })}</p>` : html`<p class="big-num sm">${MISSION_HOURS} h</p><p class="muted">${t('mission.checkpointHint')}</p>`}
-        <p class="muted small">${t('mission.honest')}</p>
-      </section>
-      ${nameIdeas()}
-    </div>`;
+    <h2 class="section-h">${t('mission.assets')}</h2>
+    <div class="kit">
+      ${[['website', getState().site.generated], ['pack', !!assets], ['proof', !!getState().checkpoint]].map(([r, ok]) => html`
+        <button class="kit-tile" data-act="go" data-route="${r}" data-stage="${r === 'proof' ? 'measure' : 'act'}">
+          <span class="kit-ic">${icon(r, 24)}</span><strong>${t(`nav.${r}`)}</strong>
+          <span class="badge badge-${ok ? 'live' : 'inference'}">${t(ok ? 'common.ready' : 'common.pending')}</span>
+          <span class="kit-go">${t('common.open')} ${icon('next', 16)}</span></button>`)}
+    </div>
+    ${nameIdeas()}`;
   },
 };
 
