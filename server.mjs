@@ -7,7 +7,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runAI, aiHealth } from './lib/ai-core.mjs';
+import { runAI, aiHealth, streamChat, corsHeaders } from './lib/ai-core.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = process.argv.includes('--dist') ? path.join(here, 'dist') : here;
@@ -16,6 +16,7 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; cha
 const BLOCKED = /^\/(server\.mjs|package\.json|scripts|docs|dist\/\.|\.|node_modules)/;
 
 const send = (res, code, body, type = 'application/json; charset=utf-8', extra = {}) => {
+  type = type || 'application/json; charset=utf-8';
   res.writeHead(code, { 'content-type': type, 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer', ...extra });
   res.end(body);
 };
@@ -26,18 +27,36 @@ async function readBody(req, max = 64 * 1024) {
   return Buffer.concat(chunks).toString('utf8');
 }
 
-async function handleAI(req, res) {
+async function handleAI(req, res, cors) {
   let body;
-  try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' })); }
+  try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, cors); }
   const out = await runAI(body, { ip: req.socket.remoteAddress || 'local', code: String(req.headers['x-access-code'] || '') });
-  return send(res, 200, JSON.stringify(out));
+  return send(res, 200, JSON.stringify(out), undefined, cors);
 }
+
+// "Ask LocalBoost": Server-Sent Events, one `data: {json}` line per event (meta, delta, done, error).
+async function handleChat(req, res, cors) {
+  let body;
+  try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, cors); }
+  res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', ...cors });
+  const ctrl = new AbortController();
+  res.on('close', () => { if (!res.writableEnded) ctrl.abort(); });
+  await streamChat(body, { ip: req.socket.remoteAddress || 'local', code: String(req.headers['x-access-code'] || ''), clientSignal: ctrl.signal,
+    emit: (ev) => { if (!res.writableEnded) res.write(`data: ${JSON.stringify(ev)}\n\n`); } });
+  res.end();
+}
+
 http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
     let p = decodeURIComponent(url.pathname);
-    if (p === '/api/ai' && req.method === 'POST') return handleAI(req, res);
-    if (p === '/api/health') return send(res, 200, JSON.stringify(aiHealth()));
+    if (p.startsWith('/api/')) {
+      const cors = corsHeaders(req.headers.origin);
+      if (req.method === 'OPTIONS') { res.writeHead(204, cors); return res.end(); }
+      if (p === '/api/ai' && req.method === 'POST') return handleAI(req, res, cors);
+      if (p === '/api/chat' && req.method === 'POST') return handleChat(req, res, cors);
+      if (p === '/api/health') return send(res, 200, JSON.stringify(aiHealth()), undefined, cors);
+    }
     if (p.startsWith('/preview/')) p = '/preview.html';
     if (p === '/') p = '/index.html';
     if (BLOCKED.test(p) || p.includes('..')) return send(res, 404, 'Not found', 'text/plain');
