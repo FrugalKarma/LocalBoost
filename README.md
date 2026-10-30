@@ -5,6 +5,21 @@ Transformă semnale despre un business (recenzii, întrebări, audit de website,
 
 Business demo: **Cafeneaua Copou** (Iași), fictiv. Toate cifrele sunt etichetate **DEMO DATA**.
 
+## What's new in v1.0-redesign
+
+- **New design ("Copou Ledger")**: colour-coded journey tabs (Home · Observe · Analyse · Act · Measure) instead of the sidebar, map-first Home, burgundy palette, light and dark, 5 languages.
+- **Ask LocalBoost**: open questions answered by Claude on the server (`/api/chat`, streamed), grounded in the business data. Default model `claude-haiku-5-5`. Without `ANTHROPIC_API_KEY` the panel says AI is not set up and links to the right screen.
+- **What works, what is blocked and how to unblock it:** [docs/GAP_REPORT.md](docs/GAP_REPORT.md).
+
+| Variable | Purpose |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | enables real AI (server only) |
+| `LOCALBOOST_MODEL` / `LOCALBOOST_CHAT_MODEL` | model override (default `claude-haiku-5-5`) |
+| `LOCALBOOST_ALLOWED_ORIGINS` | extra origins allowed to call the API (default: the Capacitor app) |
+| `LOCALBOOST_IP_LIMIT` / `LOCALBOOST_DAILY_LIMIT` | questions per visitor per hour / per day (default 40 / 800) |
+
+> Note: sections below describe the previous version in places (sidebar, Pitch Mode). The gap report lists what is outdated.
+
 ## Pornire rapidă
 
 Necesită doar Node.js ≥ 18. **Zero dependențe npm.**
@@ -71,4 +86,4 @@ server.mjs                 server static + /api/ai (cheia rămâne pe server)
 ## Android
 
 LocalBoost-debug.apk (semnat debug) se instaleaza direct pe telefon. Rebuild: JDK din Android Studio (jbr) + Android SDK, apoi 
-pm run android:sync ?i, �n folderul ndroid/, gradlew assembleDebug. APK-ul include aplica?ia offline; AI-ul real cere un server (vezi docs/SETUP.md), altfel folose?te fallback-ul local.
+pm run android:sync ?i, �n folderul ndroid/, gradlew assembleDebug. APK-ul include aplica?ia offline; AI-ul real cere un server (vezi docs/SETUP.md), altfel folose?te fallback-ul local.

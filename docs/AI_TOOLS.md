@@ -8,9 +8,11 @@
 | **Opportunity Strategist** | alege o oportunitate, ipoteză testabilă, baseline și țintă | idem |
 | **Action Creator** | ofertă, postare, 3 titluri, concept de sticker (toate cu CTA) | idem |
 | **Website Builder** | headline ≤ 12 cuvinte, subheadline, CTA, ofertă, FAQ | idem |
-| **Fallback local determinist** | aceleași scheme, conținut scris în `js/locales/*.js` | oricând AI nu răspunde în 8 s, lipsește cheia, JSON-ul nu se poate repara sau ești offline |
+| **Fallback local determinist** | aceleași scheme, conținut scris în `js/locales/*.js` | oricând AI nu răspunde la timp, lipsește cheia, JSON-ul nu se poate repara sau ești offline |
 
-- Model implicit: `claude-sonnet-5-5` (se schimbă cu `LOCALBOOST_MODEL`).
+- Model implicit: `claude-haiku-5-5` (se schimbă cu `LOCALBOOST_MODEL`; pentru chat `LOCALBOOST_CHAT_MODEL`).
+- **Ask LocalBoost** (`/api/chat`, `js/chat.js`): întrebări libere, răspuns transmis în flux (Server-Sent Events), cu contextul afacerii; fără cheie, panoul spune că AI nu este configurat și trimite la ecranul potrivit. Detalii: [GAP_REPORT.md](GAP_REPORT.md).
+- Termene: 16 s pe apel / 25 s pe pas pentru rolurile structurate; chat: primul cuvânt în 15 s, maximum 60 s.
 - Toate răspunsurile trebuie să fie JSON; `repairJSON()` elimină gardurile de cod, virgulele finale și ghilimelele curbe, apoi fiecare rol trece printr-un validator cu limite de lungime. Ce nu trece validarea → fallback local.
 - Prompturile sunt vizibile în aplicație: **Settings → View AI/tool transparency** (inclusiv ultimele apeluri, rol, rezultat și durată).
 - Fiecare recomandare afișează sursele, timestamp-ul, confidence-ul, ce este **fapt**, ce este **inferență** și ce **trebuie confirmat de proprietar**. Etichete: `AI model (server side)` vs `Deterministic local analysis`; `DEMO DATA` pe toate datele simulate.
