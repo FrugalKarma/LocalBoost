@@ -1,0 +1,8 @@
+# server.mjs is the local dev server. If Vercel sees it, it runs it as the
+# whole app and the static build in dist/ is never served ("Not found").
+# On Vercel, static files come from dist/ and the API from api/.
+server.mjs
+android/
+*.apk
+*.pptx
+.shots/

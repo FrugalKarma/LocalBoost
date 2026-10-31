@@ -12,7 +12,7 @@ const walk = (d, out = []) => { for (const f of readdirSync(d)) { const p = path
 const rel = (p) => path.relative(root, p).replaceAll('\\', '/');
 
 console.log('1. JavaScript syntax');
-const jsFiles = [...walk(path.join(root, 'js')), path.join(root, 'sw.js'), path.join(root, 'server.mjs'), ...walk(path.join(root, 'scripts'))].filter((f) => /\.m?js$/.test(f));
+const jsFiles = [...walk(path.join(root, 'js')), path.join(root, 'sw.js'), ...[path.join(root, 'server.mjs')].filter((f) => existsSync(f)), ...walk(path.join(root, 'scripts'))].filter((f) => /\.m?js$/.test(f));
 for (const f of jsFiles) { const r = spawnSync(process.execPath, ['--check', f], { encoding: 'utf8' }); if (r.status !== 0) fail(`${rel(f)}: ${r.stderr.split('\n').slice(0, 3).join(' ')}`); }
 if (!failures) ok(`${jsFiles.length} files parse`);
 
