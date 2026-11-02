@@ -2,7 +2,7 @@
 import { getState, update, updateSite } from './store.js';
 import { runDiagnosis, runAssets, runBuilder, runNames, getDiagnosis, ensureAssetsSync, ensureDiagnosisSync } from './ai.js';
 import { needsNames } from './business.js';
-import { MISSION_HOURS, BASELINE, TARGET } from './data.js';
+import { MISSION_HOURS, liveMetrics, loadSiteData } from './insights.js';
 import { sleep } from './core.js';
 import { getLang } from './i18n.js';
 
@@ -19,7 +19,10 @@ export async function startMission(onChange = () => {}) {
   running = true;
   const fallbacks = [];
   try {
-    update({ mission: { status: 'running', startedAt: Date.now(), agents: Object.fromEntries(missionAgents().map((a) => [a, 'waiting'])) } });
+    await loadSiteData(true).catch(() => {});
+    // baseline = the real numbers right before the experiment (null where nothing is measured yet)
+    const baseline = { ...liveMetrics(Date.now() - MISSION_HOURS * 3600e3), at: Date.now() };
+    update({ mission: { status: 'running', startedAt: Date.now(), baseline, agents: Object.fromEntries(missionAgents().map((a) => [a, 'waiting'])) }, checkpoint: null });
     onChange();
     const step = async (id, work) => {
       setAgent(id, 'running'); onChange();
@@ -62,14 +65,32 @@ export function resetMission() {
 export function missionPlan() {
   const d = getDiagnosis();
   const o = d?.data.opportunity;
-  return { opportunity: o, baseline: o?.baseline || BASELINE, target: { reachPct: o?.target.reachPct || TARGET.reachPct, requests: o?.target.requests || TARGET.requests } };
+  const m = getState().mission;
+  return { opportunity: o, baseline: m?.baseline || null, target: { requests: o?.target?.requests ?? 3, reviews: o?.target?.reviews ?? 2 } };
 }
 
-/** Evaluate a recorded checkpoint against the target. */
+/**
+ * Measures the mission window with real numbers: website visits, clicks and requests since the start,
+ * new Google reviews since the baseline, plus requests the owner received elsewhere (phone, DMs) if they add them.
+ */
+export function measureNow(extraRequests = 0) {
+  const p = missionPlan(); const m = getState().mission;
+  const since = m?.startedAt || Date.now();
+  const now = liveMetrics(since);
+  const base = p.baseline || {};
+  const newReviews = now.reviewCount != null && base.reviewCount != null ? Math.max(0, now.reviewCount - base.reviewCount) : null;
+  return {
+    views: now.views, clicks: now.clicks, siteRequests: now.requests, extraRequests: Math.max(0, Math.round(extraRequests) || 0),
+    requests: (now.requests || 0) + (Math.max(0, Math.round(extraRequests) || 0)),
+    rating: now.rating, reviewCount: now.reviewCount, newReviews, recordedAt: Date.now(),
+  };
+}
+
+/** Compare a checkpoint with the target: success when both goals are met, partial when one is. */
 export function evaluateCheckpoint(cp) {
   const p = missionPlan();
-  const reachGoal = Math.round(p.baseline.reach * (1 + p.target.reachPct / 100));
-  const reachOk = cp.reach >= reachGoal; const reqOk = cp.requests >= p.target.requests;
-  const status = reachOk && reqOk ? 'success' : reachOk || reqOk || cp.ctaClicks > 0 ? 'partial' : 'miss';
-  return { status, reachGoal, reachOk, reqOk };
+  const reqOk = cp.requests >= p.target.requests;
+  const revOk = cp.newReviews != null && cp.newReviews >= p.target.reviews;
+  const status = reqOk && (revOk || cp.newReviews == null) ? 'success' : reqOk || revOk || (cp.clicks || 0) > 0 ? 'partial' : 'miss';
+  return { status, reqOk, revOk };
 }

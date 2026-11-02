@@ -20,7 +20,7 @@ const emit = (extra = {}) => watchers.forEach((fn) => fn({ status, savedAt, ...e
 export const cloudStatus = () => ({ status, savedAt });
 export const viewingClient = () => (target?.kind === 'client' ? target : null);
 
-const keepLocal = (data) => { const cur = getState(); return { ...data, aiSim: cur.aiSim, theme: cur.theme }; };
+const keepLocal = (data) => ({ ...data, theme: getState().theme });
 
 subscribe((_s, meta) => {
   if (meta.remote || !target || !signedIn()) return;

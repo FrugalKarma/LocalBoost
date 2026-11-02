@@ -1,7 +1,7 @@
-import { html, icon, demoBadge } from '../core.js';
+import { html, icon } from '../core.js';
 import { t } from '../i18n.js';
 import { getState } from '../store.js';
-import { scan, SCAN_STEPS } from '../collect.js';
+import { scan, hasSignals } from '../collect.js';
 
 export function pageHead({ note, title, sub, actions }) {
   return html`<header class="page-head">
@@ -14,7 +14,7 @@ export const statusBadge = (status) => html`<span class="badge badge-${status}">
 export function journeyState() {
   const s = getState();
   return {
-    observe: true,
+    observe: hasSignals(),
     diagnose: !!s.diagnosis,
     act: s.mission?.status === 'active',
     measure: !!s.checkpoint,
@@ -38,7 +38,6 @@ export function journey() {
     <span><strong>${t(`journey.${k}`)}</strong><small>${t(`journey.${k}Sub`)}</small></span></button></li>`)}</ol>`;
 }
 
-export { demoBadge };
 
 /** AI can be wrong and local conditions change quickly: shown wherever AI output appears. */
 export function aiNotice() {
@@ -48,7 +47,7 @@ export function aiNotice() {
 /** Live scanning steps shown while signals are being collected. */
 export function scanCard() {
   return html`<section class="card scan" aria-live="polite"><p class="tag">${t('start.scanning')}</p>
-    <ol class="steps">${SCAN_STEPS.map((k, i) => html`<li class="${i < scan.step ? 'done' : i === scan.step ? 'now' : ''}"><span class="dot"></span>${t(`start.scan.${k}`)}</li>`)}</ol>
+    <ol class="steps">${scan.steps.map((k, i) => html`<li class="${i < scan.step ? 'done' : i === scan.step ? 'now' : ''}"><span class="dot"></span>${t(`collect.step.${k}`)}</li>`)}</ol>
     <div class="bar-indet"><i></i></div></section>`;
 }
 

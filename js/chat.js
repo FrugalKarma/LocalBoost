@@ -8,7 +8,8 @@ import { actions, go } from './registry.js';
 import { apiUrl } from './api.js';
 import { aiAvailable, getDiagnosis, getAssets, signalPayload } from './ai.js';
 import { getBiz, displayName } from './business.js';
-import { COMPETITORS, MISSION_HOURS } from './data.js';
+import { MISSION_HOURS, liveMetrics, competitorList } from './insights.js';
+import { hasSignals } from './collect.js';
 
 const MAX_LEN = 2000; const KEEP = 30;
 const FIRST_TOKEN_MS = 20000; const TOTAL_MS = 75000;
@@ -16,17 +17,18 @@ let animateNext = false; let isOpen = false; let busy = false; let ctrl = null; 
 
 /* ---------- what the model knows about the business ---------- */
 function context() {
-  const s = getState(); const ctx = { screen: (location.hash.replace(/^#\/?/, '') || 'overview').split('?')[0], dataMode: 'demo' };
+  const s = getState(); const ctx = { screen: (location.hash.replace(/^#\/?/, '') || 'overview').split('?')[0] };
   if (!s.business.loaded) return { ...ctx, business: null, note: 'No business has been added yet.' };
-  const b = getBiz();
-  ctx.business = { name: displayName(), city: b.city, category: b.category, goal: b.goal, website: b.website || null, instagram: b.instagram || null, tiktok: b.tiktok || null, facebook: b.facebook || null };
-  if (s.signalsCollected) { const p = signalPayload(); ctx.metrics = { rating: p.business.rating, visibility: p.business.visibility, reach: p.business.reach, trend: p.business.trend }; ctx.signals = p.signals.map((x) => ({ type: x.type, source: x.source, evidence: x.evidence, data: x.data || 'demo' })); }
+  const p = signalPayload();
+  ctx.business = p.business;
+  ctx.metrics = liveMetrics();
+  if (hasSignals()) ctx.evidence = p.evidence;
   if (s.diagnosis) { const d = getDiagnosis(); const o = d.data.opportunity; ctx.diagnosis = { engine: d.mode, opportunity: { title: o.title, why: o.why, hypothesis: o.hypothesis, impact: o.impact, confidence: o.confidence }, problems: d.data.problems.map((x) => x.title), ownerMustConfirm: d.data.needsOwner }; }
-  if (s.mission) ctx.mission = { status: s.mission.status, hoursLeft: s.mission.checkpointAt ? Math.max(0, Math.ceil((s.mission.checkpointAt - Date.now()) / 3.6e6)) : MISSION_HOURS };
+  if (s.mission) ctx.mission = { status: s.mission.status, hoursLeft: s.mission.checkpointAt ? Math.max(0, Math.ceil((s.mission.checkpointAt - Date.now()) / 3.6e6)) : MISSION_HOURS, baseline: s.mission.baseline };
   if (s.assets) { const a = getAssets(); ctx.assets = { offer: a.offer.title, offerText: a.offer.body, post: a.post.text, headlines: a.headlines }; }
-  if (s.site?.generated) ctx.website = 'generated';
-  if (s.checkpoint) ctx.checkpoint = { reach: s.checkpoint.reach, requests: s.checkpoint.requests, ctaClicks: s.checkpoint.ctaClicks, visibility: s.checkpoint.visibility };
-  if (s.competitors?.scanned) ctx.competitors = COMPETITORS.map((c) => ({ name: c.name, rating: c.rating, reviews: c.reviews, visibility: c.visibility, booking: c.booking, afternoonOffer: c.afternoon }));
+  if (s.site?.generated) ctx.website = s.site.publishedAt ? `published at /s/${s.site.slug}` : 'generated, not published';
+  if (s.checkpoint) ctx.checkpoint = s.checkpoint;
+  const comps = competitorList(); if (comps.length) ctx.competitors = p.competitors;
   return ctx;
 }
 
@@ -117,17 +119,14 @@ async function ask(text) {
   busy = true; render();
   const finish = (patch = {}) => { Object.assign(a, { pending: false }, patch); busy = false; ctrl = null; save(); render(); };
 
-  const sim = getState().aiSim; // rehearsal switch in Settings
-  if (sim === 'error') return finish({ error: 'http' });
   if (!navigator.onLine) return finish({ error: 'unreachable' });
   live = await aiAvailable();
   if (!live) return finish({ fallback: routeFor(q) });
 
   ctrl = new AbortController(); const c = ctrl;
-  let firstTimer = setTimeout(() => c.abort('timeout'), sim === 'timeout' ? 1500 : FIRST_TOKEN_MS);
+  let firstTimer = setTimeout(() => c.abort('timeout'), FIRST_TOKEN_MS);
   const totalTimer = setTimeout(() => c.abort('timeout'), TOTAL_MS);
   try {
-    if (sim === 'timeout') await new Promise((_, rej) => c.signal.addEventListener('abort', () => rej(new Error('timeout')), { once: true }));
     const res = await fetch(apiUrl('/api/chat'), { method: 'POST', headers: await authHeaders({ 'content-type': 'application/json' }), signal: c.signal,
       body: JSON.stringify({ messages: [...history, { role: 'user', content: q }], context: context(), lang: getLang() }) });
     if (!res.ok || !res.body) throw Object.assign(new Error('http'), { kind: res.status === 429 ? 'rate_limited' : 'http' });

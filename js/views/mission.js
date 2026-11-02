@@ -4,7 +4,7 @@ import { getState, update } from '../store.js';
 import { missingItems, needsNames, cleanHandle } from '../business.js';
 import { missionAgents, startMission, resetMission, missionPlan, isMissionRunning } from '../mission.js';
 import { getAssets } from '../ai.js';
-import { MISSION_HOURS } from '../data.js';
+import { MISSION_HOURS } from '../insights.js';
 import { actions, rerender } from '../registry.js';
 import { pageHead, aiNotice } from './shared.js';
 import { needSignals } from '../collect.js';
@@ -24,11 +24,11 @@ export const mission = {
     const m = getState().mission; const p = missionPlan(); const o = p.opportunity;
     const busy = m?.status === 'running';
     const assets = getAssets();
-    const reachGoal = Math.round(p.baseline.reach * (1 + p.target.reachPct / 100));
+    const base = p.baseline || {}; const dash = (v) => (v == null ? '—' : fmtNumber(v));
     const hoursLeft = m?.checkpointAt ? Math.max(0, Math.ceil((m.checkpointAt - Date.now()) / 3.6e6)) : MISSION_HOURS;
     const label = m?.status === 'active' ? 'active' : busy ? 'running' : m?.status === 'error' ? 'error' : 'idle';
     return html`
-    ${pageHead({ note: '04', title: t('mission.title'), sub: t('mission.sub'),
+    ${pageHead({ title: t('mission.title'), sub: t('mission.sub'),
       actions: html`${m ? html`<button class="btn btn-ghost" data-act="reset-mission" ${busy ? 'disabled' : ''}>${icon('refresh', 18)} ${t('actions.resetMission')}</button>` : ''}
         <button class="btn btn-primary btn-lg" data-act="start-mission" ${busy ? 'disabled' : ''}>${icon('play', 18)} ${m?.status === 'active' ? t('actions.restartMission') : t('actions.startMission')}</button>` })}
     <details class="sig-about"><summary>${icon('info', 16)} ${t('ai.noticeTitle')}</summary><p>${t('ai.notice')}</p></details>
@@ -46,7 +46,7 @@ export const mission = {
         ${[0, 12, 24, 36, 48].map((h) => html`<span class="clock-tick" style="left:${(h / MISSION_HOURS) * 100}%"><b>${h} h</b></span>`)}
       </div>
       <div class="clock-ends"><span>${m?.startedAt ? `${t('mission.started')} ${fmtDate(m.startedAt)}` : ''}</span><span>${t('mission.checkpoint')}</span></div>
-      <p class="clock-note">${t('mission.honest')}</p>
+      <p class="clock-note">${t('mission.honest')}${base.published === false ? html` <a href="#/website">${t('mission.publishHint')}</a>` : ''}</p>
     </section>
 
     <div class="mis-grid">
@@ -57,10 +57,10 @@ export const mission = {
           <div><dt>${t('mission.audience')}</dt><dd>${o.audience}</dd></div>
         </dl>` : html`<p class="muted">${t('mission.noPlan')}</p>`}
         <div class="goal-grid">
-          <div class="goal has-src" tabindex="0" data-src="target"><span>${t('proof.reach')}</span><p><s>${fmtNumber(p.baseline.reach)}</s>${icon('next', 16)}<b>${fmtNumber(reachGoal)}</b></p><small>+${p.target.reachPct}%</small></div>
-          <div class="goal has-src" tabindex="0" data-src="target"><span>${t('proof.requests')}</span><p><s>${p.baseline.requests}</s>${icon('next', 16)}<b>≥ ${p.target.requests}</b></p><small>${t('mission.target')}</small></div>
-          <div class="goal has-src" tabindex="0" data-src="baseline"><span>${t('proof.visibility')}</span><p><s>${p.baseline.visibility}</s>${icon('next', 16)}<b>↑</b></p><small>/100</small></div>
-          <div class="goal"><span>${t('proof.ctaClicks')}</span><p><s>0</s>${icon('next', 16)}<b>↑</b></p><small>${t('mission.target')}</small></div>
+          <div class="goal"><span>${t('proof.requests')}</span><p><s>0</s>${icon('next', 16)}<b>≥ ${p.target.requests}</b></p><small>${t('mission.in48')}</small></div>
+          <div class="goal"><span>${t('proof.newReviews')}</span><p><s>${dash(base.reviewCount)}</s>${icon('next', 16)}<b>+${p.target.reviews}</b></p><small>Google</small></div>
+          <div class="goal"><span>${t('proof.views')}</span><p><s>${dash(base.views)}</s>${icon('next', 16)}<b>↑</b></p><small>${t('mission.prev48')}</small></div>
+          <div class="goal"><span>${t('proof.clicks')}</span><p><s>${dash(base.clicks)}</s>${icon('next', 16)}<b>↑</b></p><small>${t('mission.prev48')}</small></div>
         </div>
       </section>
       <section class="card" aria-live="polite">

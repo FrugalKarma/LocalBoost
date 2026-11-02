@@ -67,7 +67,7 @@ for (const f of allClient) if (!shell.includes(f)) fail(`client file not precach
 ok(`${shell.length} precached files verified`);
 
 console.log('6. No secrets in client code');
-for (const f of [...walk(path.join(root, 'js')), path.join(root, 'index.html'), path.join(root, 'sw.js'), path.join(root, 'preview.html')]) {
+for (const f of [...walk(path.join(root, 'js')), path.join(root, 'index.html'), path.join(root, 'sw.js')]) {
   const src = readFileSync(f, 'utf8');
   if (/sk-ant-|ANTHROPIC_API_KEY|x-api-key/i.test(src)) fail(`${rel(f)} references an API key`);
 }

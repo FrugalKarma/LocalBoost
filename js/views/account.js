@@ -1,4 +1,4 @@
-import { html, limit, demoBadge, icon, toast, confirmDialog, $, openModal } from '../core.js';
+import { html, limit, icon, toast, confirmDialog, $, openModal } from '../core.js';
 import { t, getLang } from '../i18n.js';
 import { getState, update } from '../store.js';
 import { inputs, actions } from '../registry.js';
@@ -32,29 +32,28 @@ function accountRows() {
 export const account = {
   id: 'account',
   render() {
-    const s = getState(); const name = s.profile.name;
+    const s = getState(); const name = s.profile.name || (userEmail() || '').split('@')[0];
     const live = authOn() && signedIn();
-    const role = live ? t(isAdmin() ? 'account.roleAdmin' : 'account.roleClient') : t('account.role');
-    return html`${pageHead({ note: '10', title: t('account.title'), sub: t(live ? 'account.subLive' : 'account.sub') })}
+    const role = t(live && isAdmin() ? 'account.roleAdmin' : 'account.roleClient');
+    return html`${pageHead({ title: t('account.title'), sub: t(live ? 'account.subLive' : 'account.sub') })}
     <section class="profile-hero">
       <span class="avatar-lg" aria-hidden="true">${(name || '?').slice(0, 1).toUpperCase()}</span>
-      <div class="profile-main"><h2>${name}</h2><p>${role}${live ? '' : html` · ${demoBadge()}`}</p>
+      <div class="profile-main"><h2>${name || displayName()}</h2><p>${role}</p>
         <label class="field"><span>${t('account.displayName')}</span><input type="text" maxlength="40" value="${name}" data-in="profile-name" autocomplete="off"></label>
         ${live ? '' : html`<p class="small profile-note">${t('account.noLogin')}</p>`}</div>
     </section>
     <div class="set-list">
       ${accountRows()}
-      <section class="set-row"><div class="set-label"><h2>${t('account.workspace')}</h2><p>${displayName()}${live ? '' : ` — ${t('account.demoWorkspace')}`}</p></div>
-        <div class="set-ctl"><dl class="facts"><div><dt>${t('account.plan')}</dt><dd>${t('account.planValue')}</dd></div>
-          <div><dt>${t('account.dataMode')}</dt><dd>${t('common.demoData')}</dd></div>
-          <div><dt>${t('account.separation')}</dt><dd>${t('account.separationBody', { n: s.userSignals.length })}</dd></div></dl></div></section>
+      <section class="set-row"><div class="set-label"><h2>${t('account.workspace')}</h2><p>${displayName()}</p></div>
+        <div class="set-ctl"><dl class="facts"><div><dt>${t('account.plan')}</dt><dd>${t('plans.free.name')} · <a href="#/plans">${t('account.seePlans')}</a></dd></div>
+          <div><dt>${t('account.dataMode')}</dt><dd>${t(live ? 'account.dataCloud' : 'account.dataDevice')}</dd></div></dl></div></section>
     </div>
     ${live && !isAdmin() && !viewingClient() ? html`<section class="danger-zone"><div><h2>${t('account.deleteTitle')}</h2><p>${t('account.deleteBody')}</p></div>
       <button class="btn btn-secondary danger" data-act="delete-account">${icon('trash', 18)} ${t('account.deleteTitle')}</button></section>` : ''}`;
   },
 };
 
-inputs['profile-name'] = (el) => { update({ profile: { name: limit(el.value, 40) || 'Ana Demo' } }); };
+inputs['profile-name'] = (el) => { update({ profile: { name: limit(el.value, 40) } }); };
 
 actions['change-password'] = async () => {
   const pw = await openModal({

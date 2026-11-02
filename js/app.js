@@ -1,11 +1,9 @@
-import { html, raw, icon, $, $$, toast, demoBadge, closeModal } from './core.js';
+import { html, raw, icon, $, $$, toast, closeModal } from './core.js';
 import { t, initLang, setLang, onLang, LANGS, getLang } from './i18n.js';
 import { initTheme, toggleTheme, currentTheme, themeTransition } from './theme.js';
-import { getState, update, subscribe } from './store.js';
+import { getState, subscribe } from './store.js';
 import { actions, inputs, setRerender, ROUTES, go } from './registry.js';
 import { registerSW, onInstallChange } from './pwa.js';
-import { seedFullDemo, seedSignalsDemo } from './seed.js';
-import { getSiteFrames } from './views/website.js';
 import { overview } from './views/overview.js';
 import { signals } from './views/signals.js';
 import { diagnosis } from './views/diagnosis.js';
@@ -16,6 +14,7 @@ import { proof } from './views/proof.js';
 import { settings } from './views/settings.js';
 import { account } from './views/account.js';
 import { competitors } from './views/competitors.js';
+import { plans } from './views/plans.js';
 import { journeyState } from './views/shared.js';
 import { displayName, getBiz } from './business.js';
 import './chat.js'; // "Ask LocalBoost" panel (registers its own actions)
@@ -24,7 +23,7 @@ import { showSignin, repaintSignin, authErrorText } from './views/signin.js';
 import { loadAuthConfig, authOn, signedIn, isAdmin, userEmail, userId, onAuthChange, readAuthHash, adoptLinkSession, signOut } from './auth.js';
 import { loadOwn, flush, viewingClient, closeClient, onCloud, localOwner } from './cloud.js';
 
-const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, pack, proof, settings, account, admin].map((v) => [v.id, v]));
+const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, pack, proof, settings, account, admin, plans].map((v) => [v.id, v]));
 let route = 'overview';
 let pendingAnchor = null;
 let screen = 'boot'; // boot | signin | loading | app
@@ -77,15 +76,14 @@ function shell() {
       <span class="top-biz" id="top-biz"></span>
       <span class="spacer"></span>
       <span class="badge badge-offline" id="offline-badge" hidden>${t('common.offline')}</span>
-      ${demoBadge('hide-sm')}
       <button class="btn btn-ask" data-act="chat-open" aria-label="${t('chat.title')}">${icon('sparkle', 18)}<span class="hide-sm">${t('chat.open')}</span></button>
       <label class="lang"><span class="sr-only">${t('settings.language')}</span>${icon('globe', 16)}<select data-in="lang-select" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<option value="${l.code}" ${getLang() === l.code ? 'selected' : ''}>${l.label}</option>`)}</select></label>
       <button class="icon-btn ${spinTheme ? 'spin-once' : ''}" data-act="toggle-theme" aria-label="${t('settings.theme')}" title="${t('settings.theme')}">${icon(currentTheme() === 'dark' ? 'sun' : 'moon', 20)}</button>
       <div class="menu-wrap"><button class="icon-btn" data-act="account-menu" aria-haspopup="true" aria-expanded="false" aria-label="${t('nav.account')}">${icon('account', 20)}</button>
         <div class="menu" id="account-menu" hidden role="menu">
-          <p class="menu-name">${getState().profile.name}<small>${signedIn() ? userEmail() : t('account.role')}</small></p>
+          <p class="menu-name">${getState().profile.name || displayName()}<small>${signedIn() ? userEmail() : t('account.roleClient')}</small></p>
           ${isAdmin() ? html`<a role="menuitem" href="#/admin">${icon('overview', 16)} ${t('nav.admin')}</a>` : ''}
-          <a role="menuitem" href="#/account">${icon('account', 16)} ${t('nav.account')}</a><a role="menuitem" href="#/settings">${icon('settings', 16)} ${t('nav.settings')}</a>
+          <a role="menuitem" href="#/account">${icon('account', 16)} ${t('nav.account')}</a><a role="menuitem" href="#/plans">${icon('star', 16)} ${t('nav.plans')}</a><a role="menuitem" href="#/settings">${icon('settings', 16)} ${t('nav.settings')}</a>
           <button role="menuitem" data-act="help">${icon('help', 16)} ${t('settings.openHelp')}</button>
           ${signedIn() && authOn() ? html`<button role="menuitem" data-act="sign-out">${icon('external', 16)} ${t('account.signOut')}</button>` : ''}</div></div>
     </header>
@@ -170,13 +168,6 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { const m = $('#account-menu'); if (m && !m.hidden) { m.hidden = true; $('[data-act="account-menu"]')?.focus(); } }
 });
 
-window.addEventListener('message', (e) => {
-  const d = e.data;
-  if (!d || d.lb !== 'booking') return;
-  if (!getSiteFrames().some((f) => f.contentWindow === e.source)) return; // only our own sandboxed preview
-  update((s) => ({ bookings: [...s.bookings, { party: Math.min(99, Number(d.party) || 1), slot: String(d.slot || '').slice(0, 20), at: Date.now(), demo: true }].slice(-200) }));
-  toast(t('website.toastBooking'), 'success');
-});
 
 /* ---------- "where does this number come from?" tooltip ---------- */
 // Any element with data-src="<key>" explains its origin on hover, keyboard focus or a long press with a finger.
@@ -185,8 +176,7 @@ function showTip(el) {
   const key = el.dataset.src; if (!key) return;
   tipEl ||= Object.assign(document.createElement('div'), { id: 'src-tip', role: 'tooltip' });
   if (!tipEl.isConnected) document.body.appendChild(tipEl);
-  const origin = key === 'checkpointVal' ? t('src.userEntered') : t('src.simulated');
-  tipEl.innerHTML = html`<strong>${t('src.label')}</strong><p>${t(`src.${key}`)}</p>${el.dataset.dyn ? html`<small class="dyn">${t('src.dynamic')}</small>` : ''}<small>${origin}</small>`.s;
+  tipEl.innerHTML = html`<strong>${t('src.label')}</strong><p>${t(`src.${key}`)}</p>`.s;
   tipEl.hidden = false;
   const r = el.getBoundingClientRect(); const w = tipEl.offsetWidth; const h = tipEl.offsetHeight;
   const left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left + r.width / 2 - w / 2));
@@ -267,11 +257,7 @@ async function boot() {
   window.__localboost = { go, getState }; // debug handle for QA
   const link = readAuthHash(); // came back from an email link (confirm sign-up / reset password)
   const on = await loadAuthConfig();
-  if (!on) {
-    if (q.get('seed') === 'full') seedFullDemo();
-    if (q.get('seed') === 'signals') seedSignalsDemo();
-    return startApp();
-  }
+  if (!on) return startApp();
   if (link?.error) { screen = 'signin'; return showSignin({ notice: { kind: 'error', text: authErrorText(link.error) }, onDone: enterApp }); }
   if (link?.session) {
     const r = await adoptLinkSession(link.session);

@@ -3,12 +3,12 @@
 const VERSION = 'localboost-dev';
 const CACHE = `lb-shell-${VERSION}`;
 const FONTS = 'lb-fonts-v1';
-const SHELL = ['/', '/index.html', '/preview.html', '/manifest.json', '/css/styles.css', '/css/ledger.css',
+const SHELL = ['/', '/index.html', '/manifest.json', '/css/styles.css', '/css/ledger.css',
   '/icons/favicon.svg', '/icons/logo.png', '/icons/pattern.svg', '/icons/favicon-32.png', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/icon-maskable-512.png',
-  '/js/app.js', '/js/ai.js', '/js/api.js', '/js/auth.js', '/js/cloud.js', '/js/chat.js', '/js/business.js', '/js/charts.js', '/js/collect.js', '/js/core.js', '/js/data.js', '/js/i18n.js', '/js/mission.js', '/js/names.js', '/js/prompts.js',
-  '/js/pwa.js', '/js/registry.js', '/js/seed.js', '/js/siteTemplate.js', '/js/store.js', '/js/theme.js', '/js/website.js',
+  '/js/app.js', '/js/ai.js', '/js/api.js', '/js/auth.js', '/js/cloud.js', '/js/chat.js', '/js/business.js', '/js/charts.js', '/js/collect.js', '/js/core.js', '/js/i18n.js', '/js/insights.js', '/js/mission.js', '/js/names.js', '/js/prompts.js',
+  '/js/pwa.js', '/js/registry.js', '/js/siteTemplate.js', '/js/sources.js', '/js/store.js', '/js/theme.js', '/js/website.js',
   '/js/locales/en.js', '/js/locales/ro.js', '/js/locales/fr.js', '/js/locales/de.js', '/js/locales/hu.js',
-  '/js/views/account.js', '/js/views/admin.js', '/js/views/signin.js', '/js/views/competitors.js', '/js/views/diagnosis.js', '/js/views/mission.js', '/js/views/overview.js', '/js/views/pack.js',
+  '/js/views/account.js', '/js/views/admin.js', '/js/views/plans.js', '/js/views/signin.js', '/js/views/competitors.js', '/js/views/diagnosis.js', '/js/views/mission.js', '/js/views/overview.js', '/js/views/pack.js',
   '/js/views/proof.js', '/js/views/settings.js', '/js/views/shared.js', '/js/views/signals.js', '/js/views/website.js'];
 
 self.addEventListener('install', (e) => {
@@ -28,7 +28,7 @@ self.addEventListener('message', (e) => { if (e.data?.type === 'SKIP_WAITING') s
 self.addEventListener('fetch', (e) => {
   const req = e.request; const url = new URL(req.url);
   if (req.method !== 'GET') return;
-  if (url.origin === location.origin && url.pathname.startsWith('/api/')) return; // AI calls: network only, app has its own fallback
+  if (url.origin === location.origin && (url.pathname.startsWith('/api/') || url.pathname.startsWith('/s/'))) return; // AI calls: network only, app has its own fallback
 
   if (url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com') {
     e.respondWith((async () => {
@@ -41,7 +41,8 @@ self.addEventListener('fetch', (e) => {
   if (url.origin !== location.origin) return;
 
   if (req.mode === 'navigate') {
-    const shellKey = url.pathname.startsWith('/preview/') ? '/preview.html' : '/index.html';
+    if (url.pathname.startsWith('/s/')) return; // hosted business sites: always from the network
+    const shellKey = '/index.html';
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);
       try {

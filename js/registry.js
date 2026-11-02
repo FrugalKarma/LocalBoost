@@ -17,4 +17,5 @@ export const ROUTES = [
   { id: 'proof', icon: 'proof' },
   { id: 'settings', icon: 'settings' },
   { id: 'account', icon: 'account' },
+  { id: 'plans', icon: 'star' },
 ];

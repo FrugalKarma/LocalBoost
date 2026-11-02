@@ -155,6 +155,3 @@ export function downloadBlob(filename, blob) {
 export const limit = (s, n) => String(s ?? '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').slice(0, n);
 export const slug = (s) => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-export function demoBadge(extra = '') {
-  return html`<span class="badge badge-demo ${extra}">${t('common.demoData')}</span>`;
-}

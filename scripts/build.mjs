@@ -11,7 +11,7 @@ if (check.status !== 0) { console.error('Build aborted: checks failed.'); proces
 
 const dist = path.join(root, 'dist');
 rmSync(dist, { recursive: true, force: true }); mkdirSync(dist);
-for (const item of ['index.html', 'preview.html', 'manifest.json', 'sw.js', 'css', 'js', 'icons']) cpSync(path.join(root, item), path.join(dist, item), { recursive: true });
+for (const item of ['index.html', 'manifest.json', 'sw.js', 'css', 'js', 'icons']) cpSync(path.join(root, item), path.join(dist, item), { recursive: true });
 
 const walk = (d, out = []) => { for (const f of readdirSync(d).sort()) { const p = path.join(d, f); statSync(p).isDirectory() ? walk(p, out) : out.push(p); } return out; };
 const hash = createHash('sha256');

@@ -1,11 +1,11 @@
 // AI layer: role-separated calls to /api/ai (server-side key), 16 s per call / 25 s per step, JSON repair,
-// schema validation and a deterministic local fallback so the demo can never block.
+// schema validation and a rule-based local fallback built from the same real data, so the app never blocks.
 import { t, ta, getLang } from './i18n.js';
 import { authHeaders } from './auth.js';
 import { getState, update } from './store.js';
-import { BUSINESS, SIGNALS, BASELINE, TARGET } from './data.js';
 import { limit } from './core.js';
-import { getBiz, cleanHandle, socialSignals } from './business.js';
+import { getBiz, cleanHandle } from './business.js';
+import { evidenceForAi, competitorList, ruleProblems, OPP_OF, siteGaps } from './insights.js';
 import { localNames } from './names.js';
 import { apiUrl, onApiBaseChange } from './api.js';
 
@@ -51,12 +51,17 @@ export const validators = {
   strategist(o) {
     const p = o?.opportunity;
     if (!p || !str(p.title) || !str(p.hypothesis)) return null;
+    const n = (v, d, max) => { const x = Math.round(Number(v)); return Number.isFinite(x) && x >= 0 ? Math.min(max, x) : d; };
     return { opportunity: {
       title: str(p.title, 120), why: str(p.why_now), hypothesis: str(p.hypothesis, 500), impact: str(p.impact, 240),
-      audience: str(p.audience, 240), confidence: pct(p.confidence, 75),
-      baseline: { visibility: pct(p.baseline?.visibility, BASELINE.visibility), reach: Number(p.baseline?.reach) || BASELINE.reach, requests: Number(p.baseline?.requests) || 0 },
-      target: { reachPct: Number(p.target?.reach_pct) || TARGET.reachPct, requests: Number(p.target?.requests) || TARGET.requests },
+      audience: str(p.audience, 240), confidence: pct(p.confidence, 70),
+      target: { requests: n(p.target?.requests, 3, 200), reviews: n(p.target?.reviews, 2, 100) },
     } };
+  },
+  themes(o) {
+    if (!o || !Array.isArray(o.themes)) return null;
+    const items = o.themes.slice(0, 6).map((x) => ({ label: str(x?.label, 60), tone: x?.tone === 'gap' ? 'gap' : 'pos', mentions: Math.max(1, Math.min(999, Math.round(Number(x?.mentions) || 1))), quotes: strs(x?.quotes, 2, 160) })).filter((x) => x.label);
+    return items.length ? { items } : null;
   },
   creator(o) {
     if (!o || !str(o.offer?.title) || !str(o.post?.text) || !Array.isArray(o.headlines)) return null;
@@ -78,18 +83,21 @@ export const validators = {
     return {
       headline: str(o.headline, 110), subheadline: str(o.subheadline, 240), cta: str(o.cta, 40),
       offerTitle: str(o.offer_title, 80), offerText: str(o.offer_text, 300),
+      services: Array.isArray(o.services) ? o.services.slice(0, 6).map((x) => ({ n: str(x?.name, 60), d: str(x?.description, 200) })).filter((x) => x.n) : [],
       faq: Array.isArray(o.faq) ? o.faq.slice(0, 4).map((f) => ({ q: str(f?.q, 140), a: str(f?.a, 300) })).filter((f) => f.q && f.a) : [],
     };
   },
 };
 
 /* ---------- transport ---------- */
+/** Everything the AI may use: only real data the owner gave or LocalBoost measured. */
 export function signalPayload() {
-  const user = getState().userSignals.map((s) => ({ id: s.id, source: s.source, evidence: s.evidence, data: 'user' }));
-  const demo = [...SIGNALS, ...socialSignals().used].map((s) => ({ id: s.id, type: s.type, source: s.source, status: s.status, confidence: s.confidence, evidence: t(`d.${s.id}`) }));
+  const b = getBiz();
   return {
-    business: { name: getBiz().name, city: getBiz().city, category: getBiz().category, goal: getBiz().goal, website: getBiz().website || null, instagram: getBiz().instagram || null, tiktok: getBiz().tiktok || null, facebook: getBiz().facebook || null, rating: BUSINESS.rating, visibility: BUSINESS.visibility, reach: BUSINESS.reach, trend: BUSINESS.trend },
-    dataMode: 'demo', signals: [...demo, ...user],
+    business: { name: b.name || null, city: b.city, category: b.category, goal: b.goal, address: b.address || b.place?.address || null, website: b.website || null, phone: b.phone || null,
+      instagram: b.instagram || null, tiktok: b.tiktok || null, facebook: b.facebook || null, openingHours: b.place?.hours || null, googleRating: b.place?.rating ?? null, googleReviewCount: b.place?.reviewCount ?? null },
+    evidence: evidenceForAi(),
+    competitors: competitorList().slice(0, 8).map((c) => ({ name: c.name, rating: c.rating, reviewCount: c.reviewCount, distanceM: c.distance ?? null, hasWebsite: !!c.website })),
   };
 }
 
@@ -107,15 +115,10 @@ export async function aiAvailable() {
 }
 
 async function callRole(role, payload, signal) {
-  const sim = getState().aiSim;
   const started = performance.now();
   const entry = { role, at: new Date().toISOString(), outcome: 'pending', ms: 0 };
   aiTrace.unshift(entry); aiTrace.length = Math.min(aiTrace.length, 20);
   try {
-    if (sim === 'timeout') {
-      await new Promise((_, rej) => { signal.addEventListener('abort', () => rej(new AiError('timeout')), { once: true }); });
-    }
-    if (sim === 'error') throw new AiError('simulated', 'Simulated provider error');
     if (!(await aiAvailable())) throw new AiError('not_configured');
     let res;
     const callSignal = withTimeout(signal, CALL_TIMEOUT_MS);
@@ -143,29 +146,42 @@ async function callRole(role, payload, signal) {
 
 const deadline = () => AbortSignal.timeout(AI_TIMEOUT_MS);
 
-/* ---------- deterministic local fallbacks (read live from the locale) ---------- */
+/* ---------- local fallbacks: rules over the real data (read live from the locale) ---------- */
+const fill = (str0, vars) => String(str0).replace(/\{(\w+)\}/g, (_, k) => (vars[k] ?? ''));
+const bizVars = () => { const b = getBiz(); return { name: b.name || t('biz.unnamed'), city: (b.city || '').split(',')[0], kind: t(`biz.cat.${b.category}`).toLowerCase() }; };
+
 export function localDiagnosis() {
-  const problems = [1, 2, 3].map((n) => ({
-    title: t(`ai.p${n}.title`), evidence: [t(`ai.p${n}.ev1`), t(`ai.p${n}.ev2`)],
-    kind: n === 3 ? 'inference' : 'fact', confidence: [86, 91, 78][n - 1],
-  }));
+  const rules = ruleProblems();
+  const top = rules.slice(0, 3);
+  const problems = top.length ? top.map((r) => ({ title: t(`rule.${r.key}.title`, r.vars), evidence: [t(`rule.${r.key}.ev`, r.vars)], kind: r.kind, confidence: Math.min(95, r.weight) }))
+    : [{ title: t('rule.grow.title'), evidence: [t('rule.grow.ev')], kind: 'inference', confidence: 60 }];
+  const opp = top.length ? OPP_OF[top[0].key] : 'grow';
+  const v = { ...bizVars(), ...(top[0]?.vars || {}) };
+  const b = getBiz();
   return {
-    problems, facts: ta('ai.facts'), inferences: ta('ai.inferences'), needsOwner: ta('ai.needsOwner'),
+    problems,
+    facts: top.filter((r) => r.kind === 'fact').map((r) => t(`rule.${r.key}.ev`, r.vars)),
+    inferences: top.filter((r) => r.kind !== 'fact').map((r) => t(`rule.${r.key}.ev`, r.vars)),
+    needsOwner: ta('ai.needsOwner').map((x) => fill(x, v)),
     opportunity: {
-      title: t('ai.opp.title'), why: t('ai.opp.why'), hypothesis: t('ai.opp.hyp'), impact: t('ai.opp.impact'),
-      audience: t('ai.opp.audience'), confidence: 82, baseline: { ...BASELINE }, target: { reachPct: TARGET.reachPct, requests: TARGET.requests },
+      title: fill(t(`opp.${opp}.title`), v), why: fill(t(`opp.${opp}.why`), v), hypothesis: fill(t(`opp.${opp}.hyp`), v), impact: fill(t(`opp.${opp}.impact`), v),
+      audience: fill(t(`opp.${opp}.audience`), v), confidence: top[0] ? Math.min(85, top[0].weight - 5) : 55,
+      target: { requests: b.goal === 'bookings' ? 3 : 1, reviews: opp === 'reviews' || opp === 'google' ? 3 : 1 },
     },
+    gaps: siteGaps(),
   };
 }
 
 export function localAssets(v = {}) {
-  const pick = (key, i = 0) => { const a = ta(key); return a.length ? a[(i || 0) % a.length] : ''; };
-  const hs = ta('gen.headlines'); const hi = ((v.headlines || 0) * 3) % Math.max(hs.length, 1);
+  const vars = bizVars();
+  const pick = (key, i = 0) => { const a = ta(key); return a.length ? fill(a[(i || 0) % a.length], vars) : ''; };
+  const goal = getBiz().goal;
+  const hs = ta(`gen.headlines`); const hi = ((v.headlines || 0) * 3) % Math.max(hs.length, 1);
   return {
-    offer: { title: pick('gen.offerTitle', v.offer), body: pick('gen.offerBody', v.offer), cta: t('gen.cta') },
-    post: { text: pick('gen.post', v.post).replaceAll('{brand}', getBiz().name || t('biz.unnamed')), cta: t('gen.cta') },
-    headlines: [0, 1, 2].map((k) => hs[(hi + k) % hs.length]),
-    merch: { concept: pick('gen.merchConcept', v.merch), stickerText: pick('gen.stickerText', v.merch) },
+    offer: { title: pick('gen.offerTitle', v.offer), body: pick('gen.offerBody', v.offer), cta: t(`gen.cta.${goal}`) },
+    post: { text: pick('gen.post', v.post), cta: t(`gen.cta.${goal}`) },
+    headlines: [0, 1, 2].map((k) => fill(hs[(hi + k) % hs.length] || '', vars)),
+    merch: { concept: pick('gen.merchConcept', v.merch), stickerText: pick('gen.stickerText', v.merch).toUpperCase() },
   };
 }
 
@@ -245,6 +261,14 @@ export function regenAsset(kind) {
   update({ assets: { ...a, variants } });
 }
 
+/** Themes across reviews and pasted comments (AI only; without AI the Signals screen lists them one by one). */
+export async function runThemes(texts) {
+  try {
+    const r = await callRole('themes', { business: signalPayload().business, texts: texts.slice(0, 80) }, deadline());
+    return { mode: 'ai', items: r.items, at: new Date().toISOString() };
+  } catch (e) { return { mode: 'none', reason: e.kind || 'error', items: [], at: new Date().toISOString() }; }
+}
+
 /** Website copy (Website Builder role) - returns {mode, copy|null}. */
 export async function runBuilder() {
   const signal = deadline();
@@ -273,5 +297,5 @@ export async function runNames() {
 }
 
 export function reasonKey(reason) {
-  return ['timeout', 'not_configured', 'invalid_json', 'simulated', 'unreachable', 'http', 'not_run'].includes(reason) ? `ai.reason.${reason}` : 'ai.reason.error';
+  return ['timeout', 'not_configured', 'invalid_json', 'unreachable', 'http', 'not_run'].includes(reason) ? `ai.reason.${reason}` : 'ai.reason.error';
 }

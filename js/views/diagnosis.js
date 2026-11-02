@@ -2,10 +2,10 @@ import { html, icon, toast, copyText, sleep } from '../core.js';
 import { t, fmtDate } from '../i18n.js';
 import { getState } from '../store.js';
 import { runDiagnosis, getDiagnosis, reasonKey, AI_TIMEOUT_MS } from '../ai.js';
-import { SIGNALS } from '../data.js';
+import { signalList } from '../insights.js';
 import { actions, rerender, go } from '../registry.js';
 import { pageHead, aiNotice } from './shared.js';
-import { needSignals } from '../collect.js';
+import { needSignals, hasSignals } from '../collect.js';
 import { meter } from '../charts.js';
 
 const run = { active: false, step: 0 };
@@ -29,7 +29,7 @@ export async function runAnalysis() {
 export function recommendationText() {
   const d = getDiagnosis(); if (!d) return '';
   const o = d.data.opportunity;
-  return `${o.title}\n\n${t('diagnosis.why')}: ${o.why}\n${t('diagnosis.hypothesis')}: ${o.hypothesis}\n${t('diagnosis.impact')}: ${o.impact}\n${t('common.confidence')}: ${o.confidence}%\n\n(${t('common.demoData')} · ${fmtDate(d.timestamp)})`;
+  return `${o.title}\n\n${t('diagnosis.why')}: ${o.why}\n${t('diagnosis.hypothesis')}: ${o.hypothesis}\n${t('diagnosis.impact')}: ${o.impact}\n${t('common.confidence')}: ${o.confidence}%\n\n(LocalBoost · ${fmtDate(d.timestamp)})`;
 }
 
 const list = (items) => html`<ul class="plain">${items.map((x) => html`<li>${x}</li>`)}</ul>`;
@@ -38,7 +38,7 @@ export const diagnosis = {
   id: 'diagnosis',
   render() {
     const d = getDiagnosis();
-    const head = pageHead({ note: '03', title: t('diagnosis.title'), sub: t('diagnosis.sub'),
+    const head = pageHead({ title: t('diagnosis.title'), sub: t('diagnosis.sub'),
       actions: html`<button class="btn btn-primary" data-act="run-analysis" ${run.active ? 'disabled' : ''}>${icon('sparkle', 18)} ${d ? t('actions.rerun') : t('actions.runAnalysis')}</button>` });
     if (run.active) {
       return html`${head}<section class="card loading-card" aria-live="polite"><p class="tag">${t('diagnosis.running')}</p>
@@ -46,7 +46,7 @@ export const diagnosis = {
         <p class="muted small">${t('diagnosis.timeoutNote', { s: AI_TIMEOUT_MS / 1000 })}</p><div class="bar-indet"><i></i></div></section>
         <div class="skel-opp" aria-hidden="true"><i class="skel w40"></i><i class="skel w80 tall"></i><div class="skel-row"><i class="skel"></i><i class="skel"></i><i class="skel"></i></div></div>`;
     }
-    if (!d && !getState().signalsCollected) {
+    if (!d && !hasSignals()) {
       return html`${head}<section class="card empty-hero"><div class="empty-ic">${icon('signals', 34)}</div><h2>${t('start.needSignalsTitle')}</h2><p class="muted">${t(getState().business.loaded ? 'start.needSignals' : 'start.needBusiness')}</p>
         <button class="btn btn-primary btn-lg" data-act="go" data-route="${getState().business.loaded ? 'signals' : 'overview'}">${icon('next', 18)} ${t('start.goCollect')}</button></section>`;
     }
@@ -97,7 +97,7 @@ export const diagnosis = {
       <div class="explain-meta">
         <div><span class="label-mono">${t('diagnosis.engine')}</span><strong>${isAi ? t('diagnosis.engineAi') : t('diagnosis.engineLocal')}</strong></div>
         <div><span class="label-mono">${t('diagnosis.timestamp')}</span><strong>${fmtDate(d.timestamp)}</strong></div>
-        <div><span class="label-mono">${t('diagnosis.dataMode')}</span><strong>${t('common.demoData')}</strong></div>
+        <div><span class="label-mono">${t('diagnosis.dataMode')}</span><strong>${t('diagnosis.dataReal')}</strong></div>
         <div><span class="label-mono">${t('diagnosis.duration')}</span><strong>${(d.durationMs / 1000).toFixed(1)} s</strong></div>
       </div>
       ${isAi && d.lang !== document.documentElement.lang ? html`<p class="muted small">${t('diagnosis.langNote')}</p>` : ''}
@@ -106,8 +106,8 @@ export const diagnosis = {
         <div><h4>${t('diagnosis.inferences')}</h4>${list(d.data.inferences)}</div>
       </div>
       <h4>${t('diagnosis.sources')}</h4>
-      <div class="chips">${[...SIGNALS.map((s) => s.source + ' · ' + s.id), ...getState().userSignals.map((s) => s.source)].map((s) => html`<span class="chip chip-static">${s}</span>`)}</div>
-      <p class="muted small">${t('diagnosis.noRealData')}</p>
+      <div class="chips">${[...new Set(signalList().map((s) => s.source))].map((s) => html`<span class="chip chip-static">${s}</span>`)}</div>
+      <p class="muted small">${t('diagnosis.sourcesNote')}</p>
     </details>`;
   },
 };

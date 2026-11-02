@@ -3,7 +3,7 @@ import { t } from '../i18n.js';
 import { getState, update } from '../store.js';
 import { getAssets, ensureAssetsSync, regenAsset, runAssets } from '../ai.js';
 import { actions, rerender } from '../registry.js';
-import { pageHead, demoBadge, aiNotice } from './shared.js';
+import { pageHead } from './shared.js';
 import { needSignals } from '../collect.js';
 import { getBiz, displayName } from '../business.js';
 
@@ -28,7 +28,7 @@ const card = (kind, title, bodyHtml, ready = false) => html`<article class="card
 export const pack = {
   id: 'pack',
   render() {
-    const head = pageHead({ note: '06', title: t('pack.title'), sub: t('pack.sub'),
+    const head = pageHead({ title: t('pack.title'), sub: t('pack.sub'),
       actions: html`<button class="btn btn-secondary" data-act="gen-assets">${icon('sparkle', 18)} ${getState().assets ? t('actions.regenerateAll') : t('actions.generateAssets')}</button>` });
     const a = getAssets();
     if (!a) return html`${head}<section class="card empty-hero"><div class="empty-ic">${icon('pack', 34)}</div><h2>${t('pack.emptyTitle')}</h2><p class="muted">${t('pack.emptyBody')}</p>
@@ -36,7 +36,7 @@ export const pack = {
     const approved = !!getState().assets?.approved?.post;
     return html`${head}
     <div class="engine-bar ${a.mode === 'ai' ? 'is-ai' : 'is-local'}" role="status"><span class="engine-dot" aria-hidden="true"></span>
-      <span class="engine-text">${t(a.mode === 'ai' ? 'pack.modeAi' : 'pack.modeLocal')}</span>${demoBadge()}</div>
+      <span class="engine-text">${t(a.mode === 'ai' ? 'pack.modeAi' : 'pack.modeLocal')}</span></div>
     <details class="sig-about"><summary>${icon('info', 16)} ${t('ai.noticeTitle')}</summary><p>${t('ai.notice')}</p><p>${t('pack.noAutoPublish')}</p></details>
     <section class="offer-hero pack-card">
       <div class="offer-copy"><p class="tag">${t('pack.offer')} <span class="badge badge-inference">${t('pack.draft')}</span></p>
@@ -47,7 +47,7 @@ export const pack = {
     <div class="pack-row">
       ${card('post', t('pack.post'), html`<div class="post-mock"><div class="post-head"><i></i><div><strong>${displayName()}</strong><small>${t('pack.postMeta')}</small></div></div><p>${a.post.text}</p><p class="cta-line">${icon('next', 14)} ${a.post.cta}</p></div>`, approved)}
       ${card('headlines', t('pack.headlines'), html`<ol class="headlines">${a.headlines.map((h) => html`<li>${h}</li>`)}</ol>`)}
-      ${card('merch', t('pack.merch'), html`<div class="merch-col">${stickerSvg(a.merch.stickerText, 150, getBiz().city.split(',')[0])}<p>${a.merch.concept}</p></div>`)}
+      ${card('merch', t('pack.merch'), html`<div class="merch-col">${stickerSvg(a.merch.stickerText, 150, (getBiz().city || '').split(',')[0])}<p>${a.merch.concept}</p></div>`)}
     </div>
     <section class="next-bar"><div><p class="tag">${t('journey.measure')} · ${t('ledger.nextStep')}</p><strong>${t('next.proof')}</strong></div>
       <button class="btn btn-primary btn-lg" data-act="go" data-route="proof">${t('common.open')} ${icon('next', 18)}</button></section>`;

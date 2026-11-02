@@ -1,42 +1,47 @@
 import { html, icon, toast, openModal } from '../core.js';
 import { t, fmtDate, fmtNumber } from '../i18n.js';
 import { getState, update } from '../store.js';
-import { missionPlan, evaluateCheckpoint } from '../mission.js';
+import { missionPlan, evaluateCheckpoint, measureNow } from '../mission.js';
 import { actions, rerender } from '../registry.js';
-import { pageHead, demoBadge } from './shared.js';
+import { pageHead } from './shared.js';
 import { meter } from '../charts.js';
+import { loadSiteData } from '../insights.js';
+import { getBiz } from '../business.js';
+import { placeDetails, serverCaps } from '../sources.js';
+import { applyPlace } from '../collect.js';
 
 const pctOf = (v, goal) => Math.max(0, Math.min(100, Math.round((v / Math.max(goal, 1)) * 100)));
+const dash = (v) => (v == null ? '—' : fmtNumber(v));
+let busy = false;
 
 export const proof = {
   id: 'proof',
   render() {
-    const s = getState(); const p = missionPlan(); const cp = s.checkpoint;
-    const reachGoal = Math.round(p.baseline.reach * (1 + p.target.reachPct / 100));
+    const s = getState(); const p = missionPlan(); const cp = s.checkpoint; const base = p.baseline || {};
     const ev = cp ? evaluateCheckpoint(cp) : null;
-    const demoReq = s.bookings.length;
     const rows = [
-      { k: 'reach', base: fmtNumber(p.baseline.reach), target: `${fmtNumber(reachGoal)} (+${p.target.reachPct}%)`, cur: cp ? fmtNumber(cp.reach) : '—', pct: cp ? pctOf(cp.reach - p.baseline.reach, reachGoal - p.baseline.reach) : 0 },
-      { k: 'requests', base: String(p.baseline.requests), target: `≥ ${p.target.requests}`, cur: cp ? String(cp.requests) : '—', pct: cp ? pctOf(cp.requests, p.target.requests) : 0 },
-      { k: 'ctaClicks', base: '0', target: '↑', cur: cp ? String(cp.ctaClicks) : '—', pct: cp ? Math.min(100, cp.ctaClicks * 10) : 0 },
-      { k: 'visibility', base: `${p.baseline.visibility}/100`, target: '↑', cur: cp ? `${cp.visibility}/100` : '—', pct: cp ? pctOf(cp.visibility - p.baseline.visibility, 5) : 0 },
+      { k: 'requests', base: '0', target: `≥ ${p.target.requests}`, cur: cp ? dash(cp.requests) : '—', pct: cp ? pctOf(cp.requests, p.target.requests) : 0, note: cp && cp.extraRequests ? t('proof.inclExtra', { n: cp.extraRequests }) : '' },
+      { k: 'newReviews', base: dash(base.reviewCount), target: `+${p.target.reviews}`, cur: cp ? (cp.newReviews == null ? '—' : `+${cp.newReviews}`) : '—', pct: cp && cp.newReviews != null ? pctOf(cp.newReviews, p.target.reviews) : 0 },
+      { k: 'views', base: dash(base.views), target: '↑', cur: cp ? dash(cp.views) : '—', pct: cp && cp.views != null ? pctOf(cp.views, Math.max(1, base.views || 1) * 1.2) : 0 },
+      { k: 'clicks', base: dash(base.clicks), target: '↑', cur: cp ? dash(cp.clicks) : '—', pct: cp && cp.clicks != null ? pctOf(cp.clicks, Math.max(1, base.clicks || 1) * 1.2) : 0 },
     ];
     const statusKey = ev ? ev.status : s.mission?.status === 'active' ? 'waiting' : 'notStarted';
     return html`
-    ${pageHead({ note: '07', title: t('proof.title'), sub: t('proof.sub'),
-      actions: html`<button class="btn btn-primary" data-act="record-checkpoint">${icon('check', 18)} ${cp ? t('proof.update') : t('proof.record')}</button>` })}
+    ${pageHead({ title: t('proof.title'), sub: t('proof.sub'),
+      actions: s.mission?.status === 'active' ? html`<button class="btn btn-primary" data-act="record-checkpoint" ${busy ? 'disabled' : ''}>${busy ? html`<i class="spin"></i>` : icon('refresh', 18)} ${cp ? t('proof.update') : t('proof.record')}</button>` : '' })}
     <section class="verdict verdict-${statusKey}">
       <div><p class="verdict-k">${t('mission.checkpoint')}</p><h2>${t(`proof.status.${statusKey}`)}</h2>
         <p class="verdict-meta">${s.mission?.checkpointAt ? html`<span>${t('proof.due')} ${fmtDate(s.mission.checkpointAt)}</span>` : ''}
-          ${cp ? html`<span>${t('proof.recorded')} ${fmtDate(cp.recordedAt)} · ${t(cp.demo ? 'proof.sourceDemo' : 'proof.sourceOwner')}</span>` : ''}</p></div>
+          ${cp ? html`<span>${t('proof.recorded')} ${fmtDate(cp.recordedAt)}</span>` : ''}</p></div>
       <span class="verdict-mark" aria-hidden="true">${icon(statusKey === 'success' ? 'check' : statusKey === 'miss' ? 'x' : 'clock', 40)}</span>
     </section>
+    ${s.mission?.status !== 'active' ? html`<section class="card empty-hero"><p class="muted">${t('proof.noMission')}</p><button class="btn btn-primary" data-act="go" data-route="mission">${t('actions.startMission')}</button></section>` : ''}
     <div class="result-grid">${rows.map((r) => html`<article class="result ${r.pct >= 100 ? 'met' : ''}">
       <div class="result-top"><span>${t(`proof.${r.k}`)}</span>${r.pct >= 100 ? html`<span class="result-ok">${icon('check', 14)}</span>` : ''}</div>
-      <strong class="has-src" tabindex="0" data-src="checkpointVal">${r.cur}</strong>
-      <p class="result-sub"><span class="has-src" tabindex="0" data-src="baseline">${t('mission.baseline')} ${r.base}</span><span class="has-src" tabindex="0" data-src="target">${t('mission.target')} ${r.target}</span></p>
-      ${meter(r.pct, t(`proof.${r.k}`))}</article>`)}</div>
-    <p class="muted small">${t('proof.demoRequests', { n: demoReq })} ${demoBadge()}</p>
+      <strong>${r.cur}</strong>
+      <p class="result-sub"><span>${t('mission.baseline')} ${r.base}</span><span>${t('mission.target')} ${r.target}</span></p>
+      ${meter(r.pct, t(`proof.${r.k}`))}${r.note ? html`<small class="muted">${r.note}</small>` : ''}</article>`)}</div>
+    <p class="muted small">${t('proof.sources')}${base.published === false ? html` ${t('proof.notPublished')}` : ''}</p>
 
     <div class="next-grid">
       <section class="branch ${statusKey === 'success' ? 'is-now' : ''}"><h3>${icon('check', 18)} ${t('proof.ifWorks')}</h3><p>${t('proof.ifWorksBody')}</p></section>
@@ -52,22 +57,21 @@ export const proof = {
 };
 
 actions['record-checkpoint'] = async () => {
-  const p = missionPlan(); const prev = getState().checkpoint;
-  const reachGoal = Math.round(p.baseline.reach * (1 + p.target.reachPct / 100));
-  const v = prev || { reach: reachGoal + 40, requests: Math.max(getState().bookings.length, p.target.requests), ctaClicks: 23, visibility: 80 };
-  const f = (id, label, val) => html`<label class="field"><span>${label}</span><input id="${id}" type="number" min="0" max="999999" inputmode="numeric" value="${val}"></label>`;
-  const res = await openModal({
+  if (busy) return;
+  const prev = getState().checkpoint;
+  const extra = await openModal({
     title: t('proof.recordTitle'),
-    body: html`<p class="muted">${t('proof.recordBody')}</p>${f('cp-reach', t('proof.reach'), v.reach)}${f('cp-req', t('proof.requests'), v.requests)}${f('cp-cta', t('proof.ctaClicks'), v.ctaClicks)}${f('cp-vis', t('proof.visibility'), v.visibility)}<p class="small">${demoBadge()} ${t('proof.recordDemoNote')}</p>`,
-    actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: false }, {
-      label: t('proof.save'), kind: 'btn-primary',
-      collect: () => {
-        const n = (id, max) => Math.max(0, Math.min(max, Math.round(Number(document.getElementById(id)?.value) || 0)));
-        return { reach: n('cp-reach', 999999), requests: n('cp-req', 9999), ctaClicks: n('cp-cta', 99999), visibility: n('cp-vis', 100) };
-      },
-    }],
+    body: html`<p class="muted">${t('proof.recordBody')}</p><label class="field"><span>${t('proof.extraLabel')}</span>
+      <input id="cp-extra" type="number" min="0" max="9999" inputmode="numeric" value="${prev?.extraRequests || 0}"></label><p class="muted small">${t('proof.extraHint')}</p>`,
+    actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: null }, { label: t('proof.measure'), kind: 'btn-primary', collect: () => Number(document.getElementById('cp-extra')?.value) || 0 }],
   });
-  if (!res || typeof res !== 'object') return;
-  update({ checkpoint: { ...res, recordedAt: Date.now(), demo: true } });
+  if (extra == null) return;
+  busy = true; rerender();
+  // fresh numbers: Google rating/review count and the website's visits and requests
+  const b = getBiz(); const caps = await serverCaps();
+  if (b.place?.id && caps.places) { const r = await placeDetails(b.place.id); if (r.ok) { applyPlace(r.data.place, r.data.fetchedAt); update((st) => ({ signals: { ...st.signals, google: { rating: r.data.place.rating, reviewCount: r.data.place.reviewCount, reviews: r.data.place.reviews, fetchedAt: r.data.fetchedAt } } })); } }
+  await loadSiteData(true).catch(() => {});
+  update({ checkpoint: measureNow(extra) });
+  busy = false;
   toast(t('proof.toastSaved'), 'success'); rerender();
 };
