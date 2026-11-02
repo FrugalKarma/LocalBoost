@@ -8,6 +8,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runAI, aiHealth, streamChat, corsHeaders } from './lib/ai-core.mjs';
+import { handleAccount, aiAllowed } from './lib/auth-core.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = process.argv.includes('--dist') ? path.join(here, 'dist') : here;
@@ -30,6 +31,7 @@ async function readBody(req, max = 64 * 1024) {
 async function handleAI(req, res, cors) {
   let body;
   try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, cors); }
+  if (!(await aiAllowed(req.headers))) return send(res, 200, JSON.stringify({ error: 'auth_required' }), undefined, cors);
   const out = await runAI(body, { ip: req.socket.remoteAddress || 'local', code: String(req.headers['x-access-code'] || '') });
   return send(res, 200, JSON.stringify(out), undefined, cors);
 }
@@ -39,11 +41,20 @@ async function handleChat(req, res, cors) {
   let body;
   try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, cors); }
   res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', ...cors });
+  if (!(await aiAllowed(req.headers))) { res.write(`data: ${JSON.stringify({ type: 'error', error: 'auth_required' })}\n\n`); return res.end(); }
   const ctrl = new AbortController();
   res.on('close', () => { if (!res.writableEnded) ctrl.abort(); });
   await streamChat(body, { ip: req.socket.remoteAddress || 'local', code: String(req.headers['x-access-code'] || ''), clientSignal: ctrl.signal,
     emit: (ev) => { if (!res.writableEnded) res.write(`data: ${JSON.stringify(ev)}\n\n`); } });
   res.end();
+}
+
+// Accounts (/api/auth, /api/data, /api/admin): same handlers as the Vercel functions.
+async function handleAccountReq(route, req, res, url, cors) {
+  let body = {};
+  if (req.method !== 'GET') { try { body = JSON.parse((await readBody(req, 1024 * 1024)) || '{}'); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, cors); } }
+  const r = await handleAccount(route, { method: req.method, query: Object.fromEntries(url.searchParams), body, headers: req.headers, ip: req.socket.remoteAddress || 'local' });
+  return send(res, r.status, JSON.stringify(r.body), undefined, { 'cache-control': 'no-store', ...cors });
 }
 
 http.createServer(async (req, res) => {
@@ -55,6 +66,8 @@ http.createServer(async (req, res) => {
       if (req.method === 'OPTIONS') { res.writeHead(204, cors); return res.end(); }
       if (p === '/api/ai' && req.method === 'POST') return handleAI(req, res, cors);
       if (p === '/api/chat' && req.method === 'POST') return handleChat(req, res, cors);
+      const acct = { '/api/auth': 'auth', '/api/data': 'data', '/api/admin': 'admin' }[p];
+      if (acct) return handleAccountReq(acct, req, res, url, cors);
       if (p === '/api/health') return send(res, 200, JSON.stringify(aiHealth()), undefined, cors);
     }
     if (p.startsWith('/preview/')) p = '/preview.html';

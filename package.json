@@ -13,7 +13,8 @@
     "serve:dist": "node server.mjs --dist",
     "screenshots": "node scripts/screenshots.mjs",
     "android:sync": "node scripts/build.mjs && npx cap sync android",
-    "android:open": "npx cap open android"
+    "android:open": "npx cap open android",
+    "mock:supabase": "node scripts/mock-supabase.mjs"
   },
   "engines": {
     "node": ">=18"
