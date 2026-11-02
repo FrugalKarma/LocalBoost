@@ -7,8 +7,11 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { runAI, aiHealth, streamChat, corsHeaders } from './lib/ai-core.mjs';
+import { runAI, streamChat, corsHeaders } from './lib/ai-core.mjs';
 import { handleAccount, aiAllowed } from './lib/auth-core.mjs';
+import { handleData } from './lib/places-core.mjs';
+import { handleSite, originOf, PUBLIC_CORS } from './lib/site-core.mjs';
+import { health } from './lib/health.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = process.argv.includes('--dist') ? path.join(here, 'dist') : here;
@@ -57,6 +60,24 @@ async function handleAccountReq(route, req, res, url, cors) {
   return send(res, r.status, JSON.stringify(r.body), undefined, { 'cache-control': 'no-store', ...cors });
 }
 
+async function handleDataReq(route, req, res, url, cors) {
+  let body = {};
+  if (req.method === 'POST') { try { body = JSON.parse((await readBody(req)) || '{}'); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, cors); } }
+  const r = await handleData(route, { method: req.method, query: Object.fromEntries(url.searchParams), body, headers: req.headers, ip: req.socket.remoteAddress || 'local' });
+  return send(res, r.status, JSON.stringify(r.body), undefined, { 'cache-control': 'no-store', ...cors });
+}
+
+// Hosted sites: /s/<slug> pages, plus booking requests and visit counts that may come from any website.
+async function handleSiteReq(req, res, url, cors) {
+  if (req.method === 'OPTIONS') { res.writeHead(204, { ...PUBLIC_CORS, ...cors, 'access-control-allow-methods': 'GET, POST, OPTIONS', 'access-control-allow-headers': 'content-type, authorization' }); return res.end(); }
+  let body = {};
+  if (req.method === 'POST') { try { body = JSON.parse((await readBody(req, 256 * 1024)) || '{}'); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, PUBLIC_CORS); } }
+  const r = await handleSite({ method: req.method, query: Object.fromEntries(url.searchParams), body, headers: req.headers, origin: originOf(req.headers), ip: req.socket.remoteAddress || 'local' });
+  const pub = ['hit', 'request'].includes(body.op || url.searchParams.get('op'));
+  const headers = { 'cache-control': 'no-store', ...(r.headers || {}), ...(pub ? PUBLIC_CORS : cors) };
+  return typeof r.body === 'string' ? send(res, r.status, r.body, headers['content-type'] || 'text/html; charset=utf-8', headers) : send(res, r.status, JSON.stringify(r.body), undefined, headers);
+}
+
 http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
@@ -68,9 +89,11 @@ http.createServer(async (req, res) => {
       if (p === '/api/chat' && req.method === 'POST') return handleChat(req, res, cors);
       const acct = { '/api/auth': 'auth', '/api/data': 'data', '/api/admin': 'admin' }[p];
       if (acct) return handleAccountReq(acct, req, res, url, cors);
-      if (p === '/api/health') return send(res, 200, JSON.stringify(aiHealth()), undefined, cors);
+      if (p === '/api/health') return send(res, 200, JSON.stringify(health()), undefined, cors);
+      if (p === '/api/places' || p === '/api/sitecheck') return handleDataReq(p.slice(5), req, res, url, cors);
+      if (p === '/api/site') return handleSiteReq(req, res, url, cors);
     }
-    if (p.startsWith('/preview/')) p = '/preview.html';
+    if (/^\/s\/[^/]+\/?$/.test(p)) { url.searchParams.set('op', 'page'); url.searchParams.set('slug', p.split('/')[2]); return handleSiteReq(req, res, url, {}); }
     if (p === '/') p = '/index.html';
     if (BLOCKED.test(p) || p.includes('..')) return send(res, 404, 'Not found', 'text/plain');
     const file = path.join(ROOT, p);
@@ -83,5 +106,5 @@ http.createServer(async (req, res) => {
     send(res, 404, 'Not found', 'text/plain');
   }
 }).listen(PORT, () => {
-  console.log(`LocalBoost running at http://localhost:${PORT}  (AI: ${aiHealth().ai ? 'live model' : 'local fallback - set ANTHROPIC_API_KEY to enable'})`);
+  console.log(`LocalBoost running at http://localhost:${PORT}  (AI: ${health().ai ? 'live model' : 'local fallback - set ANTHROPIC_API_KEY to enable'})`);
 });

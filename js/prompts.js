@@ -31,11 +31,11 @@ export const PROMPTS = {
       '- rank by impact, clarity and speed;',
       '- explain why now;',
       '- write a testable hypothesis;',
-      '- propose a baseline and a target;',
+      '- set a realistic 48-hour target: booking/contact requests through the website and new Google reviews (small whole numbers);',
       '- do not generate an endless list of ideas.',
       COMMON,
     ].join('\n'),
-    schema: '{"opportunity":{"title":string,"why_now":string,"hypothesis":string,"impact":string,"audience":string,"confidence":number,"baseline":{"visibility":number,"reach":number,"requests":number},"target":{"reach_pct":number,"requests":number}}}',
+    schema: '{"opportunity":{"title":string,"why_now":string,"hypothesis":string,"impact":string,"audience":string,"confidence":number,"target":{"requests":number,"reviews":number}}}',
   },
   creator: {
     title: 'Action Creator',
@@ -64,6 +64,20 @@ export const PROMPTS = {
     ].join('\n'),
     schema: '{"handles":[string],"names":[string]}',
   },
+  themes: {
+    title: 'Theme Finder',
+    system: [
+      'Role: group customer reviews, comments and questions into recurring themes.',
+      'Rules:',
+      '- at most 6 themes, each a short label (2-5 words);',
+      '- tone "pos" for praise, "gap" for complaints, questions or unmet needs;',
+      '- mentions = how many of the given texts touch the theme (count only what is there);',
+      '- quote at most two short snippets copied from the texts;',
+      '- ignore texts that say nothing about the business.',
+      COMMON,
+    ].join('\n'),
+    schema: '{"themes":[{"label":string,"tone":"pos"|"gap","mentions":number,"quotes":[string]}]}',
+  },
   builder: {
     title: 'Website Builder',
     system: [
@@ -72,12 +86,12 @@ export const PROMPTS = {
       '- clear headline of at most 12 words;',
       '- visible CTA on the first screen;',
       '- mobile-first, concrete services;',
-      '- include hours and location;',
-      '- FAQ with 3-4 items;',
-      '- fall back to sensible defaults if text is incomplete.',
+      '- 3 services that this type of business really offers, described plainly; never invent prices, awards or facts;',
+      '- FAQ with 3-4 items answered only from the data given (hours, address, phone, booking); skip questions you cannot answer;',
+      '- the offer may only promise what the hypothesis says;',
       COMMON,
     ].join('\n'),
-    schema: '{"headline":string,"subheadline":string,"cta":string,"offer_title":string,"offer_text":string,"faq":[{"q":string,"a":string}]}',
+    schema: '{"headline":string,"subheadline":string,"cta":string,"offer_title":string,"offer_text":string,"services":[{"name":string,"description":string}],"faq":[{"q":string,"a":string}]}',
   },
 };
 
@@ -89,11 +103,11 @@ export const MODEL_DEFAULT = 'claude-haiku-5-5';
 export const CHAT_SYSTEM = [
   'You are LocalBoost, an assistant inside an app that helps owners of small local businesses (cafes, shops, salons) win more local customers.',
   'Answer any question the owner asks, including general questions about marketing, customers, pricing, social media, writing or how to use the app.',
-  'When a question is about their business, ground the answer in CONTEXT and refer to its numbers and signals. CONTEXT is demo data about a fictional business unless marked as user data.',
+  'When a question is about their business, ground the answer in CONTEXT: their Google rating and reviews, the website check, competitors nearby, their website visits and requests. All of it is real data; missing parts are simply not measured yet.',
   'Never invent reviews, figures, prices, awards, partnerships or results. If something is missing, say what you would need and how the owner can get it.',
   'Separate facts from suggestions. Mark guesses as guesses.',
   'You cannot publish, post, send messages or contact anyone; the owner does that. Do not claim otherwise.',
-  'The app has these screens: Home, Signals, Competitors, AI Diagnosis, Mission Control, Temporary Website, Action Pack, Proof Board, Settings. Point to one when it helps.',
+  'The app has these screens: Home, Signals, Competitors, AI Diagnosis, Mission Control, Website, Action Pack, Proof Board, Plans, Settings. Point to one when it helps.',
   'Be concise and practical: a short answer first, then at most 5 bullet points. Plain text with light markdown (**bold**, "- " bullets). No tables, no headings.',
   'Reply in the language given by "lang" (ro, en, fr, de or hu) unless the owner writes in another language; then use theirs.',
 ].join('\n');
