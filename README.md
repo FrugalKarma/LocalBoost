@@ -9,6 +9,7 @@ Business demo: **Cafeneaua Copou** (Iași), fictiv. Toate cifrele sunt etichetat
 
 - **New design ("Copou Ledger")**: colour-coded journey tabs (Home · Observe · Analyse · Act · Measure) instead of the sidebar, map-first Home, burgundy palette, light and dark, 5 languages.
 - **Ask LocalBoost**: open questions answered by Claude on the server (`/api/chat`, streamed), grounded in the business data. Default model `claude-haiku-5-5`. Without `ANTHROPIC_API_KEY` the panel says AI is not set up and links to the right screen.
+- **Accounts and admin**: email and password sign-in, work saved to the account, and an admin area that sees, edits, disables and deletes every client. Off until Supabase is connected; setup in [docs/ACCOUNTS.md](docs/ACCOUNTS.md).
 - **What works, what is blocked and how to unblock it:** [docs/GAP_REPORT.md](docs/GAP_REPORT.md).
 
 | Variable | Purpose |
@@ -17,6 +18,7 @@ Business demo: **Cafeneaua Copou** (Iași), fictiv. Toate cifrele sunt etichetat
 | `LOCALBOOST_MODEL` / `LOCALBOOST_CHAT_MODEL` | model override (default `claude-haiku-5-5`) |
 | `LOCALBOOST_ALLOWED_ORIGINS` | extra origins allowed to call the API (default: the Capacitor app) |
 | `LOCALBOOST_IP_LIMIT` / `LOCALBOOST_DAILY_LIMIT` | questions per visitor per hour / per day (default 40 / 800) |
+| `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` | turn on accounts and the admin area ([docs/ACCOUNTS.md](docs/ACCOUNTS.md)); the last one is secret, server only |
 
 > Note: sections below describe the previous version in places (sidebar, Pitch Mode). The gap report lists what is outdated.
 
