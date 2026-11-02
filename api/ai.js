@@ -1,5 +1,5 @@
 import { runAI, corsHeaders } from '../lib/ai-core.mjs';
-import { aiAllowed } from '../lib/auth-core.mjs';
+import { aiAccess } from '../lib/auth-core.mjs';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -8,8 +8,11 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
   const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
   const body = typeof req.body === 'string' ? safeParse(req.body) : req.body;
-  if (!(await aiAllowed(req.headers))) return res.status(200).json({ error: 'auth_required' }); // accounts on: sign in to use the AI
-  return res.status(200).json(await runAI(body || {}, { ip, code: String(req.headers['x-access-code'] || '') }));
+  const gate = await aiAccess(req.headers, String(body?.role || '')); // accounts on: plan and monthly quota
+  if (!gate.ok) return res.status(200).json({ error: gate.error });
+  const result = await runAI(body || {}, { ip, code: String(req.headers['x-access-code'] || '') });
+  if (!result.error && gate.consume) await gate.consume().catch(() => {});
+  return res.status(200).json(result);
 }
 
 function safeParse(s) { try { return JSON.parse(s); } catch { return null; } }

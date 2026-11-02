@@ -8,7 +8,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runAI, streamChat, corsHeaders } from './lib/ai-core.mjs';
-import { handleAccount, aiAllowed } from './lib/auth-core.mjs';
+import { handleAccount, aiAccess } from './lib/auth-core.mjs';
 import { handleData } from './lib/places-core.mjs';
 import { handleSite, originOf, PUBLIC_CORS } from './lib/site-core.mjs';
 import { health } from './lib/health.mjs';
@@ -34,8 +34,10 @@ async function readBody(req, max = 64 * 1024) {
 async function handleAI(req, res, cors) {
   let body;
   try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, cors); }
-  if (!(await aiAllowed(req.headers))) return send(res, 200, JSON.stringify({ error: 'auth_required' }), undefined, cors);
+  const gate = await aiAccess(req.headers, String(body?.role || ''));
+  if (!gate.ok) return send(res, 200, JSON.stringify({ error: gate.error }), undefined, cors);
   const out = await runAI(body, { ip: req.socket.remoteAddress || 'local', code: String(req.headers['x-access-code'] || '') });
+  if (!out.error && gate.consume) await gate.consume().catch(() => {});
   return send(res, 200, JSON.stringify(out), undefined, cors);
 }
 
@@ -44,7 +46,8 @@ async function handleChat(req, res, cors) {
   let body;
   try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, cors); }
   res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', ...cors });
-  if (!(await aiAllowed(req.headers))) { res.write(`data: ${JSON.stringify({ type: 'error', error: 'auth_required' })}\n\n`); return res.end(); }
+  const gate = await aiAccess(req.headers, 'chat');
+  if (!gate.ok) { res.write(`data: ${JSON.stringify({ type: 'error', error: gate.error })}\n\n`); return res.end(); }
   const ctrl = new AbortController();
   res.on('close', () => { if (!res.writableEnded) ctrl.abort(); });
   await streamChat(body, { ip: req.socket.remoteAddress || 'local', code: String(req.headers['x-access-code'] || ''), clientSignal: ctrl.signal,

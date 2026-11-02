@@ -1,6 +1,6 @@
 // Vercel serverless (Node runtime): streamed answers for "Ask LocalBoost". Same logic as server.mjs.
 import { streamChat, corsHeaders } from '../lib/ai-core.mjs';
-import { aiAllowed } from '../lib/auth-core.mjs';
+import { aiAccess } from '../lib/auth-core.mjs';
 
 export const config = { maxDuration: 60 };
 
@@ -10,7 +10,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'method' });
   const body = typeof req.body === 'string' ? safeParse(req.body) : req.body;
   res.writeHead(200, { 'content-type': 'text/event-stream; charset=utf-8', 'cache-control': 'no-store', 'x-accel-buffering': 'no' });
-  if (!(await aiAllowed(req.headers))) { res.write(`data: ${JSON.stringify({ type: 'error', error: 'auth_required' })}\n\n`); return res.end(); }
+  const gate = await aiAccess(req.headers, 'chat');
+  if (!gate.ok) { res.write(`data: ${JSON.stringify({ type: 'error', error: gate.error })}\n\n`); return res.end(); }
   const ctrl = new AbortController();
   req.on('close', () => { if (!res.writableEnded) ctrl.abort(); });
   const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
