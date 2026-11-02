@@ -2,6 +2,7 @@
 // States: idle -> sending (typing dots) -> streaming -> done | stopped | error (retry) | fallback (no AI: links to screens).
 import { html, raw, esc, icon, $, toast } from './core.js';
 import { authHeaders } from './auth.js';
+import { can, upgradePrompt } from './plans.js';
 import { t, getLang } from './i18n.js';
 import { getState, update } from './store.js';
 import { actions, go } from './registry.js';
@@ -165,6 +166,7 @@ function retry() {
 /* ---------- open / close ---------- */
 export function openChat(question) {
   const root = $('#chat-root'); if (!root) return;
+  if (!can('chat')) { upgradePrompt('chat'); return; }
   if (!busy) msgs = (getState().chat || []).map((m) => ({ ...m }));
   if (!isOpen) animateNext = true;
   isOpen = true; root.hidden = false; document.body.classList.add('chat-open');

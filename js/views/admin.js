@@ -49,6 +49,7 @@ function row(c) {
     </div>
     <div class="client-stage">${stagePill(b?.stage)}</div>
     <div class="client-when"><small>${t('admin.colUpdated')}</small>${fmt(b?.updated_at)}</div>
+    <div class="client-plan">${admin ? '' : html`<label><span class="sr-only">${t('admin.plan')}: ${c.email}</span><select data-in="admin-plan" data-id="${c.id}" ${busy ? 'disabled' : ''}>${['free', 'pro', 'business'].map((p) => html`<option value="${p}" ${c.plan === p ? 'selected' : ''}>${t(`plans.${p}.name`)}</option>`)}</select></label>`}</div>
     <div class="client-status">${admin ? html`<span class="badge badge-admin">${t('admin.roleAdmin')}</span>`
       : html`<span class="badge ${c.disabled ? 'badge-off' : 'badge-on'}">${t(c.disabled ? 'admin.statusDisabled' : 'admin.statusActive')}</span>`}</div>
     <div class="client-acts">
@@ -99,6 +100,15 @@ export const admin = {
 inputs['admin-q'] = (el) => { q = el.value.trim().slice(0, 80); const b = $('#admin-body'); if (b) b.innerHTML = body().s; };
 document.addEventListener('input', (e) => { if (e.target.matches?.('[data-in="admin-q"]')) inputs['admin-q'](e.target); }); // type="search" is not in the app's text-input list
 actions['admin-reload'] = () => load();
+inputs['admin-plan'] = async (el) => {
+  const c = find(el.dataset.id); if (!c) return;
+  const plan = el.value; busyId = c.id;
+  const r = await api('/api/admin', { method: 'POST', body: { op: 'plan', id: c.id, plan } });
+  busyId = null;
+  if (r.status === 200) { c.plan = plan; toast(t('admin.planSet', { email: c.email, plan: t(`plans.${plan}.name`) }), 'success'); }
+  else { toast(t('common.errorGeneric'), 'error'); }
+  paintBody();
+};
 
 actions['admin-open'] = async (el) => {
   busyId = el.dataset.id; paintBody();

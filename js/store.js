@@ -2,20 +2,19 @@
 const KEY = 'localboost.state.v1';
 
 export const defaultSite = () => ({
+  v: 2,
   generated: false,
-  theme: 'burgundy',
-  accent: '#F1C84B',
-  font: 'lexend',
-  radius: 'soft',
-  layout: 'split',
-  lang: null, // null = follow UI language
-  showBooking: true,
-  showReviews: true,
-  showLocation: true,
-  overrides: {},
-  variants: { hero: 0, offer: 0, faq: 0 },
+  design: { preset: null, palette: {}, fonts: null, radius: null, heroStyle: null, density: 'cozy' }, // null = the preset's choice
+  sections: [], // ordered: hero, about, services, menu, gallery, offer, reviews, visit, faq, booking, contact
+  booking: { askParty: null, askDate: true, askTime: true, askService: false, services: null, note: '' },
+  announcement: { on: false, text: '' },
+  seo: { title: '', description: '', image: '' },
+  logo: '',
+  branding: true,
+  lang: null, // null = follow the app language
   ai: null,
 });
+
 
 const defaults = () => ({
   v: 2,
@@ -29,6 +28,7 @@ const defaults = () => ({
   assets: null,
   site: defaultSite(), // website content + look; site.slug / site.publishedAt once it is online
   checkpoint: null,
+  replies: null, // drafted replies to Google reviews, by review index
   chat: [], // "Ask LocalBoost" conversation (last 30 messages)
   profile: { name: '' },
 });

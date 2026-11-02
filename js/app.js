@@ -20,7 +20,7 @@ import { displayName, getBiz } from './business.js';
 import './chat.js'; // "Ask LocalBoost" panel (registers its own actions)
 import { admin } from './views/admin.js';
 import { showSignin, repaintSignin, authErrorText } from './views/signin.js';
-import { loadAuthConfig, authOn, signedIn, isAdmin, userEmail, userId, onAuthChange, readAuthHash, adoptLinkSession, signOut } from './auth.js';
+import { loadAuthConfig, authOn, signedIn, isAdmin, userEmail, userId, onAuthChange, readAuthHash, adoptLinkSession, signOut, refreshMe } from './auth.js';
 import { loadOwn, flush, viewingClient, closeClient, onCloud, localOwner } from './cloud.js';
 
 const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, pack, proof, settings, account, admin, plans].map((v) => [v.id, v]));
@@ -231,6 +231,7 @@ function showLoading() {
 /** Signed in (or accounts off): load the account's business, then show the app. */
 async function enterApp(kind = 'resume') {
   if (authOn() && signedIn()) {
+    refreshMe().catch(() => {}); // plan may have changed since the last visit
     if (kind === 'resume' && localOwner() === userId()) { startApp(); loadOwn(); return; } // this browser already holds their data: open now, refresh quietly
     showLoading();
     const r = await loadOwn();

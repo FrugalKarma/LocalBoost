@@ -4,9 +4,13 @@ import { apiUrl } from './api.js';
 
 const SKEY = 'localboost.session';
 const CKEY = 'localboost.authEnabled'; // last answer from the server, so the app can start offline
+const MKEY = 'localboost.support';
 const listeners = new Set();
 let session = read(SKEY);
 let enabled = read(CKEY) === true;
+let support = read(MKEY) || '';
+/** Where owners ask for a plan change (LOCALBOOST_SUPPORT_EMAIL on the server). */
+export const supportEmail = () => support;
 
 function read(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } }
 function write(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage blocked */ } }
@@ -20,7 +24,7 @@ export const userId = () => session?.user?.id || '';
 export const onAuthChange = (fn) => listeners.add(fn);
 
 export function setSession(s, reason = 'signin') {
-  session = s?.access_token ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Number(s.expires_at) || 0, user: s.user || {}, role: s.role || 'client' } : null;
+  session = s?.access_token ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Number(s.expires_at) || 0, user: s.user || {}, role: s.role || 'client', plan: s.plan || 'free', aiUsed: Number(s.aiUsed) || 0, aiLimit: Number(s.aiLimit) || 3 } : null;
   write(SKEY, session);
   listeners.forEach((fn) => fn(session, reason));
 }
@@ -29,7 +33,7 @@ export function setSession(s, reason = 'signin') {
 export async function loadAuthConfig() {
   try {
     const r = await fetch(apiUrl('/api/auth?op=config'), { cache: 'no-store', signal: AbortSignal.timeout(5000) });
-    if (r.ok) { const j = await r.json(); enabled = !!j.enabled; write(CKEY, enabled); }
+    if (r.ok) { const j = await r.json(); enabled = !!j.enabled; write(CKEY, enabled); support = typeof j.support === 'string' ? j.support : ''; write(MKEY, support || null); }
   } catch { /* offline or no server: keep the cached answer */ }
   return enabled;
 }
@@ -122,6 +126,15 @@ export function readAuthHash() {
 export async function adoptLinkSession(s) {
   const j = await post({ op: 'me' }, s.access_token);
   if (!j.user) return j;
-  setSession({ ...s, user: j.user, role: j.role }, 'link');
+  setSession({ ...s, user: j.user, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit }, 'link');
+  return j;
+}
+
+/** Re-reads role, plan and AI allowance (the admin may have changed the plan). */
+export async function refreshMe() {
+  if (!signedIn()) return null;
+  const tok = await freshToken(); if (!tok) return null;
+  const j = await post({ op: 'me' }, tok);
+  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
   return j;
 }

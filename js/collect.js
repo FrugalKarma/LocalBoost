@@ -14,7 +14,7 @@ export const scan = { active: false, step: 0, steps: [] };
 export function applyPlace(p, fetchedAt = new Date().toISOString()) {
   update((s) => {
     const b = s.business;
-    const place = { id: p.id, name: p.name, address: p.address, lat: p.lat, lng: p.lng, rating: p.rating, reviewCount: p.reviewCount, mapsUrl: p.mapsUrl, website: p.website, phone: p.phone || b.place?.phone || '', hours: p.hours || b.place?.hours || [], fetchedAt };
+    const place = { id: p.id, name: p.name, address: p.address, lat: p.lat, lng: p.lng, rating: p.rating, reviewCount: p.reviewCount, mapsUrl: p.mapsUrl, website: p.website, phone: p.phone || b.place?.phone || '', hours: p.hours || b.place?.hours || [], hoursStruct: p.hoursStruct || b.place?.hoursStruct || null, fetchedAt };
     return { business: { ...b, place, address: b.address || p.address || '', phone: b.phone || p.phone || '', website: b.website || (p.website ? p.website.replace(/^https?:\/\//, '').replace(/\/$/, '') : '') } };
   });
 }

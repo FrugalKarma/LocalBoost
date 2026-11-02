@@ -64,6 +64,20 @@ export const PROMPTS = {
     ].join('\n'),
     schema: '{"handles":[string],"names":[string]}',
   },
+  replier: {
+    title: 'Review Replier',
+    system: [
+      'Role: draft public replies from the business owner to Google reviews.',
+      'Rules:',
+      '- one reply per review, in the language of the review;',
+      '- thank the person by first name if given; be specific about what they wrote;',
+      '- for 1-3 stars: apologise once, no excuses, offer a concrete fix and a way to talk (phone or email given in the data);',
+      '- 2-4 sentences, warm and human, no marketing slogans, no discounts unless the data mentions one;',
+      '- never reveal private information or argue.',
+      COMMON,
+    ].join('\n'),
+    schema: '{"replies":[{"index":number,"reply":string}]}',
+  },
   themes: {
     title: 'Theme Finder',
     system: [
@@ -89,9 +103,10 @@ export const PROMPTS = {
       '- 3 services that this type of business really offers, described plainly; never invent prices, awards or facts;',
       '- FAQ with 3-4 items answered only from the data given (hours, address, phone, booking); skip questions you cannot answer;',
       '- the offer may only promise what the hypothesis says;',
+      '- "about": 2-3 warm, plain sentences about the business from the facts given only (no invented history, awards or numbers);',
       COMMON,
     ].join('\n'),
-    schema: '{"headline":string,"subheadline":string,"cta":string,"offer_title":string,"offer_text":string,"services":[{"name":string,"description":string}],"faq":[{"q":string,"a":string}]}',
+    schema: '{"headline":string,"subheadline":string,"cta":string,"about":string,"offer_title":string,"offer_text":string,"services":[{"name":string,"description":string}],"faq":[{"q":string,"a":string}]}',
   },
 };
 

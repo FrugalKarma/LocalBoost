@@ -1,7 +1,7 @@
 // AI layer: role-separated calls to /api/ai (server-side key), 16 s per call / 25 s per step, JSON repair,
 // schema validation and a rule-based local fallback built from the same real data, so the app never blocks.
 import { t, ta, getLang } from './i18n.js';
-import { authHeaders } from './auth.js';
+import { authHeaders, refreshMe } from './auth.js';
 import { getState, update } from './store.js';
 import { limit } from './core.js';
 import { getBiz, cleanHandle } from './business.js';
@@ -58,6 +58,11 @@ export const validators = {
       target: { requests: n(p.target?.requests, 3, 200), reviews: n(p.target?.reviews, 2, 100) },
     } };
   },
+  replier(o) {
+    if (!o || !Array.isArray(o.replies)) return null;
+    const replies = o.replies.slice(0, 10).map((r) => ({ index: Math.round(Number(r?.index)), reply: str(r?.reply, 900) })).filter((r) => r.reply && Number.isFinite(r.index));
+    return replies.length ? { replies } : null;
+  },
   themes(o) {
     if (!o || !Array.isArray(o.themes)) return null;
     const items = o.themes.slice(0, 6).map((x) => ({ label: str(x?.label, 60), tone: x?.tone === 'gap' ? 'gap' : 'pos', mentions: Math.max(1, Math.min(999, Math.round(Number(x?.mentions) || 1))), quotes: strs(x?.quotes, 2, 160) })).filter((x) => x.label);
@@ -82,7 +87,7 @@ export const validators = {
     if (!o || !str(o.headline) || !str(o.cta)) return null;
     return {
       headline: str(o.headline, 110), subheadline: str(o.subheadline, 240), cta: str(o.cta, 40),
-      offerTitle: str(o.offer_title, 80), offerText: str(o.offer_text, 300),
+      offerTitle: str(o.offer_title, 80), offerText: str(o.offer_text, 300), about: str(o.about, 900),
       services: Array.isArray(o.services) ? o.services.slice(0, 6).map((x) => ({ n: str(x?.name, 60), d: str(x?.description, 200) })).filter((x) => x.n) : [],
       faq: Array.isArray(o.faq) ? o.faq.slice(0, 4).map((f) => ({ q: str(f?.q, 140), a: str(f?.a, 300) })).filter((f) => f.q && f.a) : [],
     };
@@ -130,7 +135,7 @@ async function callRole(role, payload, signal) {
     }
     if (!res.ok) throw new AiError('http', `HTTP ${res.status}`);
     const body = await res.json();
-    if (body.error) throw new AiError(body.error === 'ai_not_configured' || body.error === 'auth_required' ? 'not_configured' : body.error === 'timeout' ? 'timeout' : 'http', body.error);
+    if (body.error) throw new AiError(body.error === 'ai_not_configured' || body.error === 'auth_required' ? 'not_configured' : ['timeout', 'plan_required', 'quota_reached'].includes(body.error) ? body.error : 'http', body.error);
     const parsed = repairJSON(body.text ?? body.json);
     const valid = validators[role](parsed);
     if (!valid) throw new AiError('invalid_json');
@@ -203,6 +208,7 @@ export async function runDiagnosis({ onStep } = {}) {
   }
   const result = { mode, reason, timestamp: new Date().toISOString(), lang: getLang(), durationMs: Date.now() - started, data };
   update({ diagnosis: result });
+  if (mode === 'ai') refreshMe().catch(() => {}); // the free allowance changed
   return result;
 }
 
@@ -269,6 +275,15 @@ export async function runThemes(texts) {
   } catch (e) { return { mode: 'none', reason: e.kind || 'error', items: [], at: new Date().toISOString() }; }
 }
 
+/** Draft replies to Google reviews (Pro). Returns { mode, replies: [{ index, reply }] }. */
+export async function runReplies(reviews) {
+  const b = getBiz();
+  try {
+    const r = await callRole('replier', { business: { name: b.name, phone: b.phone || null, email: b.email || null, category: b.category }, reviews: reviews.map((v, index) => ({ index, rating: v.rating, author: v.author, text: v.text })) }, deadline());
+    return { mode: 'ai', replies: r.replies };
+  } catch (e) { return { mode: 'fallback', reason: e.kind || 'error', replies: [] }; }
+}
+
 /** Website copy (Website Builder role) - returns {mode, copy|null}. */
 export async function runBuilder() {
   const signal = deadline();
@@ -297,5 +312,5 @@ export async function runNames() {
 }
 
 export function reasonKey(reason) {
-  return ['timeout', 'not_configured', 'invalid_json', 'unreachable', 'http', 'not_run'].includes(reason) ? `ai.reason.${reason}` : 'ai.reason.error';
+  return ['timeout', 'not_configured', 'invalid_json', 'unreachable', 'http', 'not_run', 'plan_required', 'quota_reached'].includes(reason) ? `ai.reason.${reason}` : 'ai.reason.error';
 }
