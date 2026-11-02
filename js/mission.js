@@ -1,7 +1,8 @@
 // Mission Control orchestration: four agents move waiting -> running -> complete.
 import { getState, update, updateSite } from './store.js';
 import { runDiagnosis, runAssets, runBuilder, runNames, getDiagnosis, ensureAssetsSync, ensureDiagnosisSync } from './ai.js';
-import { needsNames } from './business.js';
+import { needsNames, getBiz } from './business.js';
+import { draftSections, PRESET_FOR } from './website.js';
 import { MISSION_HOURS, liveMetrics, loadSiteData } from './insights.js';
 import { sleep } from './core.js';
 import { getLang } from './i18n.js';
@@ -41,7 +42,10 @@ export async function startMission(onChange = () => {}) {
     await step('creator', async () => (getState().assets ? getState().assets.mode : runAssets()));
     await step('builder', async () => {
       const r = await runBuilder();
-      updateSite({ generated: true, ai: r.mode === 'ai' ? { lang: getLang(), copy: r.copy } : null, variants: { hero: 0, offer: 0, faq: 0 } });
+      const ai = r.mode === 'ai' ? { lang: getLang(), copy: r.copy } : null;
+      // never overwrite a site the owner already edited; only draft one when there is none yet
+      if (getState().site.generated && getState().site.sections?.length) updateSite({ ai: ai || getState().site.ai });
+      else updateSite({ v: 2, generated: true, ai, sections: draftSections(ai?.copy || null), design: { preset: PRESET_FOR[getBiz().category], palette: {}, fonts: null, radius: null, heroStyle: null, density: 'cozy' } });
       return r.mode;
     });
     if (needsNames()) await step('scout', async () => runNames());
