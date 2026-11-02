@@ -5,6 +5,15 @@ Every change is a separate commit on `main` (`design: …`, `feat(ai): …`).
 
 ---
 
+## Update, 2 November 2026: demo removed, real data, working websites
+
+- **No demo data left.** The sample café, seeded results, simulated reach/visibility numbers, the rehearsal switches and every DEMO badge are gone. Older saves are migrated: the owner's own details are kept, sample data is dropped.
+- **Real sources:** Google Places (find the business, rating, latest reviews, hours, map position, nearby competitors), a website check (opens the owner's site server-side and tests 13 things customers need; private/internal addresses are blocked), and owner-pasted reviews/comments/questions. With the AI on, themes are found across all of them; without it, the analysis uses rules over the same real data.
+- **Working websites:** the generator builds the site from real details (Google reviews with authors, hours, OpenStreetMap map, call/WhatsApp/email buttons, LocalBusiness structured data). One click publishes it at `/s/<address>`; the booking form stores requests in Supabase, visits and clicks are counted per day, and the owner answers requests from the Website screen. Hosted pages run under a strict Content-Security-Policy sandbox. The downloadable HTML works anywhere; its form posts to LocalBoost once published, otherwise opens WhatsApp or email.
+- **Measuring is real:** the mission stores a baseline (Google rating/reviews, site visits/clicks/requests); "Measure now" reads them again and adds requests the owner got by phone or DM.
+- **Plans screen:** Free / Pro €19 / Business €49, shown but not selectable yet.
+- **Needs:** Supabase (accounts, publishing, requests) and a Google Places key. Without them the app still works: details typed by hand, website downloaded instead of published.
+
 ## 1. What works as intended
 
 ### Redesign ("Copou Ledger")
@@ -38,7 +47,7 @@ Every change is a separate commit on `main` (`design: …`, `feat(ai): …`).
 | 3 | **The APK in the repo is the old build** | It predates the redesign and has no server address. Rebuilding needs a JDK and the Android SDK (Android Studio), which are not available to me here. | `npm run android:sync`, then in `android/`: `gradlew assembleDebug`. On the phone: Settings → **AI server address** → your Vercel URL (e.g. `https://localboost.vercel.app`). To bake it in instead, set `window.LOCALBOOST_API_BASE` in `index.html` before building. |
 | 4 | **Usage limits are not reliable on Vercel** | Limits (40 questions/hour per visitor, 800/day) are kept in memory per server instance; Vercel runs many short-lived instances, so the real limit is higher. | Add a shared store (Upstash Redis or Vercel KV) and move the counters in `lib/ai-core.mjs › allowed()` there. Until then, rely on the Anthropic spend limit from #1. |
 | 5 | **The optional access code cannot be used** | The server supports `LOCALBOOST_ACCESS_CODE`, but the app never sends the `x-access-code` header, so setting it would turn AI off for everyone. | Do not set it yet. Fix: add an access-code field in Settings and send the header from `js/ai.js` and `js/chat.js` (small change). With accounts on, this is no longer needed: AI only answers signed-in users. |
-| 6 | **No real business data** | Signals, competitors, reach and the map are demo data about a fictional café. Real reviews, Google Business Profile and social posts need official API access with the owner's consent (OAuth, app review), which a static demo cannot get. The AI answers are only as real as the data it is given. | Per source: a Google Cloud project with the Business Profile API approved; Meta app review for Instagram/Facebook; TikTok developer access. Each needs a server-side connector and stored tokens (a database), plus a privacy policy. CSV import already works for your own data. |
+| 6 | ~~No real business data~~ **Real data built, needs a Google key** | Demo data is gone. Signals now come from the owner's Google listing (rating, 5 latest reviews, hours, location), a real check of their website, and what they paste in; competitors come from Google Places nearby search. Google only gives 5 reviews per place through the Places API, and Instagram/Facebook/TikTok comments still need official API access, so owners paste those. | Create a Google Cloud project, enable **Places API (New)**, create an API key restricted to that API, set a budget alert, and add `GOOGLE_PLACES_API_KEY` in Vercel. Full review history needs the Business Profile API (approval from Google, owner OAuth). |
 | 7 | ~~No accounts or sync~~ **Built, needs Supabase** | Email/password accounts, saving to the account and the admin area are in place (see [ACCOUNTS.md](ACCOUNTS.md)) but stay off until a Supabase project is connected. | Create the Supabase project, run `supabase/schema.sql`, add the three `SUPABASE_*` variables in Vercel, then make your account admin. |
 
 ---

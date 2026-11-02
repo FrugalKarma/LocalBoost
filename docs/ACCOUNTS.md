@@ -16,7 +16,7 @@ Accounts are **off** until the three Supabase variables below are set. With them
 
 - **Supabase** handles passwords, sessions and emails (Supabase Auth) and stores the data (Postgres).
 - The browser never talks to Supabase directly. It calls `/api/auth`, `/api/data` and `/api/admin` on your own server (Vercel functions or `server.mjs`). Those use the secret key, which never reaches the browser or the Android app.
-- Tables: `profiles` (email, role `client` or `admin`, disabled) and `businesses` (one row per owner, the whole workspace as JSON plus name, city and stage for the admin list). Row-level security is on with no policies, so only the server can read or write them.
+- Tables: `sites`, `site_requests` and `site_stats` hold published websites, their booking requests and daily visit counts. `profiles` (email, role `client` or `admin`, disabled) and `businesses` (one row per owner, the whole workspace as JSON plus name, city and stage for the admin list). Row-level security is on with no policies, so only the server can read or write them.
 - Saves carry a version number. If the owner and the admin edit the same business at the same time, the second save gets the newer copy instead of overwriting it.
 - Signing out clears that browser's copy, so a shared computer never shows the previous person's business.
 - The first time someone signs in on a browser that already holds work from before accounts existed, that work is uploaded to their account.
@@ -24,7 +24,7 @@ Accounts are **off** until the three Supabase variables below are set. With them
 ## Set it up (about 10 minutes)
 
 1. **Create a Supabase project** at supabase.com (free tier is fine). Pick the EU (Frankfurt) region if your clients are in Romania.
-2. **Create the tables.** Supabase → *SQL Editor* → *New query* → paste all of [`supabase/schema.sql`](../supabase/schema.sql) → *Run*.
+2. **Create the tables.** Supabase → *SQL Editor* → *New query* → paste all of [`supabase/schema.sql`](../supabase/schema.sql) → *Run*. (Already ran an older version? Run it again: it only adds what is missing.)
 3. **Point emails at your site.** Supabase → *Authentication* → *URL Configuration*:
    - *Site URL*: your Vercel address, e.g. `https://local-boost-livid.vercel.app`
    - *Redirect URLs*: add the same address with `/**` at the end.
