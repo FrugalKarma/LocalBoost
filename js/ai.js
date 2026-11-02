@@ -1,6 +1,7 @@
 // AI layer: role-separated calls to /api/ai (server-side key), 16 s per call / 25 s per step, JSON repair,
 // schema validation and a deterministic local fallback so the demo can never block.
 import { t, ta, getLang } from './i18n.js';
+import { authHeaders } from './auth.js';
 import { getState, update } from './store.js';
 import { BUSINESS, SIGNALS, BASELINE, TARGET } from './data.js';
 import { limit } from './core.js';
@@ -119,14 +120,14 @@ async function callRole(role, payload, signal) {
     let res;
     const callSignal = withTimeout(signal, CALL_TIMEOUT_MS);
     try {
-      res = await fetch(apiUrl('/api/ai'), { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ role, lang: getLang(), payload }), signal: callSignal });
+      res = await fetch(apiUrl('/api/ai'), { method: 'POST', headers: await authHeaders({ 'content-type': 'application/json' }), body: JSON.stringify({ role, lang: getLang(), payload }), signal: callSignal });
     } catch (e) {
       if (callSignal.aborted) throw new AiError('timeout');
       throw new AiError('unreachable', e.message);
     }
     if (!res.ok) throw new AiError('http', `HTTP ${res.status}`);
     const body = await res.json();
-    if (body.error) throw new AiError(body.error === 'ai_not_configured' ? 'not_configured' : body.error === 'timeout' ? 'timeout' : 'http', body.error);
+    if (body.error) throw new AiError(body.error === 'ai_not_configured' || body.error === 'auth_required' ? 'not_configured' : body.error === 'timeout' ? 'timeout' : 'http', body.error);
     const parsed = repairJSON(body.text ?? body.json);
     const valid = validators[role](parsed);
     if (!valid) throw new AiError('invalid_json');

@@ -1,7 +1,7 @@
 import { html, raw, icon, $, $$, toast, demoBadge, closeModal } from './core.js';
 import { t, initLang, setLang, onLang, LANGS, getLang } from './i18n.js';
 import { initTheme, toggleTheme, currentTheme, themeTransition } from './theme.js';
-import { getState, update } from './store.js';
+import { getState, update, subscribe } from './store.js';
 import { actions, inputs, setRerender, ROUTES, go } from './registry.js';
 import { registerSW, onInstallChange } from './pwa.js';
 import { seedFullDemo, seedSignalsDemo } from './seed.js';
@@ -19,12 +19,17 @@ import { competitors } from './views/competitors.js';
 import { journeyState } from './views/shared.js';
 import { displayName, getBiz } from './business.js';
 import './chat.js'; // "Ask LocalBoost" panel (registers its own actions)
+import { admin } from './views/admin.js';
+import { showSignin, repaintSignin, authErrorText } from './views/signin.js';
+import { loadAuthConfig, authOn, signedIn, isAdmin, userEmail, userId, onAuthChange, readAuthHash, adoptLinkSession, signOut } from './auth.js';
+import { loadOwn, flush, viewingClient, closeClient, onCloud, localOwner } from './cloud.js';
 
-const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, pack, proof, settings, account].map((v) => [v.id, v]));
+const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, pack, proof, settings, account, admin].map((v) => [v.id, v]));
 let route = 'overview';
 let pendingAnchor = null;
+let screen = 'boot'; // boot | signin | loading | app
 
-const parseRoute = () => { const r = (location.hash.replace(/^#\/?/, '') || 'overview').split('?')[0]; return views[r] ? r : 'overview'; };
+const parseRoute = () => { const r = (location.hash.replace(/^#\/?/, '') || 'overview').split('?')[0]; return views[r] && (r !== 'admin' || isAdmin()) ? r : 'overview'; };
 
 /* ---------- journey navigation: Home + the four stages, each with its own colour ---------- */
 // Settings and Account are reached from the account menu; they belong to no stage.
@@ -57,6 +62,10 @@ function updateChrome() {
   const sub = $('#subnav-slot'); if (sub) sub.innerHTML = subnav().s;
   const biz = $('#top-biz'); const b = getState().business;
   if (biz) biz.textContent = b.loaded ? `${displayName()} · ${getBiz().city || ''}` : '';
+  const vc = viewingClient(); const bar = $('#viewing-slot');
+  if (bar) bar.innerHTML = vc ? html`<div class="viewing-bar" role="status">${icon('eye', 18)}<p><strong>${t('admin.viewing', { name: b.loaded ? displayName() : t('admin.noBusiness'), email: vc.email })}</strong>
+    <span>${t(vc.disabled ? 'admin.viewingOff' : 'admin.viewingNote')}</span></p><button class="btn btn-sm" data-act="admin-exit">${t('admin.back')}</button></div>`.s : '';
+  document.body.classList.toggle('is-viewing', !!vc);
 }
 
 function shell() {
@@ -74,10 +83,13 @@ function shell() {
       <button class="icon-btn ${spinTheme ? 'spin-once' : ''}" data-act="toggle-theme" aria-label="${t('settings.theme')}" title="${t('settings.theme')}">${icon(currentTheme() === 'dark' ? 'sun' : 'moon', 20)}</button>
       <div class="menu-wrap"><button class="icon-btn" data-act="account-menu" aria-haspopup="true" aria-expanded="false" aria-label="${t('nav.account')}">${icon('account', 20)}</button>
         <div class="menu" id="account-menu" hidden role="menu">
-          <p class="menu-name">${getState().profile.name}<small>${t('account.role')}</small></p>
+          <p class="menu-name">${getState().profile.name}<small>${signedIn() ? userEmail() : t('account.role')}</small></p>
+          ${isAdmin() ? html`<a role="menuitem" href="#/admin">${icon('overview', 16)} ${t('nav.admin')}</a>` : ''}
           <a role="menuitem" href="#/account">${icon('account', 16)} ${t('nav.account')}</a><a role="menuitem" href="#/settings">${icon('settings', 16)} ${t('nav.settings')}</a>
-          <button role="menuitem" data-act="help">${icon('help', 16)} ${t('settings.openHelp')}</button></div></div>
+          <button role="menuitem" data-act="help">${icon('help', 16)} ${t('settings.openHelp')}</button>
+          ${signedIn() && authOn() ? html`<button role="menuitem" data-act="sign-out">${icon('external', 16)} ${t('account.signOut')}</button>` : ''}</div></div>
     </header>
+    <div id="viewing-slot"></div>
     <div id="subnav-slot"></div>
     <main id="main" tabindex="-1"></main>
   </div>
@@ -100,6 +112,7 @@ function renderView(keepScroll = false) {
 let spinTheme = false;
 
 function renderAll() {
+  if (screen !== 'app') return;
   const app = document.getElementById('app');
   app.innerHTML = shell().s;
   renderView(true);
@@ -107,9 +120,10 @@ function renderAll() {
 }
 
 const rerender = () => renderView(true);
-setRerender((o) => (o?.full ? renderAll() : rerender()));
+setRerender((o) => { if (screen !== 'app') return; if (o?.full) renderAll(); else rerender(); });
 
 function onRoute() {
+  if (screen !== 'app') return;
   route = parseRoute();
   $('#account-menu') && ($('#account-menu').hidden = true);
   renderView();
@@ -198,25 +212,75 @@ let tipScrollY = 0;
 window.addEventListener('scroll', () => { if (Math.abs(window.scrollY - tipScrollY) > 60) hideTip(0); }, { passive: true });
 document.addEventListener('mouseover', () => { tipScrollY = window.scrollY; }, { passive: true });
 
-window.addEventListener('hashchange', onRoute);
+// An email link opened in a tab that already runs LocalBoost only changes the hash: start over to read it.
+window.addEventListener('hashchange', () => { if (/(^|[#&])(access_token|error_description)=/.test(location.hash)) location.reload(); else onRoute(); });
 window.addEventListener('online', updateOnline);
 window.addEventListener('offline', updateOnline);
-onLang(() => { renderAll(); closeModal(); });
+onLang(() => { if (screen === 'signin') repaintSignin(); else renderAll(); closeModal(); });
 onInstallChange(() => { if (route === 'settings') rerender(); });
 
+/* ---------- accounts ---------- */
+actions['sign-out'] = async () => { await flush(); await signOut('signout'); };
+actions['admin-exit'] = async () => { await closeClient(); go('admin'); renderAll(); };
+
+// Data changed on the server side (sign-in load, an edit from elsewhere, admin opening a client): redraw.
+subscribe((_s, meta) => { if (meta.remote && screen === 'app') renderAll(); });
+onCloud((e) => { if (e.conflict) toast(t('admin.toastConflict'), 'info'); });
+onAuthChange((s, reason) => {
+  if (s || !authOn()) { if (screen === 'app' && reason !== 'refresh') renderAll(); return; }
+  closeModal(); history.replaceState(null, '', location.pathname + location.search);
+  const notice = reason === 'disabled' ? { kind: 'error', text: authErrorText('account_disabled') } : reason === 'expired' ? { kind: 'info', text: authErrorText('session_expired') } : null;
+  screen = 'signin'; showSignin({ notice, onDone: enterApp });
+});
+
+function showLoading() {
+  screen = 'loading';
+  document.getElementById('app').innerHTML = html`<div class="auth-loading" role="status"><img src="/icons/logo.png" alt="" width="56" height="56"><p>${t('signin.loading')}</p></div>`.s;
+}
+
+/** Signed in (or accounts off): load the account's business, then show the app. */
+async function enterApp(kind = 'resume') {
+  if (authOn() && signedIn()) {
+    if (kind === 'resume' && localOwner() === userId()) { startApp(); loadOwn(); return; } // this browser already holds their data: open now, refresh quietly
+    showLoading();
+    const r = await loadOwn();
+    if (!signedIn()) return; // signed out meanwhile (disabled / expired): the sign-in screen is already up
+    if (r === 'error') { screen = 'signin'; return showSignin({ notice: { kind: 'error', text: authErrorText('network') }, onDone: enterApp }); }
+  }
+  startApp();
+}
+
+function startApp() {
+  screen = 'app';
+  route = parseRoute();
+  renderAll();
+  document.documentElement.dataset.ready = '1';
+}
+
 /* ---------- boot ---------- */
-function boot() {
+async function boot() {
   initTheme(); initLang();
   const q = new URLSearchParams(location.search);
   if (q.get('lang') && LANGS.some((l) => l.code === q.get('lang'))) { setLang(q.get('lang')); }
   if (q.get('theme') === 'dark' || q.get('theme') === 'light') { document.documentElement.dataset.theme = q.get('theme'); }
-  if (q.get('seed') === 'full') seedFullDemo();
-  if (q.get('seed') === 'signals') seedSignalsDemo();
-  route = parseRoute();
-  renderAll();
   registerSW();
-  document.documentElement.dataset.ready = '1';
   window.__localboost = { go, getState }; // debug handle for QA
+  const link = readAuthHash(); // came back from an email link (confirm sign-up / reset password)
+  const on = await loadAuthConfig();
+  if (!on) {
+    if (q.get('seed') === 'full') seedFullDemo();
+    if (q.get('seed') === 'signals') seedSignalsDemo();
+    return startApp();
+  }
+  if (link?.error) { screen = 'signin'; return showSignin({ notice: { kind: 'error', text: authErrorText(link.error) }, onDone: enterApp }); }
+  if (link?.session) {
+    const r = await adoptLinkSession(link.session);
+    if (r.error) { screen = 'signin'; return showSignin({ notice: { kind: 'error', text: authErrorText(r.error === 'session_expired' ? 'link_invalid' : r.error) }, onDone: enterApp }); }
+    if (link.type === 'recovery') { screen = 'signin'; return showSignin({ mode: 'newpw', onDone: enterApp }); }
+    return enterApp('link');
+  }
+  if (!signedIn()) { screen = 'signin'; return showSignin({ onDone: enterApp }); }
+  return enterApp('resume');
 }
 boot();
 

@@ -1,6 +1,7 @@
 // "Ask LocalBoost": open questions answered by the server-side model, streamed word by word.
 // States: idle -> sending (typing dots) -> streaming -> done | stopped | error (retry) | fallback (no AI: links to screens).
 import { html, raw, esc, icon, $, toast } from './core.js';
+import { authHeaders } from './auth.js';
 import { t, getLang } from './i18n.js';
 import { getState, update } from './store.js';
 import { actions, go } from './registry.js';
@@ -127,7 +128,7 @@ async function ask(text) {
   const totalTimer = setTimeout(() => c.abort('timeout'), TOTAL_MS);
   try {
     if (sim === 'timeout') await new Promise((_, rej) => c.signal.addEventListener('abort', () => rej(new Error('timeout')), { once: true }));
-    const res = await fetch(apiUrl('/api/chat'), { method: 'POST', headers: { 'content-type': 'application/json' }, signal: c.signal,
+    const res = await fetch(apiUrl('/api/chat'), { method: 'POST', headers: await authHeaders({ 'content-type': 'application/json' }), signal: c.signal,
       body: JSON.stringify({ messages: [...history, { role: 'user', content: q }], context: context(), lang: getLang() }) });
     if (!res.ok || !res.body) throw Object.assign(new Error('http'), { kind: res.status === 429 ? 'rate_limited' : 'http' });
     const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = '';
@@ -141,7 +142,7 @@ async function ask(text) {
         let ev; try { ev = JSON.parse(line.slice(5)); } catch { continue; }
         if (ev.type === 'delta') { if (firstTimer) { clearTimeout(firstTimer); firstTimer = null; } a.content += ev.text; a.pending = false; paint(idx); }
         else if (ev.type === 'error') {
-          if (ev.error === 'ai_not_configured') { live = false; return finish({ fallback: routeFor(q) }); }
+          if (ev.error === 'ai_not_configured' || ev.error === 'auth_required') { live = false; return finish({ fallback: routeFor(q) }); }
           if (ev.error === 'aborted') return finish({ stopped: true });
           throw Object.assign(new Error(ev.error), { kind: ['rate_limited', 'timeout', 'too_long'].includes(ev.error) ? ev.error : 'http' });
         }

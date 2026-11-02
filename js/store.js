@@ -37,6 +37,11 @@ const defaults = () => ({
 });
 
 let state = load();
+let shadow = null; // admin looking at a client: the admin's own state waits here and nothing is written to this browser
+const listeners = new Set();
+/** fn(state, { remote }) runs after every change. remote = the change came from the server (do not send it back). */
+export const subscribe = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
+const notify = (meta = {}) => listeners.forEach((fn) => { try { fn(state, meta); } catch (e) { console.error(e); } });
 
 function load() {
   try {
@@ -47,6 +52,7 @@ function load() {
 }
 
 function persist() {
+  if (shadow) return;
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* quota or private mode */ }
 }
 
@@ -54,7 +60,7 @@ export const getState = () => state;
 
 export function update(patch) {
   state = { ...state, ...(typeof patch === 'function' ? patch(state) : patch) };
-  persist();
+  persist(); notify();
   return state;
 }
 
@@ -62,13 +68,33 @@ export function updateSite(patch) {
   return update((s) => ({ site: { ...s.site, ...patch } }));
 }
 
-export function resetAll() {
+export function resetAll({ remote = false } = {}) {
   state = defaults();
-  persist();
+  persist(); notify({ remote });
   return state;
 }
 
-export function replaceState(next) {
+/** remote: true when `next` came from the server, so cloud sync does not send it straight back. */
+export function replaceState(next, { remote = false } = {}) {
   state = { ...defaults(), ...next };
-  persist();
+  persist(); notify({ remote });
+}
+
+/** Admin opens a client: show their data in memory only. exitShadow() brings the admin's own state back. */
+export function enterShadow(data) {
+  if (!shadow) shadow = state;
+  state = { ...defaults(), ...data, aiSim: shadow.aiSim, theme: shadow.theme };
+  notify({ remote: true });
+}
+export function exitShadow() {
+  if (!shadow) return;
+  state = shadow; shadow = null;
+  notify({ remote: true });
+}
+export const inShadow = () => !!shadow;
+
+/** What goes to the account in the cloud: everything except per-device switches. */
+export function cloudData(s = state) {
+  const { aiSim, theme, ...rest } = s; // eslint-disable-line no-unused-vars
+  return rest;
 }
