@@ -45,6 +45,13 @@ Accounts are **off** until the three Supabase variables below are set. With them
 
    Sign out and in again: **Admin** appears in the account menu.
 
+### Plans and photos (after updating to the November 2026 version)
+
+- **Run `supabase/schema.sql` again** in the SQL Editor. It is safe to rerun: it adds `profiles.plan` (default `free`), the monthly AI counter, and the public `site-media` storage bucket for website photos (3 MB each, JPG/PNG/WebP).
+- **Set a client's plan** in *Admin* (the Plan menu on each client) or in SQL: `update public.profiles set plan = 'business' where email = 'client@example.com';`. The client sees it the next time they open the app. Admins always have every feature.
+- Only **Business** can publish. If a client drops to Free or Pro, their site stops being served (it is kept, and comes back when they return to Business).
+- **Booking emails (optional):** set `RESEND_API_KEY` and `LOCALBOOST_MAIL_FROM` (e.g. `LocalBoost <bookings@yourdomain.com>`, a domain verified in Resend). The owner gets an email for each new request, at the email in their business details or their account email.
+
 ### Optional
 
 - **Email confirmation** is on by default in Supabase (new users must click a link). To let people in immediately, turn off *Authentication → Sign In / Providers → Email → Confirm email*.
@@ -59,7 +66,7 @@ npm run mock:supabase                      # fake Supabase on http://localhost:5
 SUPABASE_URL=http://localhost:5299 SUPABASE_ANON_KEY=mock-public SUPABASE_SERVICE_ROLE_KEY=mock-secret npm start
 ```
 
-Create an account in the app, then make it admin with `http://localhost:5299/mock/role?email=you@example.com`.
+Create an account in the app, then make it admin with `http://localhost:5299/mock/role?email=you@example.com`, or change its plan with `http://localhost:5299/mock/plan?email=you@example.com&plan=business`.
 
 ## Limits and next steps
 

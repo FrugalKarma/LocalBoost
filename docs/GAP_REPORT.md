@@ -5,13 +5,21 @@ Every change is a separate commit on `main` (`design: …`, `feat(ai): …`).
 
 ---
 
+## Update, 2 November 2026 (later): plans, website designer v2, Pro tools
+
+- **What each plan gets.** Free: Google data, website check, 3 AI analyses a month, the full designer with a watermarked preview. Pro €19: unlimited AI, Ask LocalBoost, growth pack, AI replies to Google reviews, QR review poster. Business €49: the site online at its own address, booking inbox + email alerts, visits and clicks, no branding, download. The server enforces all of it (AI routes, publishing, hosted pages); the app shows a lock and explains the upgrade.
+- **Website designer.** Sections you add, hide, drag and edit (also by clicking them in the preview); 8 complete styles with a colour editor that checks contrast; 8 font pairs, 4 hero layouts, corners and spacing; photo uploads (resized in the browser, stored in Supabase) with alt text; menu/price lists; gallery with a lightbox; offers; FAQ; a per-day hours editor that drives a live "open now" badge and the booking time slots; booking questions (date, time, people, service); announcement bar; Google and share-card previews; QR code; a quality score with one-click fixes; undo/redo.
+- **Pro tools.** Review replies (AI, or good templates without it) with copy and open-on-Google; an A4 QR poster for the Google review form or the website, printable or as SVG.
+- **Not done yet:** online payment (Stripe). Until then the admin sets plans; the Plans page tells owners how to ask (`LOCALBOOST_SUPPORT_EMAIL`). Google does not let apps post review replies, so owners paste them.
+- **Before using it:** rerun `supabase/schema.sql` (adds plans and the photo bucket).
+
 ## Update, 2 November 2026: demo removed, real data, working websites
 
 - **No demo data left.** The sample café, seeded results, simulated reach/visibility numbers, the rehearsal switches and every DEMO badge are gone. Older saves are migrated: the owner's own details are kept, sample data is dropped.
 - **Real sources:** Google Places (find the business, rating, latest reviews, hours, map position, nearby competitors), a website check (opens the owner's site server-side and tests 13 things customers need; private/internal addresses are blocked), and owner-pasted reviews/comments/questions. With the AI on, themes are found across all of them; without it, the analysis uses rules over the same real data.
 - **Working websites:** the generator builds the site from real details (Google reviews with authors, hours, OpenStreetMap map, call/WhatsApp/email buttons, LocalBusiness structured data). One click publishes it at `/s/<address>`; the booking form stores requests in Supabase, visits and clicks are counted per day, and the owner answers requests from the Website screen. Hosted pages run under a strict Content-Security-Policy sandbox. The downloadable HTML works anywhere; its form posts to LocalBoost once published, otherwise opens WhatsApp or email.
 - **Measuring is real:** the mission stores a baseline (Google rating/reviews, site visits/clicks/requests); "Measure now" reads them again and adds requests the owner got by phone or DM.
-- **Plans screen:** Free / Pro €19 / Business €49, shown but not selectable yet.
+- **Plans screen:** Free / Pro €19 / Business €49 (now enforced, see the update above).
 - **Needs:** Supabase (accounts, publishing, requests) and a Google Places key. Without them the app still works: details typed by hand, website downloaded instead of published.
 
 ## 1. What works as intended
