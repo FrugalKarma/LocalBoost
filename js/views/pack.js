@@ -6,6 +6,8 @@ import { actions, rerender } from '../registry.js';
 import { pageHead } from './shared.js';
 import { needSignals } from '../collect.js';
 import { getBiz, displayName } from '../business.js';
+import { can, upgradePrompt, lockBadge } from '../plans.js';
+import { repliesSection, posterSection } from './tools.js';
 
 /** Circular sticker concept, drawn as SVG (text on a circle path). */
 export function stickerSvg(text, size = 200, place = '') {
@@ -31,8 +33,9 @@ export const pack = {
     const head = pageHead({ title: t('pack.title'), sub: t('pack.sub'),
       actions: html`<button class="btn btn-secondary" data-act="gen-assets">${icon('sparkle', 18)} ${getState().assets ? t('actions.regenerateAll') : t('actions.generateAssets')}</button>` });
     const a = getAssets();
-    if (!a) return html`${head}<section class="card empty-hero"><div class="empty-ic">${icon('pack', 34)}</div><h2>${t('pack.emptyTitle')}</h2><p class="muted">${t('pack.emptyBody')}</p>
-      <button class="btn btn-primary btn-lg" data-act="gen-assets">${icon('sparkle', 18)} ${t('actions.generateAssets')}</button></section>`;
+    const tools = html`<div class="tools-row">${repliesSection()}${posterSection()}</div>`;
+    if (!a) return html`${head}<section class="card empty-hero"><div class="empty-ic">${icon('pack', 34)}</div><h2>${t('pack.emptyTitle')} ${can('pack') ? '' : lockBadge('pack')}</h2><p class="muted">${t('pack.emptyBody')}</p>
+      <button class="btn btn-primary btn-lg" data-act="gen-assets">${icon('sparkle', 18)} ${t('actions.generateAssets')}</button></section>${tools}`;
     const approved = !!getState().assets?.approved?.post;
     return html`${head}
     <div class="engine-bar ${a.mode === 'ai' ? 'is-ai' : 'is-local'}" role="status"><span class="engine-dot" aria-hidden="true"></span>
@@ -49,6 +52,7 @@ export const pack = {
       ${card('headlines', t('pack.headlines'), html`<ol class="headlines">${a.headlines.map((h) => html`<li>${h}</li>`)}</ol>`)}
       ${card('merch', t('pack.merch'), html`<div class="merch-col">${stickerSvg(a.merch.stickerText, 150, (getBiz().city || '').split(',')[0])}<p>${a.merch.concept}</p></div>`)}
     </div>
+    ${tools}
     <section class="next-bar"><div><p class="tag">${t('journey.measure')} · ${t('ledger.nextStep')}</p><strong>${t('next.proof')}</strong></div>
       <button class="btn btn-primary btn-lg" data-act="go" data-route="proof">${t('common.open')} ${icon('next', 18)}</button></section>`;
   },
@@ -66,6 +70,7 @@ function assetText(kind) {
 
 actions['gen-assets'] = async (el) => {
   if (needSignals()) return;
+  if (!can('pack')) return upgradePrompt('pack');
   el.disabled = true;
   const mode = await runAssets();
   toast(mode === 'ai' ? t('pack.toastAi') : t('pack.toastLocal'), mode === 'ai' ? 'success' : 'info');
