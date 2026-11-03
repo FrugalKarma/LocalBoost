@@ -7,6 +7,7 @@ import { actions, rerender, go } from './registry.js';
 import { getBiz } from './business.js';
 import { serverCaps, placeDetails, checkWebsite } from './sources.js';
 import { runThemes } from './ai.js';
+import { isExample } from './example.js';
 
 export const scan = { active: false, step: 0, steps: [] };
 
@@ -22,6 +23,7 @@ export function applyPlace(p, fetchedAt = new Date().toISOString()) {
 export async function collectSignals() {
   const s = getState();
   if (scan.active || !s.business.loaded) return;
+  if (isExample()) { toast(t('example.noRefresh'), 'info'); return; }
   const caps = await serverCaps();
   const b = getBiz();
   scan.steps = [b.place?.id && 'google', b.website && 'website', 'notes', 'themes'].filter(Boolean);

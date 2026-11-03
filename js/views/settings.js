@@ -12,6 +12,7 @@ import { currentTheme, applyTheme, themeTransition } from '../theme.js';
 import { apiBase, setApiBase } from '../api.js';
 import { getDisplay, setDisplay, DISPLAY } from '../display.js';
 import { consentRecord } from '../legal.js';
+import { isExample } from '../example.js';
 import { BRAND } from '../brand.js';
 import { authOn, signedIn } from '../auth.js';
 
@@ -29,6 +30,7 @@ export const settings = {
       ${row(t('settings.language'), '', html`<div class="seg seg-wide" role="group" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<button aria-pressed="${lang === l.code}" data-act="set-lang" data-lang="${l.code}">${l.name}</button>`)}</div>`)}
       ${row(t('settings.theme'), '', html`<div class="seg seg-wide" role="group" aria-label="${t('settings.theme')}">${['light', 'dark'].map((m) => html`<button aria-pressed="${currentTheme() === m}" data-act="set-theme" data-theme="${m}">${icon(m === 'dark' ? 'moon' : 'sun', 16)} ${t(`settings.${m}`)}</button>`)}</div>`)}
       ${row(t('settings.display'), t('settings.displayBody'), html`<div class="disp">${Object.entries(DISPLAY).map(([k, opts]) => html`<div class="disp-row"><span>${t(`settings.disp.${k}`)}</span><div class="seg" role="group" aria-label="${t(`settings.disp.${k}`)}">${opts.map((o) => html`<button aria-pressed="${getDisplay()[k] === o}" data-act="set-display" data-k="${k}" data-v="${o}">${t(`settings.dispOpt.${o}`)}</button>`)}</div></div>`)}</div>`)}
+      ${row(t('example.settingsTitle'), t('example.settingsBody'), html`<div class="btn-row">${isExample() ? html`<button class="btn btn-secondary" data-act="example-clear">${icon('trash', 18)} ${t('example.clear')}</button>` : html`<button class="btn btn-primary" data-act="example-load">${icon('sparkle', 18)} ${t('example.load')}</button>`}</div>`, 'example')}
       ${row(t('settings.install'), isInstalled() ? t('settings.installedAlready') : t('settings.installBody'), html`<div class="btn-row"><button class="btn btn-primary" data-act="install" ${isInstalled() ? 'disabled' : ''}>${icon('install', 18)} ${t('actions.install')}</button>
           <button class="btn btn-ghost" data-act="help">${icon('help', 18)} ${t('settings.openHelp')}</button></div>`)}
       ${row(t('settings.ai'), t('settings.aiBody'), html`<p class="legal-note">${icon('info', 15)} ${t('settings.aiNotice')}</p><div class="btn-row"><button class="btn btn-secondary" data-act="transparency">${icon('eye', 18)} ${t('settings.transparency')}</button><a class="btn btn-ghost" href="#/info?ai">${t('legal.ai')}</a></div>`)}

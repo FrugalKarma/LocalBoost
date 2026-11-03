@@ -6,6 +6,7 @@ import { actions, rerender } from '../registry.js';
 import { pageHead } from './shared.js';
 import { serverCaps, nearbyPlaces } from '../sources.js';
 import { competitorList, liveMetrics } from '../insights.js';
+import { isExample } from '../example.js';
 
 const METRICS = ['rating', 'reviewCount', 'distance'];
 let metric = 'rating';
@@ -91,6 +92,7 @@ export const competitors = {
 
 actions['scan-comp'] = async () => {
   const b = getBiz(); if (busy || b.place?.lat == null) return;
+  if (isExample()) return toast(t('example.noRefresh'), 'info');
   busy = true; rerender();
   const r = await nearbyPlaces({ lat: b.place.lat, lng: b.place.lng, category: b.category, self: b.place.id, q: `${t(`biz.cat.${b.category}`)} ${b.city}` });
   busy = false;

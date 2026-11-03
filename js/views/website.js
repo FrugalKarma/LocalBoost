@@ -19,6 +19,7 @@ import { barSeries } from '../charts.js';
 import { addPhotos } from '../images.js';
 import { can, currentPlan, upgradePrompt } from '../plans.js';
 import { qrSvg } from '../qr.js';
+import { isExample } from '../example.js';
 
 const TABS = ['sections', 'design', 'details', 'booking', 'seo', 'publish'];
 const TAB_ICON = { sections: 'layers', design: 'palette', details: 'pin', booking: 'calendar', seo: 'globe', publish: 'external' };
@@ -542,6 +543,7 @@ document.addEventListener('submit', async (e) => {
   e.preventDefault();
   if (busy) return;
   if (!can('publish')) return upgradePrompt('publish');
+  if (isExample()) return toast(t('example.noPublish'), 'info');
   const slug = slugify($('#site-slug')?.value || '').slice(0, 40).replace(/^-+|-+$/g, '');
   slugDraft = slug;
   if (slug.length < 3) return toast(t('website.errSlug'), 'error');

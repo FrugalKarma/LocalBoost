@@ -45,6 +45,7 @@ function bizForm() {
   return html`<section class="hero-card solo"><div class="hero-copy">
       <p class="field-note on-dark">${t('overview.eyebrow')}</p>
       <h1 class="hero-title">${t('biz.title')}</h1><p class="hero-lede">${t('biz.sub')}</p></div></section>
+    <div class="try-example">${icon('sparkle', 22)}<div><b>${t('example.tryTitle')}</b><span>${t('example.tryBody')}</span></div><button type="button" class="btn btn-primary" data-act="example-load">${t('example.load')}</button></div>
     <div class="bento"><form class="card span-7 biz-form" data-biz-form novalidate>
       ${googleLookup()}
       ${field('name', t('biz.name'), t('biz.namePh'), { none: 'noName', max: 80 })}

@@ -29,6 +29,8 @@ const defaults = () => ({
   site: defaultSite(), // website content + look; site.slug / site.publishedAt once it is online
   checkpoint: null,
   replies: null, // drafted replies to Google reviews, by review index
+  studio: null, // Action Pack designs: stickers, post graphic, offer card, calendar
+  example: false, // true while the fictional example business is loaded
   chat: [], // "Ask Arcton" conversation (last 30 messages)
   profile: { name: '' },
 });

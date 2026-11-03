@@ -1,4 +1,4 @@
-import { html, raw, icon, $, $$, toast, closeModal } from './core.js';
+import { html, raw, icon, $, $$, toast, closeModal, confirmDialog } from './core.js';
 import { t, initLang, setLang, onLang, LANGS, getLang } from './i18n.js';
 import { initTheme, toggleTheme, currentTheme, themeTransition } from './theme.js';
 import { getState, subscribe } from './store.js';
@@ -19,6 +19,8 @@ import { info } from './views/info.js';
 import { BRAND } from './brand.js';
 import { needsConsent, showConsent } from './legal.js';
 import { applyDisplay } from './display.js';
+import { isExample, loadExample, clearExample } from './example.js';
+import { currentPlan } from './plans.js';
 import { journeyState } from './views/shared.js';
 import { displayName, getBiz } from './business.js';
 import './chat.js'; // "Ask Arcton" panel (registers its own actions)
@@ -76,6 +78,11 @@ function updateChrome() {
   if (bar) bar.innerHTML = vc ? html`<div class="viewing-bar" role="status">${icon('eye', 18)}<p><strong>${t('admin.viewing', { name: b.loaded ? displayName() : t('admin.noBusiness'), email: vc.email })}</strong>
     <span>${t(vc.disabled ? 'admin.viewingOff' : 'admin.viewingNote')}</span></p><button class="btn btn-sm" data-act="admin-exit">${t('admin.back')}</button></div>`.s : '';
   document.body.classList.toggle('is-viewing', !!vc);
+  const ex = $('#example-slot');
+  if (ex) ex.innerHTML = isExample() && !vc ? html`<div class="example-bar" role="status">${icon('sparkle', 18)}<p><b>${t('example.barTitle')}</b> ${t('example.barBody')}</p>
+    <button class="btn btn-sm btn-secondary" data-act="example-clear">${t('example.clear')}</button></div>`.s : '';
+  const promo = $('#side-promo');
+  if (promo) promo.innerHTML = currentPlan() !== 'business' && !vc ? html`<div class="side-promo"><b>${t('promo.title', { plan: t(`plans.${currentPlan() === 'free' ? 'pro' : 'business'}.name`) })}</b><span>${t(currentPlan() === 'free' ? 'promo.pro' : 'promo.business')}</span><a href="#/plans">${t('promo.cta')}</a></div>`.s : '';
 }
 
 function shell() {
@@ -99,6 +106,7 @@ function shell() {
           ${signedIn() && authOn() ? html`<button role="menuitem" data-act="sign-out">${icon('external', 16)} ${t('account.signOut')}</button>` : ''}</div></div>
     </header>
     <div id="viewing-slot"></div>
+    <div id="example-slot"></div>
     <div id="subnav-slot"></div>
     <main id="main" tabindex="-1"></main>
   </div>
@@ -107,6 +115,7 @@ function shell() {
     <p class="side-h">${t('brand.journey')}</p>
     <ul class="side-stages">${STAGES.map(stageTab)}</ul>
     <span class="side-spacer"></span>
+    <div id="side-promo"></div>
     <ul class="side-links">${sideLinks()}</ul>
     <p class="side-foot">© ${new Date().getFullYear()} ${BRAND.company}<br><a href="#/info?legal">${t('info.tab.legal')}</a></p>
   </nav>`;
@@ -230,6 +239,14 @@ onInstallChange(() => { if (route === 'settings') rerender(); });
 
 /* ---------- accounts ---------- */
 actions['sign-out'] = async () => { await flush(); await signOut('signout'); };
+actions['example-load'] = async () => {
+  if (getState().business.loaded && !isExample() && !(await confirmDialog(t('example.replaceTitle'), t('example.replaceBody'), t('example.load')))) return;
+  loadExample(); toast(t('example.loaded'), 'success'); go('overview'); renderAll();
+};
+actions['example-clear'] = async () => {
+  if (!(await confirmDialog(t('example.clearTitle'), t('example.clearBody'), t('example.clear')))) return;
+  clearExample(); toast(t('example.cleared'), 'info'); go('overview'); renderAll();
+};
 actions['admin-exit'] = async () => { await closeClient(); go('admin'); renderAll(); };
 
 // Data changed on the server side (sign-in load, an edit from elsewhere, admin opening a client): redraw.
