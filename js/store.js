@@ -29,7 +29,7 @@ const defaults = () => ({
   site: defaultSite(), // website content + look; site.slug / site.publishedAt once it is online
   checkpoint: null,
   replies: null, // drafted replies to Google reviews, by review index
-  chat: [], // "Ask LocalBoost" conversation (last 30 messages)
+  chat: [], // "Ask Arcton" conversation (last 30 messages)
   profile: { name: '' },
 });
 

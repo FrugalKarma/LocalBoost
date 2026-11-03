@@ -1,5 +1,5 @@
 // Everything the screens show is derived here from real data: the Google listing, the website check,
-// what the owner pasted, nearby competitors and the visits/requests of the published LocalBoost site.
+// what the owner pasted, nearby competitors and the visits/requests of the published Arcton Ai site.
 import { getState } from './store.js';
 import { t } from './i18n.js';
 import { getBiz } from './business.js';
@@ -85,7 +85,7 @@ export function dailySeries(n = 30) {
   return Array.from({ length: n }, (_, i) => { const day = new Date(Date.now() - (n - 1 - i) * DAY).toISOString().slice(0, 10); const d = map.get(day); return { day, views: d?.views || 0, clicks: d?.clicks || 0, requests: d?.requests || 0 }; });
 }
 
-/** The numbers LocalBoost can measure right now. null = not measurable yet (no Google link / site not published). */
+/** The numbers Arcton Ai can measure right now. null = not measurable yet (no Google link / site not published). */
 export function liveMetrics(sinceMs = Date.now() - 7 * DAY) {
   const b = getBiz(); const g = getState().signals?.google;
   const published = !!(siteData?.available && siteData.site?.published);

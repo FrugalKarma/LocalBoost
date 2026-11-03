@@ -55,7 +55,7 @@ export async function startMission(onChange = () => {}) {
     onChange();
     return { ok: true, fallbacks };
   } catch (e) {
-    console.error('[LocalBoost] mission error', e); // developer log only
+    console.error('[Arcton] mission error', e); // developer log only
     update((s) => ({ mission: { ...s.mission, status: 'error' } }));
     onChange();
     return { ok: false };

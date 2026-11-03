@@ -47,7 +47,10 @@ Accounts are **off** until the three Supabase variables below are set. With them
 
 ### Plans and photos (after updating to the November 2026 version)
 
-- **Run `supabase/schema.sql` again** in the SQL Editor. It is safe to rerun: it adds `profiles.plan` (default `free`), the monthly AI counter, and the public `site-media` storage bucket for website photos (3 MB each, JPG/PNG/WebP).
+- **Run `supabase/schema.sql` again** in the SQL Editor. It is safe to rerun. It adds:
+  - `profiles.plan` (default `free`) and the monthly AI counter;
+  - the record of accepted terms (`terms_version`, `terms_accepted_at`);
+  - the public `site-media` storage bucket for website photos (3 MB each, JPG/PNG/WebP).
 - **Set a client's plan** in *Admin* (the Plan menu on each client) or in SQL: `update public.profiles set plan = 'business' where email = 'client@example.com';`. The client sees it the next time they open the app. Admins always have every feature.
 - Only **Business** can publish. If a client drops to Free or Pro, their site stops being served (it is kept, and comes back when they return to Business).
 - **Booking emails (optional):** set `RESEND_API_KEY` and `LOCALBOOST_MAIL_FROM` (e.g. `LocalBoost <bookings@yourdomain.com>`, a domain verified in Resend). The owner gets an email for each new request, at the email in their business details or their account email.

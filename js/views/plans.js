@@ -1,5 +1,5 @@
 // Plans: what each one includes, the owner's current plan and how to change it.
-// Online payment is not switched on yet; until then the LocalBoost team sets the plan (Admin area).
+// Online payment is not switched on yet; until then the Arcton Ai team sets the plan (Admin area).
 import { html, icon } from '../core.js';
 import { t, ta } from '../i18n.js';
 import { pageHead } from './shared.js';
@@ -44,7 +44,7 @@ export const plans = {
       <p class="plan-price"><b>€${p.price}</b><span>${t('plans.perMonth')}</span></p>
       <ul>${ta(`plans.${p.id}.features`).map((f) => html`<li>${icon('check', 16)}${f}</li>`)}</ul>
       ${isCur ? html`<span class="btn btn-secondary is-static">${icon('check', 16)} ${t('plans.current')}</span>`
-        : lower || !accounts ? '' : html`<a class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" href="mailto:${supportEmail()}?subject=${encodeURIComponent(`LocalBoost ${t(`plans.${p.id}.name`)}`)}&body=${encodeURIComponent(t('plans.mailBody', { plan: t(`plans.${p.id}.name`), email: userEmail() }))}">${t('plans.ask', { plan: t(`plans.${p.id}.name`) })}</a>`}
+        : lower || !accounts ? '' : html`<a class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" href="mailto:${supportEmail()}?subject=${encodeURIComponent(`Arcton Ai ${t(`plans.${p.id}.name`)}`)}&body=${encodeURIComponent(t('plans.mailBody', { plan: t(`plans.${p.id}.name`), email: userEmail() }))}">${t('plans.ask', { plan: t(`plans.${p.id}.name`) })}</a>`}
     </article>`; })}</div>
     <section class="card pc-card"><h2>${t('pc.title')}</h2>
       <div class="table-wrap"><table class="pc-table"><thead><tr><th scope="col">${t('pc.feature')}</th>${PLANS.map((p) => html`<th scope="col" class="${accounts && p.id === cur ? 'is-current' : ''}">${t(`plans.${p.id}.name`)}<small>€${p.price}</small></th>`)}</tr></thead>

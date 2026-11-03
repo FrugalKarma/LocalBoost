@@ -1,5 +1,5 @@
 // Small QR code encoder (byte mode, error correction level M, versions 1-10: up to 213 bytes).
-// Written for LocalBoost so links to a site or to the Google review form can be printed as posters.
+// Written for Arcton Ai so links to a site or to the Google review form can be printed as posters.
 // Follows ISO/IEC 18004; structure after Project Nayuki's reference implementation (MIT).
 
 const ECC_M = [-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26]; // EC codewords per block

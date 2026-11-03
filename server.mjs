@@ -41,7 +41,7 @@ async function handleAI(req, res, cors) {
   return send(res, 200, JSON.stringify(out), undefined, cors);
 }
 
-// "Ask LocalBoost": Server-Sent Events, one `data: {json}` line per event (meta, delta, done, error).
+// "Ask Arcton": Server-Sent Events, one `data: {json}` line per event (meta, delta, done, error).
 async function handleChat(req, res, cors) {
   let body;
   try { body = JSON.parse(await readBody(req)); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, cors); }
@@ -109,5 +109,5 @@ http.createServer(async (req, res) => {
     send(res, 404, 'Not found', 'text/plain');
   }
 }).listen(PORT, () => {
-  console.log(`LocalBoost running at http://localhost:${PORT}  (AI: ${health().ai ? 'live model' : 'local fallback - set ANTHROPIC_API_KEY to enable'})`);
+  console.log(`Arcton Ai running at http://localhost:${PORT}  (AI: ${health().ai ? 'live model' : 'local fallback - set ANTHROPIC_API_KEY to enable'})`);
 });

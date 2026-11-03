@@ -95,7 +95,7 @@ export const validators = {
 };
 
 /* ---------- transport ---------- */
-/** Everything the AI may use: only real data the owner gave or LocalBoost measured. */
+/** Everything the AI may use: only real data the owner gave or Arcton Ai measured. */
 export function signalPayload() {
   const b = getBiz();
   return {
@@ -204,7 +204,7 @@ export async function runDiagnosis({ onStep } = {}) {
     data = { ...an, ...st }; mode = 'ai';
   } catch (e) {
     reason = e.kind || 'error';
-    console.warn('[LocalBoost] AI unavailable, using local analysis:', reason); // developer log only
+    console.warn('[Arcton] AI unavailable, using local analysis:', reason); // developer log only
   }
   const result = { mode, reason, timestamp: new Date().toISOString(), lang: getLang(), durationMs: Date.now() - started, data };
   update({ diagnosis: result });
@@ -225,7 +225,7 @@ export async function runAssets() {
   try {
     ai = await callRole('creator', { ...signalPayload(), opportunity: diag?.data.opportunity }, signal);
     mode = 'ai';
-  } catch (e) { reason = e.kind || 'error'; console.warn('[LocalBoost] creator fallback:', reason); }
+  } catch (e) { reason = e.kind || 'error'; console.warn('[Arcton] creator fallback:', reason); }
   const prev = getState().assets;
   update({ assets: { mode, reason, ai, lang: getLang(), timestamp: new Date().toISOString(), variants: prev?.variants || { offer: 0, post: 0, headlines: 0, merch: 0 }, approved: {} } });
   return mode;
@@ -291,7 +291,7 @@ export async function runBuilder() {
     const copy = await callRole('builder', { ...signalPayload(), opportunity: getDiagnosis()?.data.opportunity }, signal);
     return { mode: 'ai', copy };
   } catch (e) {
-    console.warn('[LocalBoost] builder fallback:', e.kind);
+    console.warn('[Arcton] builder fallback:', e.kind);
     return { mode: 'fallback', copy: null, reason: e.kind };
   }
 }
@@ -305,7 +305,7 @@ export async function runNames() {
     data = await callRole('namer', { business: { name: b.name || null, city: b.city, category: b.category }, needName: b.noName && !b.name, lang: getLang() }, signal);
     mode = 'ai';
     if (!(b.noName && !b.name)) data.names = [];
-  } catch (e) { console.warn('[LocalBoost] namer fallback:', e.kind); }
+  } catch (e) { console.warn('[Arcton] namer fallback:', e.kind); }
   if (!data) data = localNames();
   update({ names: { mode, handles: data.handles, names: data.names || [], lang: getLang(), timestamp: new Date().toISOString() } });
   return mode;

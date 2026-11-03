@@ -114,7 +114,7 @@ actions['csv-import'] = () => {
       const n = addNotes(text, form.kind, form.source || 'CSV');
       if (!n) return toast(t('signals.csvEmpty'), 'error');
       toast(t('signals.csvOk', { n }), 'success'); rerender();
-    } catch (e) { console.error('[LocalBoost] csv', e); toast(t('common.errorGeneric'), 'error'); }
+    } catch (e) { console.error('[Arcton] csv', e); toast(t('common.errorGeneric'), 'error'); }
   };
   inp.click();
 };

@@ -1,4 +1,4 @@
-// Business profile: what the owner tells LocalBoost, plus the Google listing they linked (business.place).
+// Business profile: what the owner tells Arcton Ai, plus the Google listing they linked (business.place).
 import { getState, update } from './store.js';
 import { limit } from './core.js';
 import { t } from './i18n.js';

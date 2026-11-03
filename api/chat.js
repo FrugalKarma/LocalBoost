@@ -1,4 +1,4 @@
-// Vercel serverless (Node runtime): streamed answers for "Ask LocalBoost". Same logic as server.mjs.
+// Vercel serverless (Node runtime): streamed answers for "Ask Arcton". Same logic as server.mjs.
 import { streamChat, corsHeaders } from '../lib/ai-core.mjs';
 import { aiAccess } from '../lib/auth-core.mjs';
 

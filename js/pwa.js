@@ -37,7 +37,7 @@ export async function registerSW() {
       if (!hadController) { hadController = true; return; }
       if (!reloading) { reloading = true; location.reload(); }
     });
-  } catch (e) { console.warn('[LocalBoost] service worker not registered:', e.message); }
+  } catch (e) { console.warn('[Arcton] service worker not registered:', e.message); }
 }
 
 function showUpdate(worker) {

@@ -1,4 +1,18 @@
-# LocalBoost — Signal-to-Action OS
+# Arcton Ai
+
+**Arcton Ai** (formerly LocalBoost) is built by **Arcton Ai Consulting SRL**. It helps local businesses see what lies beneath: real reviews, a website that takes bookings, and one clear next step every week.
+
+## Rebrand and legal (November 2026)
+
+- New name, minimal dark-blue iceberg logo (`npm run icons` redraws every icon, Android included), deep-purple palette with ice-blue highlights, Sora + Lexend type, and a left sidebar (bottom bar on phones).
+- **Info centre** (`#/info`): About, What's coming, a searchable Q&A, Contact & company, and the legal texts.
+- **Legal:** Terms of Service (with GDPR art. 28 data-processing terms for booking requests), Privacy Notice (GDPR art. 13), AI notice and Cookies & storage, in English and Romanian (`js/legalText.js`). Acceptance is required at sign-up, asked again whenever `LEGAL_VERSION` changes, and recorded on the account (`profiles.terms_version`, `terms_accepted_at`).
+- **Before launch:**
+  - Fill in the company details (tax ID / CUI, trade register number, registered office, contact and privacy emails) in `js/brand.js`.
+  - Rerun `supabase/schema.sql`.
+  - Have a lawyer review the texts.
+- Published websites now carry a short privacy notice for visitors, naming the business as controller and Arcton Ai as processor.
+- Internal storage keys and environment variables keep their `localboost` / `LOCALBOOST_` names, so existing data and deployments keep working.
 
 Aplicație web (PWA) pentru IMM-uri locale: **Observe → Diagnose → Act → Measure**.
 Transformă semnale despre un business (recenzii, întrebări, audit de website, căutări) într-o **misiune concretă de 48 de ore**, cu website temporar, ofertă, postare, concept de merch și un checkpoint de măsurare.
