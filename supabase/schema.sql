@@ -110,3 +110,7 @@ on conflict (id) do nothing;
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Make yourself the admin: sign up in the app first, then run this line with your email.
 --   update public.profiles set role = 'admin' where email = 'you@example.com';
+
+-- Record of accepted Terms / Privacy / AI notice (version = date of the texts). Safe to rerun.
+alter table public.profiles add column if not exists terms_version text;
+alter table public.profiles add column if not exists terms_accepted_at timestamptz;

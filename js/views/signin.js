@@ -3,16 +3,19 @@
 import { html, icon, $, toast, limit } from '../core.js';
 import { t, LANGS, getLang } from '../i18n.js';
 import { signIn, signUp, sendReset, changePassword } from '../auth.js';
+import { BRAND, LEGAL_VERSION } from '../brand.js';
+import { openLegal } from '../legalText.js';
 
 let mode = 'signin';
 let email = '';
 let notice = null; // { kind: 'error' | 'info', text }
 let busy = false;
 let showPw = false;
+let agreed = false;
 let done = () => {};
 
 const KNOWN = ['invalid_credentials', 'email_not_confirmed', 'account_disabled', 'email_taken', 'weak_password', 'same_password', 'invalid_email', 'rate_limited',
-  'signup_disabled', 'network', 'auth_unreachable', 'database_unreachable', 'session_expired', 'link_invalid', 'auth_not_configured'];
+  'signup_disabled', 'network', 'auth_unreachable', 'database_unreachable', 'session_expired', 'link_invalid', 'auth_not_configured', 'terms_required'];
 export const authErrorText = (code) => t(`signin.err.${code === 'otp_expired' || code === 'access_denied' ? 'link_invalid' : KNOWN.includes(code) ? code : 'generic'}`);
 
 /** onDone(kind) runs after a successful sign-in, sign-up or password change. */
@@ -60,17 +63,20 @@ function form() {
       ${pwField('auth-password', t('signin.password'), up ? 'new-password' : 'current-password')}
       ${up ? html`<p class="small auth-hint">${t('signin.passwordHint')}</p>` : html`<button type="button" class="link-btn auth-forgot" data-auth="mode" data-mode="reset">${t('signin.forgot')}</button>`}
       ${submit(t(up ? 'signin.signUp' : 'signin.signIn'))}
-      ${up ? html`<p class="small auth-terms">${t('signin.terms')}</p>` : ''}
+      ${up ? html`<label class="check auth-consent"><input type="checkbox" id="auth-agree" ${agreed ? 'checked' : ''}><span>${t('signin.agree', { company: BRAND.company })}
+        <button type="button" class="link-btn" data-auth="legal" data-doc="terms">${t('legal.terms')}</button> · <button type="button" class="link-btn" data-auth="legal" data-doc="privacy">${t('legal.privacy')}</button> · <button type="button" class="link-btn" data-auth="legal" data-doc="ai">${t('legal.ai')}</button></span></label>` : html`<p class="small auth-terms">${t('signin.signinLegal')} <button type="button" class="link-btn" data-auth="legal" data-doc="privacy">${t('legal.privacy')}</button></p>`}
     </form>`;
 }
 
 function paint() {
   const app = document.getElementById('app'); if (!app) return;
+  const keepPw = $('#auth-password')?.value || ''; // a redraw (error message, language) must not wipe what was typed
+  const keepAgree = $('#auth-agree')?.checked; if (keepAgree != null) agreed = keepAgree;
   document.body.dataset.route = 'signin';
-  document.title = `${t('signin.signInTab')} · LocalBoost`;
+  document.title = `${t('signin.signInTab')} · ${BRAND.app}`;
   app.innerHTML = html`<div class="auth">
     <aside class="auth-side">
-      <div class="auth-brand"><img src="/icons/logo.png" alt="" width="40" height="40"><strong>LocalBoost</strong></div>
+      <div class="auth-brand"><img src="/icons/logo.svg" alt="" width="40" height="40"><strong>${BRAND.app}</strong></div>
       <p class="auth-tag">${t('signin.tagline')}</p>
       ${stages()}
     </aside>
@@ -81,6 +87,7 @@ function paint() {
         ${form()}
       </section>
     </main></div>`.s;
+  if (keepPw && $('#auth-password') && mode !== 'newpw') $('#auth-password').value = keepPw;
   const focus = notice?.kind === 'error' && $('#auth-password') && email ? $('#auth-password') : $('#auth-email') || $('#auth-password') || $('.auth-card button');
   focus?.focus({ preventScroll: true });
 }
@@ -95,13 +102,14 @@ async function onSubmit(kind) {
   if (e && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return fail('invalid_email');
   if ((kind === 'signup' || kind === 'newpw') && pw.length < 8) return fail('weak_password');
   if (kind === 'signin' && !pw) return fail('invalid_credentials');
+  if (kind === 'signup') { agreed = !!$('#auth-agree')?.checked; if (!agreed) return fail('terms_required'); }
   busy = true; notice = null; paint();
   if (kind === 'signin') {
     const r = await signIn(email, pw);
     return r.session ? done('signin') : fail(r.error);
   }
   if (kind === 'signup') {
-    const r = await signUp(email, pw);
+    const r = await signUp(email, pw, LEGAL_VERSION);
     if (r.session) return done('signup');
     if (r.confirm) { busy = false; mode = 'confirm'; return paint(); }
     return fail(r.error);
@@ -129,6 +137,7 @@ document.addEventListener('click', (e) => {
     const em = $('#auth-email'); if (em) email = em.value.trim();
     mode = b.dataset.mode; notice = null; paint();
   }
+  if (b.dataset.auth === 'legal') { agreed = !!$('#auth-agree')?.checked; openLegal(b.dataset.doc); return; }
   if (b.dataset.auth === 'toggle-pw') {
     const inp = $('#auth-password'); const v = inp?.value || ''; const em = $('#auth-email'); if (em) email = em.value.trim();
     showPw = !showPw; paint(); const n = $('#auth-password'); if (n) { n.value = v; n.focus(); }

@@ -24,7 +24,7 @@ export const userId = () => session?.user?.id || '';
 export const onAuthChange = (fn) => listeners.add(fn);
 
 export function setSession(s, reason = 'signin') {
-  session = s?.access_token ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Number(s.expires_at) || 0, user: s.user || {}, role: s.role || 'client', plan: s.plan || 'free', aiUsed: Number(s.aiUsed) || 0, aiLimit: Number(s.aiLimit) || 3 } : null;
+  session = s?.access_token ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Number(s.expires_at) || 0, user: s.user || {}, role: s.role || 'client', plan: s.plan || 'free', aiUsed: Number(s.aiUsed) || 0, aiLimit: Number(s.aiLimit) || 3, termsVersion: s.termsVersion || null, termsAt: s.termsAt || null } : null;
   write(SKEY, session);
   listeners.forEach((fn) => fn(session, reason));
 }
@@ -56,8 +56,8 @@ export async function signIn(email, password) {
   if (j.session) setSession(j.session);
   return j;
 }
-export async function signUp(email, password) {
-  const j = await post({ op: 'signup', email, password, redirectTo: redirectTo() });
+export async function signUp(email, password, terms) {
+  const j = await post({ op: 'signup', email, password, terms, redirectTo: redirectTo() });
   if (j.session) setSession(j.session);
   return j;
 }
@@ -126,7 +126,7 @@ export function readAuthHash() {
 export async function adoptLinkSession(s) {
   const j = await post({ op: 'me' }, s.access_token);
   if (!j.user) return j;
-  setSession({ ...s, user: j.user, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit }, 'link');
+  setSession({ ...s, user: j.user, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit, termsVersion: j.termsVersion, termsAt: j.termsAt }, 'link');
   return j;
 }
 
@@ -135,6 +135,14 @@ export async function refreshMe() {
   if (!signedIn()) return null;
   const tok = await freshToken(); if (!tok) return null;
   const j = await post({ op: 'me' }, tok);
-  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
+  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit, termsVersion: j.termsVersion, termsAt: j.termsAt }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
+  return j;
+}
+
+/** Records on the account that the current Terms / Privacy / AI notice were accepted. */
+export async function recordConsent(version) {
+  const tok = await freshToken(); if (!tok) return { error: 'auth_required' };
+  const j = await post({ op: 'consent', version }, tok);
+  if (j.ok && session) { session = { ...session, termsVersion: version, termsAt: j.at }; write(SKEY, session); }
   return j;
 }
