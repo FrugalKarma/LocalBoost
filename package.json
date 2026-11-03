@@ -2,7 +2,7 @@
   "name": "localboost",
   "version": "1.0.0",
   "private": true,
-  "description": "LocalBoost - Signal-to-Action OS for local businesses (hackathon demo, zero dependencies)",
+  "description": "Arcton Ai - insight and action for local businesses (Arcton Ai Consulting SRL)",
   "type": "module",
   "scripts": {
     "start": "node server.mjs",

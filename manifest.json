@@ -1,22 +1,43 @@
 {
-  "name": "LocalBoost — Signal-to-Action OS",
-  "short_name": "LocalBoost",
-  "description": "Turn local signals into a measurable 48-hour action for small businesses.",
+  "name": "Arcton Ai",
+  "short_name": "Arcton Ai",
+  "description": "See what lies beneath: real reviews, a website that takes bookings and a clear next step for your local business.",
   "id": "/",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#7E041D",
-  "theme_color": "#54172A",
+  "background_color": "#170E2E",
+  "theme_color": "#170E2E",
   "lang": "en",
-  "categories": ["business", "productivity"],
-  "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  "categories": [
+    "business",
+    "productivity"
   ],
-  "shortcuts": [
-    { "name": "Pitch Mode", "url": "/?pitch=1", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  "icons": [
+    {
+      "src": "/icons/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

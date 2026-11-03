@@ -48,11 +48,11 @@ lacking.length ? fail(`keys used but not defined: ${lacking.join(', ')}`) : ok(`
 console.log('4. Manifest and icons');
 const manifest = JSON.parse(readFileSync(path.join(root, 'manifest.json'), 'utf8'));
 for (const k of ['name', 'short_name', 'start_url', 'display', 'theme_color', 'background_color', 'icons']) if (!manifest[k]) fail(`manifest.${k} missing`);
-if (manifest.theme_color !== '#54172A') fail('theme_color should be burgundy #54172A');
+if (manifest.theme_color !== '#170E2E') fail('theme_color should be the Arcton deep purple #170E2E');
 const pngSize = (p) => { const b = readFileSync(p); return b.readUInt32BE(16) + 'x' + b.readUInt32BE(20); };
 for (const ic of manifest.icons) {
   const p = path.join(root, ic.src.replace(/^\//, ''));
-  if (!existsSync(p)) fail(`icon missing: ${ic.src}`); else if (pngSize(p) !== ic.sizes) fail(`${ic.src} is ${pngSize(p)}, manifest says ${ic.sizes}`);
+  if (!existsSync(p)) fail(`icon missing: ${ic.src}`); else if (ic.type !== 'image/svg+xml' && pngSize(p) !== ic.sizes) fail(`${ic.src} is ${pngSize(p)}, manifest says ${ic.sizes}`);
 }
 if (!manifest.icons.some((i) => i.sizes === '192x192') || !manifest.icons.some((i) => i.sizes === '512x512')) fail('need 192 and 512 icons');
 if (!existsSync(path.join(root, 'icons/favicon.svg'))) fail('favicon.svg missing');
