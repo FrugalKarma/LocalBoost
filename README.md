@@ -2,6 +2,17 @@
 
 **Arcton Ai** (formerly LocalBoost) is built by **Arcton Ai Consulting SRL**. It helps local businesses see what lies beneath: real reviews, a website that takes bookings, and one clear next step every week.
 
+## November 2026: brighter look, example business, Action Studio
+
+- **Look ("Aurora"):** a light, airy theme with colour washes, a glass sidebar with a colour per step, violet-to-sky gradient buttons and cards, and a floating tab bar on phones.
+- **Example business:** *Try the example business* (setup screen or Settings) fills the app with a fictional café (Google data, reviews, website check, comments, themes, competitors). It is clearly marked, cannot be published, and *Clear example* removes it.
+- **Action Studio** (formerly Action Pack):
+  - Offer editor that sends the offer to the website, a post or a sticker.
+  - Social post designer: 3 formats, 5 layouts including a review quote, 8 palettes, 6 fonts and photos; exports PNG or SVG.
+  - Sticker designer: 7 shapes, 15 icons, curved text, palettes and custom colours, rings, rotation, templates and a "surprise me" button; up to 12 saved stickers; exports PNG or SVG and prints A4 sheets at a chosen size.
+  - Captions with emoji and hashtags, and a 7-day plan with a calendar (.ics) export.
+  - Free can design everything; exporting and printing need Pro.
+
 ## Rebrand and legal (November 2026)
 
 - New name, minimal dark-blue iceberg logo (`npm run icons` redraws every icon, Android included), deep-purple palette with ice-blue highlights, Sora + Lexend type, and a left sidebar (bottom bar on phones).
