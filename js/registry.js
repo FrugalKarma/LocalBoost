@@ -18,4 +18,5 @@ export const ROUTES = [
   { id: 'settings', icon: 'settings' },
   { id: 'account', icon: 'account' },
   { id: 'plans', icon: 'star' },
+  { id: 'info', icon: 'help' },
 ];

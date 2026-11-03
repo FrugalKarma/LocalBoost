@@ -14,10 +14,10 @@ export function stickerSvg(text, size = 200, place = '') {
   const label = esc((text || '').toUpperCase().slice(0, 34));
   return raw(`<svg class="sticker" width="${size}" height="${size}" viewBox="0 0 200 200" role="img" aria-label="${label}">
     <defs><path id="stk-${size}" d="M100 100m-72 0a72 72 0 1 1 144 0a72 72 0 1 1 -144 0"/></defs>
-    <circle cx="100" cy="100" r="96" fill="#701F36"/><circle cx="100" cy="100" r="88" fill="none" stroke="#F1C84B" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/>
-    <circle cx="100" cy="100" r="46" fill="#F1C84B"/>
-    <path d="M82 92h36v22a18 18 0 01-36 0z" fill="none" stroke="#260B18" stroke-width="6" stroke-linecap="round"/><path d="M118 98h6a7 7 0 010 14h-6" fill="none" stroke="#260B18" stroke-width="5" stroke-linecap="round"/>
-    <text font-family="Lexend, sans-serif" font-size="12" font-weight="500" fill="#FFE39A" letter-spacing="1.5"><textPath href="#stk-${size}" startOffset="0">${label} · ${place && label.length < 20 ? `${esc(place.toUpperCase().slice(0, 16))} ·` : ''}</textPath></text></svg>`);
+    <circle cx="100" cy="100" r="96" fill="#3E236C"/><circle cx="100" cy="100" r="88" fill="none" stroke="#A9D4F0" stroke-width="3" stroke-dasharray="2 7" stroke-linecap="round"/>
+    <circle cx="100" cy="100" r="46" fill="#A9D4F0"/>
+    <path d="M82 92h36v22a18 18 0 01-36 0z" fill="none" stroke="#150C25" stroke-width="6" stroke-linecap="round"/><path d="M118 98h6a7 7 0 010 14h-6" fill="none" stroke="#150C25" stroke-width="5" stroke-linecap="round"/>
+    <text font-family="Lexend, sans-serif" font-size="12" font-weight="500" fill="#DCEEFA" letter-spacing="1.5"><textPath href="#stk-${size}" startOffset="0">${label} · ${place && label.length < 20 ? `${esc(place.toUpperCase().slice(0, 16))} ·` : ''}</textPath></text></svg>`);
 }
 
 const card = (kind, title, bodyHtml, ready = false) => html`<article class="card pack-card pack-${kind}">

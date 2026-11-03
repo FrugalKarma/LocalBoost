@@ -21,7 +21,7 @@ export async function runAnalysis() {
     if (res.mode === 'ai') toast(t('diagnosis.toastAi'), 'success');
     else toast(t('diagnosis.toastFallback'), 'info');
   } catch (e) {
-    console.error('[LocalBoost] analysis', e);
+    console.error('[Arcton] analysis', e);
     toast(t('common.errorGeneric'), 'error');
   } finally { clearInterval(ticker); run.active = false; rerender(); }
 }
@@ -29,7 +29,7 @@ export async function runAnalysis() {
 export function recommendationText() {
   const d = getDiagnosis(); if (!d) return '';
   const o = d.data.opportunity;
-  return `${o.title}\n\n${t('diagnosis.why')}: ${o.why}\n${t('diagnosis.hypothesis')}: ${o.hypothesis}\n${t('diagnosis.impact')}: ${o.impact}\n${t('common.confidence')}: ${o.confidence}%\n\n(LocalBoost · ${fmtDate(d.timestamp)})`;
+  return `${o.title}\n\n${t('diagnosis.why')}: ${o.why}\n${t('diagnosis.hypothesis')}: ${o.hypothesis}\n${t('diagnosis.impact')}: ${o.impact}\n${t('common.confidence')}: ${o.confidence}%\n\n(Arcton Ai · ${fmtDate(d.timestamp)})`;
 }
 
 const list = (items) => html`<ul class="plain">${items.map((x) => html`<li>${x}</li>`)}</ul>`;
@@ -69,7 +69,7 @@ export const diagnosis = {
       <div class="opp2-head"><div><p class="tag">${t('diagnosis.opportunity')}</p><h2 class="opp2-title">${o.title}</h2></div>
         <div class="opp2-ring has-src" tabindex="0" data-src="confidence"><svg viewBox="0 0 100 100" width="104" height="104" role="img" aria-label="${t('common.confidence')}: ${o.confidence}%">
           <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-opacity=".18" stroke-width="9"/>
-          <circle cx="50" cy="50" r="40" fill="none" stroke="var(--yellow-400)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - o.confidence / 100)).toFixed(1)}" transform="rotate(-90 50 50)"/>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="var(--ice-400)" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - o.confidence / 100)).toFixed(1)}" transform="rotate(-90 50 50)"/>
           <text x="50" y="56" text-anchor="middle" class="ring-num">${o.confidence}%</text></svg><span>${t('common.confidence')}</span></div></div>
       <ol class="chain">
         <li><span class="chain-k">${t('diagnosis.why')}</span><p>${o.why}</p></li>

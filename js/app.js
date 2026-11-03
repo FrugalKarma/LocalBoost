@@ -15,15 +15,19 @@ import { settings } from './views/settings.js';
 import { account } from './views/account.js';
 import { competitors } from './views/competitors.js';
 import { plans } from './views/plans.js';
+import { info } from './views/info.js';
+import { BRAND } from './brand.js';
+import { needsConsent, showConsent } from './legal.js';
+import { applyDisplay } from './display.js';
 import { journeyState } from './views/shared.js';
 import { displayName, getBiz } from './business.js';
-import './chat.js'; // "Ask LocalBoost" panel (registers its own actions)
+import './chat.js'; // "Ask Arcton" panel (registers its own actions)
 import { admin } from './views/admin.js';
 import { showSignin, repaintSignin, authErrorText } from './views/signin.js';
 import { loadAuthConfig, authOn, signedIn, isAdmin, userEmail, userId, onAuthChange, readAuthHash, adoptLinkSession, signOut, refreshMe } from './auth.js';
 import { loadOwn, flush, viewingClient, closeClient, onCloud, localOwner } from './cloud.js';
 
-const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, pack, proof, settings, account, admin, plans].map((v) => [v.id, v]));
+const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, pack, proof, settings, account, admin, plans, info].map((v) => [v.id, v]));
 let route = 'overview';
 let pendingAnchor = null;
 let screen = 'boot'; // boot | signin | loading | app
@@ -45,9 +49,15 @@ const stageLabel = (s) => (s.id === 'home' ? t('nav.home') : t(`journey.${s.id}`
 function stageTab(s) {
   const cur = stageOf(route)?.id === s.id;
   const done = s.id !== 'home' && journeyState()[s.id];
-  const mark = s.id === 'home' ? icon('pin', 16) : done ? icon('check', 14) : s.n;
-  return html`<a class="stage-tab" data-stage="${s.id}" href="#/${s.routes[0]}" ${raw(cur ? 'aria-current="page"' : '')} title="${stageLabel(s)}">
-    <span class="stage-n" aria-hidden="true">${mark}</span><span class="stage-label">${stageLabel(s)}</span></a>`;
+  const mark = s.id === 'home' ? icon('overview', 15) : done ? icon('check', 14) : s.n;
+  const sub = cur && s.routes.length > 1 ? html`<ul class="side-sub">${s.routes.map((r) => html`<li><a href="#/${r}" ${raw(r === route ? 'aria-current="page"' : '')}>${t(`nav.${r}`)}</a></li>`)}</ul>` : '';
+  return html`<li><a class="stage-tab" data-stage="${s.id}" href="#/${s.routes[0]}" ${raw(cur ? 'aria-current="page"' : '')} title="${stageLabel(s)}">
+    <span class="stage-n" aria-hidden="true">${mark}</span><span class="stage-label">${stageLabel(s)}${s.id === 'home' ? '' : html`<small>${t(`journey.${s.id}Sub`)}</small>`}</span></a>${sub}</li>`;
+}
+const SIDE_LINKS = [['info', 'help'], ['plans', 'star'], ['settings', 'settings']];
+function sideLinks() {
+  return html`${SIDE_LINKS.map(([r, ic]) => html`<li><a href="#/${r}" ${raw(route === r ? 'aria-current="page"' : '')}>${icon(ic, 17)} ${t(`nav.${r}`)}</a></li>`)}
+    ${isAdmin() ? html`<li><a href="#/admin" ${raw(route === 'admin' ? 'aria-current="page"' : '')}>${icon('overview', 17)} ${t('nav.admin')}</a></li>` : ''}`;
 }
 
 function subnav() {
@@ -57,7 +67,8 @@ function subnav() {
 }
 
 function updateChrome() {
-  const tabs = $('.stage-tabs'); if (tabs) tabs.innerHTML = html`${STAGES.map(stageTab)}`.s;
+  const tabs = $('.side-stages'); if (tabs) tabs.innerHTML = html`${STAGES.map(stageTab)}`.s;
+  const links = $('.side-links'); if (links) links.innerHTML = sideLinks().s;
   const sub = $('#subnav-slot'); if (sub) sub.innerHTML = subnav().s;
   const biz = $('#top-biz'); const b = getState().business;
   if (biz) biz.textContent = b.loaded ? `${displayName()} · ${getBiz().city || ''}` : '';
@@ -72,7 +83,7 @@ function shell() {
   <a class="skip" href="#main">${t('common.skip')}</a>
   <div class="content">
     <header class="topbar">
-      <a class="top-brand" href="#/overview"><img class="brand-logo" src="/icons/logo.png" alt="" width="34" height="34"><strong>LocalBoost</strong></a>
+      <a class="top-brand" href="#/overview"><img class="brand-logo" src="/icons/logo.svg" alt="" width="34" height="34"><strong>${BRAND.app}</strong></a>
       <span class="top-biz" id="top-biz"></span>
       <span class="spacer"></span>
       <span class="badge badge-offline" id="offline-badge" hidden>${t('common.offline')}</span>
@@ -84,14 +95,21 @@ function shell() {
           <p class="menu-name">${getState().profile.name || displayName()}<small>${signedIn() ? userEmail() : t('account.roleClient')}</small></p>
           ${isAdmin() ? html`<a role="menuitem" href="#/admin">${icon('overview', 16)} ${t('nav.admin')}</a>` : ''}
           <a role="menuitem" href="#/account">${icon('account', 16)} ${t('nav.account')}</a><a role="menuitem" href="#/plans">${icon('star', 16)} ${t('nav.plans')}</a><a role="menuitem" href="#/settings">${icon('settings', 16)} ${t('nav.settings')}</a>
-          <button role="menuitem" data-act="help">${icon('help', 16)} ${t('settings.openHelp')}</button>
+          <a role="menuitem" href="#/info">${icon('help', 16)} ${t('nav.info')}</a><a role="menuitem" href="#/info?legal">${icon('info', 16)} ${t('info.tab.legal')}</a>
           ${signedIn() && authOn() ? html`<button role="menuitem" data-act="sign-out">${icon('external', 16)} ${t('account.signOut')}</button>` : ''}</div></div>
     </header>
     <div id="viewing-slot"></div>
     <div id="subnav-slot"></div>
     <main id="main" tabindex="-1"></main>
   </div>
-  <nav class="stage-tabs" aria-label="${t('common.navigation')}">${STAGES.map(stageTab)}</nav>`;
+  <nav class="side" aria-label="${t('common.navigation')}">
+    <a class="side-brand" href="#/overview"><img src="/icons/logo.svg" alt="" width="38" height="38"><span><strong>${BRAND.app}</strong><small>${t('brand.tagline')}</small></span></a>
+    <p class="side-h">${t('brand.journey')}</p>
+    <ul class="side-stages">${STAGES.map(stageTab)}</ul>
+    <span class="side-spacer"></span>
+    <ul class="side-links">${sideLinks()}</ul>
+    <p class="side-foot">© ${new Date().getFullYear()} ${BRAND.company}<br><a href="#/info?legal">${t('info.tab.legal')}</a></p>
+  </nav>`;
 }
 
 function renderView(keepScroll = false) {
@@ -100,9 +118,9 @@ function renderView(keepScroll = false) {
   const v = views[route];
   document.body.dataset.route = route;
   try { main.innerHTML = v.render().s; v.mount?.(); }
-  catch (e) { console.error('[LocalBoost] render failed', e); main.innerHTML = html`<div class="card empty-hero"><h2>${t('common.errorGeneric')}</h2><button class="btn btn-primary" data-act="go" data-route="overview">${t('nav.overview')}</button></div>`.s; }
+  catch (e) { console.error('[Arcton] render failed', e); main.innerHTML = html`<div class="card empty-hero"><h2>${t('common.errorGeneric')}</h2><button class="btn btn-primary" data-act="go" data-route="overview">${t('nav.overview')}</button></div>`.s; }
   updateChrome();
-  document.title = `${t(`nav.${route}`)} · LocalBoost`;
+  document.title = `${t(`nav.${route}`)} · ${BRAND.app}`;
   if (keepScroll) window.scrollTo(0, y);
   if (pendingAnchor) { document.getElementById(pendingAnchor)?.scrollIntoView(); pendingAnchor = null; }
 }
@@ -126,6 +144,7 @@ function onRoute() {
   $('#account-menu') && ($('#account-menu').hidden = true);
   renderView();
   if (!pendingAnchor) { window.scrollTo(0, 0); $('#main')?.focus({ preventScroll: true }); }
+  if (route !== 'info' && needsConsent()) showConsent();
 }
 
 // navigator.onLine can be wrong (some browsers report false on localhost), so confirm with a real request.
@@ -143,12 +162,12 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('#account-menu a, #account-menu button')) menu && (menu.hidden = true);
   if (!el) return;
   const fn = actions[el.dataset.act];
-  if (!fn) { console.warn('[LocalBoost] no handler for', el.dataset.act); return; }
+  if (!fn) { console.warn('[Arcton] no handler for', el.dataset.act); return; }
   try { const r = fn(el, e); if (r?.catch) r.catch((err) => { console.error(err); toast(t('common.errorGeneric'), 'error'); }); }
   catch (err) { console.error(err); toast(t('common.errorGeneric'), 'error'); }
 });
 
-const textual = (el) => el.matches('input[type="text"], input[type="number"], input[type="color"], textarea');
+const textual = (el) => el.matches('input[type="text"], input[type="search"], input[type="number"], input[type="color"], textarea');
 document.addEventListener('input', (e) => { const el = e.target.closest('[data-in]'); if (el && textual(el)) inputs[el.dataset.in]?.(el, e); });
 document.addEventListener('change', (e) => { const el = e.target.closest('[data-in]'); if (el && !textual(el)) inputs[el.dataset.in]?.(el, e); });
 
@@ -202,7 +221,7 @@ let tipScrollY = 0;
 window.addEventListener('scroll', () => { if (Math.abs(window.scrollY - tipScrollY) > 60) hideTip(0); }, { passive: true });
 document.addEventListener('mouseover', () => { tipScrollY = window.scrollY; }, { passive: true });
 
-// An email link opened in a tab that already runs LocalBoost only changes the hash: start over to read it.
+// An email link opened in a tab that already runs the app only changes the hash: start over to read it.
 window.addEventListener('hashchange', () => { if (/(^|[#&])(access_token|error_description)=/.test(location.hash)) location.reload(); else onRoute(); });
 window.addEventListener('online', updateOnline);
 window.addEventListener('offline', updateOnline);
@@ -225,7 +244,7 @@ onAuthChange((s, reason) => {
 
 function showLoading() {
   screen = 'loading';
-  document.getElementById('app').innerHTML = html`<div class="auth-loading" role="status"><img src="/icons/logo.png" alt="" width="56" height="56"><p>${t('signin.loading')}</p></div>`.s;
+  document.getElementById('app').innerHTML = html`<div class="auth-loading" role="status"><img src="/icons/logo.svg" alt="" width="56" height="56"><p>${t('signin.loading')}</p></div>`.s;
 }
 
 /** Signed in (or accounts off): load the account's business, then show the app. */
@@ -246,16 +265,17 @@ function startApp() {
   route = parseRoute();
   renderAll();
   document.documentElement.dataset.ready = '1';
+  if (needsConsent()) showConsent(); // first visit, or the terms changed: ask before anything is used
 }
 
 /* ---------- boot ---------- */
 async function boot() {
-  initTheme(); initLang();
+  initTheme(); initLang(); applyDisplay();
   const q = new URLSearchParams(location.search);
   if (q.get('lang') && LANGS.some((l) => l.code === q.get('lang'))) { setLang(q.get('lang')); }
   if (q.get('theme') === 'dark' || q.get('theme') === 'light') { document.documentElement.dataset.theme = q.get('theme'); }
   registerSW();
-  window.__localboost = { go, getState }; // debug handle for QA
+  window.__arcton = window.__localboost = { go, getState }; // debug handle for QA
   const link = readAuthHash(); // came back from an email link (confirm sign-up / reset password)
   const on = await loadAuthConfig();
   if (!on) return startApp();

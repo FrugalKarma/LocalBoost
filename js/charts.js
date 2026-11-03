@@ -18,10 +18,10 @@ export function fieldMap() {
       ${raw([0, 1, 2, 3, 4].map((i) => `<path d="M0 ${i * 58}H440"/>`).join(''))}
     </g>
     <g stroke="currentColor" stroke-opacity=".32" fill="none"><circle cx="300" cy="115" r="38"/><circle cx="300" cy="115" r="76"/><circle cx="300" cy="115" r="114"/></g>
-    <path d="M20 190C90 150 150 205 230 160S360 120 430 60" stroke="var(--yellow-500)" stroke-width="2" fill="none" stroke-dasharray="3 6"/>
-    <path class="sweep" d="M300 115L414 115A114 114 0 0 0 380 34Z" fill="var(--yellow-500)" fill-opacity=".14"/>
-    ${raw(dots.map(([x, y, r], i) => `<circle class="pulse-dot" style="--d:${i * 0.35}s" cx="${x}" cy="${y}" r="${r}" fill="var(--yellow-400)"/>`).join(''))}
-    <circle cx="300" cy="115" r="9" fill="var(--yellow-500)" stroke="var(--burgundy-950)" stroke-width="3"/></svg>`;
+    <path d="M20 190C90 150 150 205 230 160S360 120 430 60" stroke="var(--ice-500)" stroke-width="2" fill="none" stroke-dasharray="3 6"/>
+    <path class="sweep" d="M300 115L414 115A114 114 0 0 0 380 34Z" fill="var(--ice-500)" fill-opacity=".14"/>
+    ${raw(dots.map(([x, y, r], i) => `<circle class="pulse-dot" style="--d:${i * 0.35}s" cx="${x}" cy="${y}" r="${r}" fill="var(--ice-400)"/>`).join(''))}
+    <circle cx="300" cy="115" r="9" fill="var(--ice-500)" stroke="var(--plum-950)" stroke-width="3"/></svg>`;
 }
 
 export function meter(value, label) {
