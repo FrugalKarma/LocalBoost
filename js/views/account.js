@@ -6,6 +6,7 @@ import { displayName } from '../business.js';
 import { pageHead } from './shared.js';
 import { authOn, signedIn, userEmail, isAdmin, changePassword, api, signOut } from '../auth.js';
 import { cloudStatus, onCloud, flush, viewingClient } from '../cloud.js';
+import { currentPlan } from '../plans.js';
 import { authErrorText } from './signin.js';
 
 function syncLine() {
@@ -45,7 +46,7 @@ export const account = {
     <div class="set-list">
       ${accountRows()}
       <section class="set-row"><div class="set-label"><h2>${t('account.workspace')}</h2><p>${displayName()}</p></div>
-        <div class="set-ctl"><dl class="facts"><div><dt>${t('account.plan')}</dt><dd>${t('plans.free.name')} · <a href="#/plans">${t('account.seePlans')}</a></dd></div>
+        <div class="set-ctl"><dl class="facts"><div><dt>${t('account.plan')}</dt><dd>${t(`plans.${currentPlan()}.name`)} · <a href="#/plans">${t('account.seePlans')}</a></dd></div>
           <div><dt>${t('account.dataMode')}</dt><dd>${t(live ? 'account.dataCloud' : 'account.dataDevice')}</dd></div></dl></div></section>
     </div>
     ${live && !isAdmin() && !viewingClient() ? html`<section class="danger-zone"><div><h2>${t('account.deleteTitle')}</h2><p>${t('account.deleteBody')}</p></div>

@@ -1,4 +1,4 @@
-// "Ask LocalBoost": open questions answered by the server-side model, streamed word by word.
+// "Ask Arcton": open questions answered by the server-side model, streamed word by word.
 // States: idle -> sending (typing dots) -> streaming -> done | stopped | error (retry) | fallback (no AI: links to screens).
 import { html, raw, esc, icon, $, toast } from './core.js';
 import { authHeaders } from './auth.js';
@@ -88,7 +88,7 @@ function render() {
       ${busy ? html`<button type="button" class="btn btn-secondary chat-send" data-chat="stop">${icon('x', 16)} ${t('chat.stop')}</button>`
         : html`<button type="submit" class="btn btn-primary chat-send" aria-label="${t('chat.send')}">${icon('next', 18)}</button>`}
     </form>
-    <p class="chat-foot">${t('chat.foot')}</p></section>`.s;
+    <p class="chat-foot ai-note">${icon('info', 14)}<span>${t('chat.foot')} <a href="#/info?ai" data-chat="close">${t('legal.ai')}</a></span></p></section>`.s;
   const ta = $('#chat-input'); ta.value = draft; grow(ta);
   if (hadFocus || !busy) ta.focus({ preventScroll: true });
   scrollEnd();

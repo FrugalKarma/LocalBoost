@@ -243,6 +243,7 @@ textarea{min-height:100px;resize:vertical}
 .err{color:#B91C1C;font-weight:600;min-height:1.4em}
 footer{background:var(--brand);color:var(--brand-ink);padding:40px 0 28px;margin-top:0}
 footer .wrap{display:grid;grid-template-columns:2fr 1fr 1fr;gap:24px}footer h2{font-size:1.3rem;margin-bottom:10px}footer p,footer a{opacity:.88}footer a{display:block;padding:6px 0;text-decoration:none}footer a:hover{opacity:1;text-decoration:underline}
+.priv{max-width:62ch}.priv summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}.priv p{margin:8px 0 0;line-height:1.55}
 .fine{max-width:1120px;margin:24px auto 0;padding:16px 20px 0;border-top:1px solid color-mix(in srgb, var(--brand-ink) 20%, transparent);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.85rem;opacity:.8}
 .callbar{display:none}
 .wm{position:fixed;inset:0;pointer-events:none;z-index:60;background:repeating-linear-gradient(-30deg,transparent 0 140px,rgba(0,0,0,.035) 140px 141px)}
@@ -394,8 +395,11 @@ export function buildBody(doc, opts = {}) {
     <header class="top"><div class="wrap"><a class="logo" href="#main">${logo}</a><nav class="nav" aria-label="${E(x.navLabel || 'Main')}">${nav}</nav><a class="btn" href="${cta}" data-track="cta">${E(x.cta || 'Book')}</a></div></header>`;
   const soc = [b.social.instagram && `<a href="https://instagram.com/${E(b.social.instagram)}" target="_blank" rel="noopener noreferrer">Instagram</a>`, b.social.facebook && `<a href="https://facebook.com/${E(b.social.facebook)}" target="_blank" rel="noopener noreferrer">Facebook</a>`, b.social.tiktok && `<a href="https://tiktok.com/@${E(b.social.tiktok)}" target="_blank" rel="noopener noreferrer">TikTok</a>`].filter(Boolean).join('');
   const reach = [tel && `<a href="${tel}">${E(b.phone)}</a>`, wa && `<a href="${wa}" target="_blank" rel="noopener noreferrer">WhatsApp</a>`, b.email && `<a href="mailto:${E(b.email)}">${E(b.email)}</a>`, dir && `<a href="${E(dir)}" target="_blank" rel="noopener noreferrer">${E(x.directions || 'Directions')}</a>`].filter(Boolean).join('');
+  // Privacy notice for visitors (GDPR art. 13): the business is the controller of booking requests, Arcton Ai processes them for it.
+  const pContact = b.email || b.phone || '';
+  const privacy = x.privacyText ? `<details class="priv"><summary>${E(x.privacyTitle || 'Privacy')}</summary><p>${E(String(x.privacyText).replace(/\{biz\}/g, b.name).replace(/\{contact\}/g, pContact))}</p></details>` : '';
   const foot = `<footer><div class="wrap"><div><h2>${E(b.name)}</h2>${b.address ? `<p>${E(b.address)}</p>` : ''}</div><div>${reach ? `<p style="font-weight:700;margin-bottom:4px">${E(x.contactTitle || 'Contact')}</p>${reach}` : ''}</div><div>${soc ? `<p style="font-weight:700;margin-bottom:4px">${E(x.followTitle || 'Follow')}</p>${soc}` : ''}</div></div>
-    <div class="fine"><span>© ${new Date().getFullYear()} ${E(b.name)}</span>${doc.branding ? `<span>${E(x.madeWith || 'Made with LocalBoost')}</span>` : ''}</div></footer>`;
+    <div class="fine"><span>© ${new Date().getFullYear()} ${E(b.name)}</span>${privacy}${doc.branding ? `<span>${E(x.madeWith || 'Made with Arcton Ai')}</span>` : ''}</div></footer>`;
   const callbar = tel || wa || bookSec ? `<div class="callbar">${tel ? `<a class="btn ghost" href="${tel}" data-track="call">${E(x.call || 'Call')}</a>` : ''}${bookSec ? `<a class="btn" href="#${E(bookSec.id)}" data-track="cta">${E(x.cta || 'Book')}</a>` : wa ? `<a class="btn" href="${wa}" target="_blank" rel="noopener noreferrer">WhatsApp</a>` : ''}</div>` : '';
   const wm = opts.watermark ? `<div class="wm" aria-hidden="true"></div><div class="wm-bar" role="note">${E(opts.watermark)}</div>` : '';
   return `${head}<main id="main" tabindex="-1">${parts.join('')}</main>${foot}${callbar}${wm}`;

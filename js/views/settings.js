@@ -10,6 +10,10 @@ import { actions, inputs, rerender } from '../registry.js';
 import { pageHead } from './shared.js';
 import { currentTheme, applyTheme, themeTransition } from '../theme.js';
 import { apiBase, setApiBase } from '../api.js';
+import { getDisplay, setDisplay, DISPLAY } from '../display.js';
+import { consentRecord } from '../legal.js';
+import { BRAND } from '../brand.js';
+import { authOn, signedIn } from '../auth.js';
 
 // What this server has switched on (from /api/health), shown honestly: connected or not set up.
 const CONNECTORS = ['ai', 'places', 'sitecheck', 'accounts', 'sites'];
@@ -24,13 +28,18 @@ export const settings = {
     <div class="set-list">
       ${row(t('settings.language'), '', html`<div class="seg seg-wide" role="group" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<button aria-pressed="${lang === l.code}" data-act="set-lang" data-lang="${l.code}">${l.name}</button>`)}</div>`)}
       ${row(t('settings.theme'), '', html`<div class="seg seg-wide" role="group" aria-label="${t('settings.theme')}">${['light', 'dark'].map((m) => html`<button aria-pressed="${currentTheme() === m}" data-act="set-theme" data-theme="${m}">${icon(m === 'dark' ? 'moon' : 'sun', 16)} ${t(`settings.${m}`)}</button>`)}</div>`)}
+      ${row(t('settings.display'), t('settings.displayBody'), html`<div class="disp">${Object.entries(DISPLAY).map(([k, opts]) => html`<div class="disp-row"><span>${t(`settings.disp.${k}`)}</span><div class="seg" role="group" aria-label="${t(`settings.disp.${k}`)}">${opts.map((o) => html`<button aria-pressed="${getDisplay()[k] === o}" data-act="set-display" data-k="${k}" data-v="${o}">${t(`settings.dispOpt.${o}`)}</button>`)}</div></div>`)}</div>`)}
       ${row(t('settings.install'), isInstalled() ? t('settings.installedAlready') : t('settings.installBody'), html`<div class="btn-row"><button class="btn btn-primary" data-act="install" ${isInstalled() ? 'disabled' : ''}>${icon('install', 18)} ${t('actions.install')}</button>
           <button class="btn btn-ghost" data-act="help">${icon('help', 18)} ${t('settings.openHelp')}</button></div>`)}
-      ${row(t('settings.ai'), t('settings.aiBody'), html`<div class="btn-row"><button class="btn btn-secondary" data-act="transparency">${icon('eye', 18)} ${t('settings.transparency')}</button></div>`)}
+      ${row(t('settings.ai'), t('settings.aiBody'), html`<p class="legal-note">${icon('info', 15)} ${t('settings.aiNotice')}</p><div class="btn-row"><button class="btn btn-secondary" data-act="transparency">${icon('eye', 18)} ${t('settings.transparency')}</button><a class="btn btn-ghost" href="#/info?ai">${t('legal.ai')}</a></div>`)}
       ${row(t('chat.apiTitle'), t('chat.apiBody'), html`<form class="api-form" data-api-form novalidate><label class="field"><span>${t('chat.apiTitle')}</span>
           <input id="api-base" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://your-app.vercel.app" value="${apiBase()}"></label>
           <button type="submit" class="btn btn-secondary">${icon('check', 18)} ${t('chat.apiSave')}</button></form>`, 'ai-server')}
-      ${row(t('settings.data'), t('settings.dataBody'), html`<div class="btn-row"><button class="btn btn-secondary" data-act="export-data">${icon('download', 18)} ${t('actions.exportData')}</button></div>`)}
+      ${row(t('settings.yourData'), t('settings.yourDataBody'), (() => { const rec = consentRecord(); return html`<dl class="facts"><div><dt>${t('settings.consent')}</dt><dd>${rec ? t('legal.acceptedOn', { date: new Date(rec.at || Date.now()).toLocaleDateString(), version: rec.v }) : t('legal.notAccepted')}</dd></div>
+          <div><dt>${t('settings.stored')}</dt><dd>${t(authOn() && signedIn() ? 'settings.storedCloud' : 'settings.storedDevice')}</dd></div></dl>
+        <div class="btn-row"><button class="btn btn-secondary" data-act="export-data">${icon('download', 18)} ${t('actions.exportData')}</button>
+          <a class="btn btn-ghost" href="#/info?privacy">${t('legal.privacy')}</a><a class="btn btn-ghost" href="#/info?cookies">${t('legal.cookies')}</a>
+          ${authOn() && signedIn() ? html`<a class="btn btn-ghost" href="#/account">${t('account.deleteTitle')}</a>` : ''}</div>`; })(), 'data')}
       ${row(t('settings.connected'), t('settings.connectedBody'), html`<ul class="conn-list">${CONNECTORS.map((id) => { const on = caps ? !!caps[id] : null;
           return html`<li><div class="conn-txt"><strong>${t(`conn.${id}`)}</strong><small>${t(`conn.${id}Desc`)}</small>${on === false ? html`<small class="conn-perm">${t(`conn.${id}How`)}</small>` : ''}</div>
           <span class="badge badge-${on ? 'live' : 'inference'}">${on == null ? '…' : t(on ? 'settings.statusReady' : 'settings.statusNotConnected')}</span></li>`; })}</ul>
@@ -39,7 +48,7 @@ export const settings = {
     <section class="danger-zone"><div><h2>${t('settings.resetTitle')}</h2><p>${t('settings.resetBody')}</p></div>
       <button class="btn btn-secondary danger" data-act="reset-data">${icon('trash', 18)} ${t('settings.resetBtn')}</button></section>`;
   },
-  mount() { if (!caps) serverCaps().then((c) => { caps = c; rerender(); }); },
+  mount() { if (!caps) serverCaps().then((c) => { caps = c; rerender(); }); if (/\?data/.test(location.hash)) document.getElementById('data')?.scrollIntoView(); },
 };
 
 document.addEventListener('submit', (e) => {
@@ -78,11 +87,13 @@ actions.transparency = () => {
 };
 
 actions['export-data'] = () => {
-  const payload = { exportedAt: new Date().toISOString(), app: 'LocalBoost', data: cloudData() };
-  downloadBlob('localboost-data.json', new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
+  const payload = { exportedAt: new Date().toISOString(), app: BRAND.app, operator: BRAND.company, consent: consentRecord(), data: cloudData() };
+  downloadBlob('arcton-ai-data.json', new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }));
   toast(t('settings.toastExport'), 'success');
 };
 actions['reset-data'] = async () => {
   if (!(await confirmDialog(t('settings.resetTitle'), t('settings.resetBody'), t('settings.resetBtn')))) return;
   resetAll(); toast(t('settings.toastReset'), 'info'); rerender();
 };
+
+actions['set-display'] = (el) => { setDisplay(el.dataset.k, el.dataset.v); rerender(); };
