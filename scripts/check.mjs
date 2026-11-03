@@ -48,7 +48,7 @@ lacking.length ? fail(`keys used but not defined: ${lacking.join(', ')}`) : ok(`
 console.log('4. Manifest and icons');
 const manifest = JSON.parse(readFileSync(path.join(root, 'manifest.json'), 'utf8'));
 for (const k of ['name', 'short_name', 'start_url', 'display', 'theme_color', 'background_color', 'icons']) if (!manifest[k]) fail(`manifest.${k} missing`);
-if (manifest.theme_color !== '#170E2E') fail('theme_color should be the Arcton deep purple #170E2E');
+if (manifest.theme_color !== '#6D28D9') fail('theme_color should be the Arcton violet #6D28D9');
 const pngSize = (p) => { const b = readFileSync(p); return b.readUInt32BE(16) + 'x' + b.readUInt32BE(20); };
 for (const ic of manifest.icons) {
   const p = path.join(root, ic.src.replace(/^\//, ''));

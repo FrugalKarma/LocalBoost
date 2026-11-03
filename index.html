@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Arcton Ai</title>
   <meta name="description" content="Arcton Ai helps local businesses see what lies beneath: real reviews, a website that takes bookings and a clear next step every week.">
-  <meta name="theme-color" content="#170E2E">
+  <meta name="theme-color" content="#6D28D9">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png">
@@ -19,13 +19,13 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&family=Sora:wght@500;600;700&display=swap">
   <style>
     /* opening screen: inline so it paints before anything else loads */
-    #splash{position:fixed;inset:0;z-index:1000;background:radial-gradient(120% 90% at 50% 20%,#2E1A5C 0%,#170E2E 60%,#0E0820 100%);color:#F8F6FD;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-family:Lexend,system-ui,sans-serif;transition:opacity .35s ease,visibility .35s}
+    #splash{position:fixed;inset:0;z-index:1000;background:radial-gradient(90% 70% at 10% 0%,#F472B6 0%,transparent 55%),radial-gradient(90% 70% at 100% 10%,#38BDF8 0%,transparent 55%),linear-gradient(140deg,#7C3AED 0%,#4F46E5 55%,#0EA5E9 120%);color:#F8F6FD;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-family:Lexend,system-ui,sans-serif;transition:opacity .35s ease,visibility .35s}
     #splash.gone{opacity:0;visibility:hidden}
     #splash img{width:104px;height:104px;border-radius:28px;box-shadow:0 24px 60px -20px rgba(0,0,0,.6);animation:spl-in .7s cubic-bezier(.2,.8,.2,1) both}
     #splash strong{font-family:Sora,Lexend,system-ui,sans-serif;font-size:1.75rem;font-weight:600;letter-spacing:-.03em;margin-top:8px;animation:spl-up .6s .2s both}
     #splash span{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;opacity:.75;animation:spl-up .6s .3s both}
-    #splash i{display:block;width:120px;height:3px;border-radius:3px;background:rgba(248,246,253,.16);margin-top:22px;overflow:hidden;position:relative}
-    #splash i::after{content:"";position:absolute;inset:0;width:40%;background:#A9D4F0;border-radius:3px;animation:spl-bar 1.1s ease-in-out infinite}
+    #splash i{display:block;width:120px;height:3px;border-radius:3px;background:rgba(255,255,255,.28);margin-top:22px;overflow:hidden;position:relative}
+    #splash i::after{content:"";position:absolute;inset:0;width:40%;background:#fff;border-radius:3px;animation:spl-bar 1.1s ease-in-out infinite}
     @keyframes spl-in{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
     @keyframes spl-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
     @keyframes spl-bar{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}

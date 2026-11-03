@@ -1,1 +1,1 @@
-{"appId": "app.localboost.demo", "appName": "Arcton Ai", "webDir": "dist", "server": {"androidScheme": "https"}, "android": {"backgroundColor": "#170E2E", "adjustMarginsForEdgeToEdge": "force"}}
+{"appId": "app.localboost.demo", "appName": "Arcton Ai", "webDir": "dist", "server": {"androidScheme": "https"}, "android": {"backgroundColor": "#6D28D9", "adjustMarginsForEdgeToEdge": "force"}}
