@@ -61,6 +61,25 @@ Accounts are **off** until the three Supabase variables below are set. With them
 - **Your own sender address.** Supabase's built-in email is limited to a few messages per hour. Before launch, set up custom SMTP (*Authentication → Emails → SMTP Settings*) with Resend, Brevo, Postmark or similar.
 - **Email texts** (in Romanian, with your logo): *Authentication → Emails → Templates*.
 
+## Owner (admin) sign-in
+
+The owner signs in with a **username** on the normal sign-in form (account menu → *Sign in*); customers use email. It works with or without Supabase:
+
+- **Without Supabase:** the Admin area runs as a demo with example clients. Opening a client loads its example business; plan, disable and delete changes are kept only in memory.
+- **With Supabase:** the same login opens the real Admin area with every client.
+
+The password is never stored, only a salted scrypt hash in `lib/owner-core.mjs`. Sessions are HMAC-signed and last 12 hours, and there are 6 attempts per 15 minutes per address.
+
+**Change the password before launch.** Generate a new hash and set these environment variables in Vercel:
+
+```bash
+node -e "const c=require('crypto');const s=c.randomBytes(16).toString('hex');console.log('scrypt$'+s+'$'+c.scryptSync(process.argv[1],s,32,{N:16384,r:8,p:1}).toString('hex'))" 'your-new-password'
+```
+
+- `ARCTON_ADMIN_HASH`: the line printed above.
+- `ARCTON_ADMIN_USER`: optional, to change the username.
+- `ARCTON_ADMIN_SECRET`: a long random string used to sign owner sessions. Without it, the key is derived from the server's other secret keys.
+
 ## Try it without Supabase
 
 ```bash

@@ -2,6 +2,20 @@
 
 **Arcton Ai** (formerly LocalBoost) is built by **Arcton Ai Consulting SRL**. It helps local businesses see what lies beneath: real reviews, a website that takes bookings, and one clear next step every week.
 
+## November 2026 (later): owner sign-in, sticker editor 2, lighter and more playful
+
+- **Owner sign-in by username** on the normal sign-in form. It works even without Supabase, where the Admin area shows example clients for demos. See [docs/ACCOUNTS.md](docs/ACCOUNTS.md) to change the password.
+- **Sticker editor:**
+  - 11 shapes, solid, gradient and glow fills, 7 patterns;
+  - icons, emoji or your own logo or photo;
+  - sliders for every size, position, curve and spacing, plus text outline;
+  - a die-cut white border and shadow, undo and redo;
+  - previews on a cup, a bag, a window or a laptop, and 8 templates.
+- **Look:**
+  - lighter pastel feature blocks and floating colour blobs;
+  - emoji steps in the sidebar, a greeting with streak and progress chips;
+  - confetti for milestones, all respecting reduced motion.
+
 ## November 2026: brighter look, example business, Action Studio
 
 - **Look ("Aurora"):** a light, airy theme with colour washes, a glass sidebar with a colour per step, violet-to-sky gradient buttons and cards, and a floating tab bar on phones.

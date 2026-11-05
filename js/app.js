@@ -21,6 +21,7 @@ import { needsConsent, showConsent } from './legal.js';
 import { applyDisplay } from './display.js';
 import { isExample, loadExample, clearExample } from './example.js';
 import { currentPlan } from './plans.js';
+import { confetti } from './fun.js';
 import { journeyState } from './views/shared.js';
 import { displayName, getBiz } from './business.js';
 import './chat.js'; // "Ask Arcton" panel (registers its own actions)
@@ -45,13 +46,14 @@ const STAGES = [
   { id: 'act', routes: ['mission', 'website', 'pack'], n: '03' },
   { id: 'measure', routes: ['proof'], n: '04' },
 ];
+const STAGE_EMOJI = { home: '🏠', observe: '👀', diagnose: '🧠', act: '🚀', measure: '📈' };
 const stageOf = (r) => STAGES.find((s) => s.routes.includes(r)) || null;
 const stageLabel = (s) => (s.id === 'home' ? t('nav.home') : t(`journey.${s.id}`));
 
 function stageTab(s) {
   const cur = stageOf(route)?.id === s.id;
   const done = s.id !== 'home' && journeyState()[s.id];
-  const mark = s.id === 'home' ? icon('overview', 15) : done ? icon('check', 14) : s.n;
+  const mark = html`<span class="stage-emoji">${STAGE_EMOJI[s.id]}</span>${done ? html`<i class="stage-done">${icon('check', 10)}</i>` : ''}`;
   const sub = cur && s.routes.length > 1 ? html`<ul class="side-sub">${s.routes.map((r) => html`<li><a href="#/${r}" ${raw(r === route ? 'aria-current="page"' : '')}>${t(`nav.${r}`)}</a></li>`)}</ul>` : '';
   return html`<li><a class="stage-tab" data-stage="${s.id}" href="#/${s.routes[0]}" ${raw(cur ? 'aria-current="page"' : '')} title="${stageLabel(s)}">
     <span class="stage-n" aria-hidden="true">${mark}</span><span class="stage-label">${stageLabel(s)}${s.id === 'home' ? '' : html`<small>${t(`journey.${s.id}Sub`)}</small>`}</span></a>${sub}</li>`;
@@ -79,7 +81,7 @@ function updateChrome() {
     <span>${t(vc.disabled ? 'admin.viewingOff' : 'admin.viewingNote')}</span></p><button class="btn btn-sm" data-act="admin-exit">${t('admin.back')}</button></div>`.s : '';
   document.body.classList.toggle('is-viewing', !!vc);
   const ex = $('#example-slot');
-  if (ex) ex.innerHTML = isExample() && !vc ? html`<div class="example-bar" role="status">${icon('sparkle', 18)}<p><b>${t('example.barTitle')}</b> ${t('example.barBody')}</p>
+  if (ex) ex.innerHTML = isExample() && !vc ? html`<div class="example-bar" role="status">${icon('sparkle', 18)}<p><b>${t('example.barTitle')}</b> ${t('example.barBody', { name: displayName() })}</p>
     <button class="btn btn-sm btn-secondary" data-act="example-clear">${t('example.clear')}</button></div>`.s : '';
   const promo = $('#side-promo');
   if (promo) promo.innerHTML = currentPlan() !== 'business' && !vc ? html`<div class="side-promo"><b>${t('promo.title', { plan: t(`plans.${currentPlan() === 'free' ? 'pro' : 'business'}.name`) })}</b><span>${t(currentPlan() === 'free' ? 'promo.pro' : 'promo.business')}</span><a href="#/plans">${t('promo.cta')}</a></div>`.s : '';
@@ -103,7 +105,7 @@ function shell() {
           ${isAdmin() ? html`<a role="menuitem" href="#/admin">${icon('overview', 16)} ${t('nav.admin')}</a>` : ''}
           <a role="menuitem" href="#/account">${icon('account', 16)} ${t('nav.account')}</a><a role="menuitem" href="#/plans">${icon('star', 16)} ${t('nav.plans')}</a><a role="menuitem" href="#/settings">${icon('settings', 16)} ${t('nav.settings')}</a>
           <a role="menuitem" href="#/info">${icon('help', 16)} ${t('nav.info')}</a><a role="menuitem" href="#/info?legal">${icon('info', 16)} ${t('info.tab.legal')}</a>
-          ${signedIn() && authOn() ? html`<button role="menuitem" data-act="sign-out">${icon('external', 16)} ${t('account.signOut')}</button>` : ''}</div></div>
+          ${signedIn() ? html`<button role="menuitem" data-act="sign-out">${icon('external', 16)} ${t('account.signOut')}</button>` : html`<button role="menuitem" data-act="open-signin">${icon('account', 16)} ${t('signin.signIn')}</button>`}</div></div>
     </header>
     <div id="viewing-slot"></div>
     <div id="example-slot"></div>
@@ -176,7 +178,7 @@ document.addEventListener('click', (e) => {
   catch (err) { console.error(err); toast(t('common.errorGeneric'), 'error'); }
 });
 
-const textual = (el) => el.matches('input[type="text"], input[type="search"], input[type="number"], input[type="color"], textarea');
+const textual = (el) => el.matches('input[type="text"], input[type="search"], input[type="number"], input[type="color"], input[type="range"], textarea');
 document.addEventListener('input', (e) => { const el = e.target.closest('[data-in]'); if (el && textual(el)) inputs[el.dataset.in]?.(el, e); });
 document.addEventListener('change', (e) => { const el = e.target.closest('[data-in]'); if (el && !textual(el)) inputs[el.dataset.in]?.(el, e); });
 
@@ -241,19 +243,20 @@ onInstallChange(() => { if (route === 'settings') rerender(); });
 actions['sign-out'] = async () => { await flush(); await signOut('signout'); };
 actions['example-load'] = async () => {
   if (getState().business.loaded && !isExample() && !(await confirmDialog(t('example.replaceTitle'), t('example.replaceBody'), t('example.load')))) return;
-  loadExample(); toast(t('example.loaded'), 'success'); go('overview'); renderAll();
+  loadExample(); toast(t('example.loaded'), 'success'); go('overview'); renderAll(); confetti();
 };
 actions['example-clear'] = async () => {
   if (!(await confirmDialog(t('example.clearTitle'), t('example.clearBody'), t('example.clear')))) return;
   clearExample(); toast(t('example.cleared'), 'info'); go('overview'); renderAll();
 };
+actions['open-signin'] = () => { screen = 'signin'; showSignin({ onDone: async (k) => { await enterApp(k); if (isAdmin()) go('admin'); }, onBack: () => startApp() }); };
 actions['admin-exit'] = async () => { await closeClient(); go('admin'); renderAll(); };
 
 // Data changed on the server side (sign-in load, an edit from elsewhere, admin opening a client): redraw.
 subscribe((_s, meta) => { if (meta.remote && screen === 'app') renderAll(); });
 onCloud((e) => { if (e.conflict) toast(t('admin.toastConflict'), 'info'); });
 onAuthChange((s, reason) => {
-  if (s || !authOn()) { if (screen === 'app' && reason !== 'refresh') renderAll(); return; }
+  if (s || !authOn()) { if (!s && !authOn() && route === 'admin') go('overview'); if (screen === 'app' && reason !== 'refresh') renderAll(); return; }
   closeModal(); history.replaceState(null, '', location.pathname + location.search);
   const notice = reason === 'disabled' ? { kind: 'error', text: authErrorText('account_disabled') } : reason === 'expired' ? { kind: 'info', text: authErrorText('session_expired') } : null;
   screen = 'signin'; showSignin({ notice, onDone: enterApp });

@@ -6,6 +6,7 @@ import { t } from './i18n.js';
 import { LEGAL_VERSION, BRAND } from './brand.js';
 import { authOn, signedIn, getSession, recordConsent } from './auth.js';
 import { viewingClient } from './cloud.js';
+import { confetti } from './fun.js';
 
 const KEY = 'arcton.consent';
 const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
@@ -44,7 +45,7 @@ export function showConsent() {
     const rec = { v: LEGAL_VERSION, at: new Date().toISOString() };
     try { localStorage.setItem(KEY, JSON.stringify(rec)); } catch { /* storage blocked: asked again next time */ }
     if (authOn() && signedIn()) recordConsent(LEGAL_VERSION).catch(() => {});
-    close(); toast(t('consent.thanks'), 'success');
+    close(); toast(t('consent.thanks'), 'success'); confetti();
   };
   const trap = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); } };
   m.addEventListener('click', onClick);

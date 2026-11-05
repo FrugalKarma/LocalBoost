@@ -20,6 +20,7 @@ import { addPhotos } from '../images.js';
 import { can, currentPlan, upgradePrompt } from '../plans.js';
 import { qrSvg } from '../qr.js';
 import { isExample } from '../example.js';
+import { confetti } from '../fun.js';
 
 const TABS = ['sections', 'design', 'details', 'booking', 'seo', 'publish'];
 const TAB_ICON = { sections: 'layers', design: 'palette', details: 'pin', booking: 'calendar', seo: 'globe', publish: 'external' };
@@ -552,7 +553,7 @@ document.addEventListener('submit', async (e) => {
   busy = 'publish'; paintPanel();
   const r = await publishSite(slug, doc);
   busy = null;
-  if (r.ok) { update((s) => ({ site: { ...s.site, slug, publishedAt: Date.now() } })); slugDraft = null; await loadSiteData(true); toast(t('website.toastPublished'), 'success'); }
+  if (r.ok) { update((s) => ({ site: { ...s.site, slug, publishedAt: Date.now() } })); slugDraft = null; await loadSiteData(true); toast(t('website.toastPublished'), 'success'); confetti(); }
   else toast(t(PUB_ERR[r.error] || 'common.errorGeneric'), 'error');
   paintPanel();
 });

@@ -8,6 +8,7 @@ import { actions, inputs, rerender } from '../registry.js';
 import { CATEGORIES, GOALS, emptyDraft, getBiz, displayName, validate, saveBiz } from '../business.js';
 import { journey, nextAction, scanCard } from './shared.js';
 import { serverCaps, findPlaces } from '../sources.js';
+import { dayPart, PART_EMOJI, streak } from '../fun.js';
 import { liveMetrics, competitorList, loadSiteData, dailySeries, getSiteData } from '../insights.js';
 
 /* ---------- business details form ---------- */
@@ -175,10 +176,16 @@ export const overview = {
     const first = String(s.profile?.name || '').split(' ')[0];
     const steps = stepList(s); const done = steps.filter(Boolean).length;
     return html`
-    <header class="home-head">
-      <div><h1>${first ? t('ledger.hello', { name: first }) : displayName()}</h1>
+    <header class="home-head fun-head">
+      <div><p class="greet"><span class="greet-emoji" aria-hidden="true">${PART_EMOJI[dayPart()]}</span>${t(`fun.greet.${dayPart()}`)}${first ? `, ${first}` : ''}!</p>
+        <h1>${displayName()}</h1>
         <p class="home-step">${t('ledger.stepOf', { n: Math.min(done + 1, steps.length), total: steps.length })} · ${t(na.key)}</p></div>
-      <p class="muted home-lede">${t('overview.lede')}</p>
+      <div class="fun-chips">
+        <span class="fchip"><i aria-hidden="true">🔥</i><b>${streak()}</b>${t('fun.streak')}</span>
+        <span class="fchip"><i aria-hidden="true">✅</i><b>${Object.values(s.studio?.plan?.done || {}).filter(Boolean).length}/7</b>${t('fun.plan')}</span>
+        <span class="fchip"><i aria-hidden="true">⭐</i><b>${m.rating != null ? m.rating : '–'}</b>${t('fun.rating')}</span>
+        <span class="fchip"><i aria-hidden="true">🎨</i><b>${s.studio?.stickers?.length || 0}</b>${t('fun.stickers')}</span>
+      </div>
     </header>
     <div class="home-grid">
       ${mapCard(m)}
