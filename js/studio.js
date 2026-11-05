@@ -46,55 +46,140 @@ export const ICONS = {
   smile: '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 10h.01M15 10h.01"/>',
 };
 export const ICON_IDS = Object.keys(ICONS);
-export const SHAPES = ['circle', 'scallop', 'star', 'square', 'ticket', 'bubble', 'hexagon'];
+export const SHAPES = ['circle', 'scallop', 'star', 'flower', 'heart', 'square', 'oval', 'ticket', 'bubble', 'hexagon', 'shield'];
 export const RINGS = ['solid', 'dashed', 'dotted', 'double', 'none'];
+export const FILLS = ['solid', 'gradient', 'radial'];
+export const PATTERNS = ['none', 'dots', 'stripes', 'checks', 'rays', 'waves', 'confetti'];
+export const MOCKUPS = ['plain', 'cup', 'bag', 'window', 'laptop'];
+export const EMOJIS = ['☕', '🥐', '🍰', '🍕', '🍔', '🥗', '🍷', '🌿', '🌸', '✨', '❤️', '⭐', '🎉', '💇', '💅', '🛍️', '🎁', '📍', '😊', '🔥', '🐾', '🌞', '🧁', '🍦'];
 
-export const defaultSticker = (o = {}) => ({ id: `s${Math.random().toString(36).slice(2, 8)}`, shape: 'circle', palette: 'aurora', colors: null, font: 'bold', icon: 'coffee',
-  top: 'CAFENEAUA AURORA', center: 'HELLO', bottom: 'IAȘI · 2026', ring: 'dashed', inner: true, size: 6, rotate: 0, ...o });
+export const defaultSticker = (o = {}) => normSticker({ id: `s${Math.random().toString(36).slice(2, 8)}`, ...o });
+/** Fills every field (older saved stickers have fewer), so the editor and renderer can rely on them. */
+export function normSticker(d = {}) {
+  const n = (v, def, lo, hi) => { const x = Number(v); return Number.isFinite(x) ? Math.min(hi, Math.max(lo, x)) : def; };
+  return {
+    id: d.id || `s${Math.random().toString(36).slice(2, 8)}`,
+    shape: SHAPES.includes(d.shape) ? d.shape : 'circle', palette: PALETTES[d.palette] ? d.palette : 'aurora', colors: d.colors && typeof d.colors === 'object' ? d.colors : null,
+    fill: FILLS.includes(d.fill) ? d.fill : 'solid', gradAngle: n(d.gradAngle, 135, 0, 360), pattern: PATTERNS.includes(d.pattern) ? d.pattern : 'none', patternOpacity: n(d.patternOpacity, 0.18, 0.05, 0.6),
+    font: FONTS[d.font] ? d.font : 'bold', upper: d.upper !== false, spacing: n(d.spacing, 2, 0, 8), textStroke: !!d.textStroke,
+    top: String(d.top ?? 'CAFENEAUA AURORA'), center: String(d.center ?? 'HELLO'), bottom: String(d.bottom ?? 'IAȘI · 2026'),
+    topSize: n(d.topSize, 13, 8, 22), centerSize: n(d.centerSize, 0, 0, 56), bottomSize: n(d.bottomSize, 11, 8, 20), centerY: n(d.centerY, 0, -40, 40), arc: n(d.arc, 70, 50, 84),
+    art: ['icon', 'emoji', 'image', 'none'].includes(d.art) ? d.art : (d.icon && d.icon !== 'none' ? 'icon' : 'none'), icon: ICONS[d.icon] !== undefined ? d.icon : 'coffee', emoji: String(d.emoji || '☕').slice(0, 4), image: typeof d.image === 'string' ? d.image : '', imageRound: d.imageRound !== false,
+    artSize: n(d.artSize, 40, 16, 110), artY: n(d.artY, 0, -50, 50),
+    ring: RINGS.includes(d.ring) ? d.ring : 'dashed', ringWidth: n(d.ringWidth, 3.5, 1, 10), ringInset: n(d.ringInset, 10, 4, 30),
+    inner: d.inner !== false, innerSize: n(d.innerSize, 44, 20, 70), outline: n(d.outline, 6, 0, 16), shadow: d.shadow !== false, rotate: n(d.rotate, 0, -45, 45),
+  };
+}
 
-/* ---------- sticker ---------- */
-function shapePath(shape, c = 100, r = 92) {
-  const pts = (n, R, r2, rot = -Math.PI / 2) => Array.from({ length: n * 2 }, (_, i) => { const a = rot + (i * Math.PI) / n; const rr = i % 2 ? r2 : R; return `${(c + rr * Math.cos(a)).toFixed(2)},${(c + rr * Math.sin(a)).toFixed(2)}`; }).join(' ');
+/* ---------- shapes (drawn at radius 92 around 100,100; scaled for rings and the die-cut border) ---------- */
+function basePath(shape) {
+  const c = 100; const r = 92; const P = (pts) => `M${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join('L')}Z`;
+  const polar = (n, R, r2, rot = -Math.PI / 2) => Array.from({ length: n * 2 }, (_, i) => { const a = rot + (i * Math.PI) / n; const rr = i % 2 ? r2 : R; return [c + rr * Math.cos(a), c + rr * Math.sin(a)]; });
   switch (shape) {
-    case 'scallop': { let d = ''; const n = 18; for (let i = 0; i <= n; i++) { const a = (i / n) * Math.PI * 2 - Math.PI / 2; const x = c + r * Math.cos(a); const y = c + r * Math.sin(a); if (!i) d += `M${x.toFixed(2)},${y.toFixed(2)}`; else d += `A10.5,10.5 0 0 1 ${x.toFixed(2)},${y.toFixed(2)}`; } return `<path d="${d}Z"`; }
-    case 'star': return `<polygon points="${pts(12, r, r * 0.84)}"`;
-    case 'square': return `<rect x="${c - r}" y="${c - r}" width="${r * 2}" height="${r * 2}" rx="30"`;
-    case 'ticket': return `<path d="M18,40 h164 a12,12 0 0 0 0,24 v72 a12,12 0 0 0 0,24 h-164 a12,12 0 0 0 0,-24 v-72 a12,12 0 0 0 0,-24z" transform="translate(0,0)"`;
-    case 'bubble': return `<path d="M30,18 h140 a22,22 0 0 1 22,22 v90 a22,22 0 0 1 -22,22 h-80 l-34,30 v-30 h-26 a22,22 0 0 1 -22,-22 v-90 a22,22 0 0 1 22,-22z"`;
-    case 'hexagon': return `<polygon points="${Array.from({ length: 6 }, (_, i) => { const a = -Math.PI / 2 + (i * Math.PI) / 3; return `${(c + r * Math.cos(a)).toFixed(2)},${(c + r * Math.sin(a)).toFixed(2)}`; }).join(' ')}"`;
-    default: return `<circle cx="${c}" cy="${c}" r="${r}"`;
+    case 'scallop': { let d = ''; const k = 18; for (let i = 0; i <= k; i++) { const a = (i / k) * Math.PI * 2 - Math.PI / 2; const x = c + r * Math.cos(a); const y = c + r * Math.sin(a); d += i ? `A10.5,10.5 0 0 1 ${x.toFixed(1)},${y.toFixed(1)}` : `M${x.toFixed(1)},${y.toFixed(1)}`; } return `${d}Z`; }
+    case 'star': return P(polar(14, r, r * 0.83));
+    case 'flower': { let d = ''; const k = 8; const R = r * 0.74; const pr = R * Math.sin(Math.PI / k) * 1.08; for (let i = 0; i <= k; i++) { const a = (i / k) * Math.PI * 2 - Math.PI / 2; const x = c + R * Math.cos(a); const y = c + R * Math.sin(a); d += i ? `A${pr.toFixed(1)},${pr.toFixed(1)} 0 1 1 ${x.toFixed(1)},${y.toFixed(1)}` : `M${x.toFixed(1)},${y.toFixed(1)}`; } return `${d}Z`; }
+    case 'heart': return 'M100,178 C40,138 8,104 8,66 C8,36 32,14 60,14 C78,14 92,24 100,38 C108,24 122,14 140,14 C168,14 192,36 192,66 C192,104 160,138 100,178Z';
+    case 'square': return 'M38,8 H162 A30,30 0 0 1 192,38 V162 A30,30 0 0 1 162,192 H38 A30,30 0 0 1 8,162 V38 A30,30 0 0 1 38,8Z';
+    case 'oval': return 'M100,36 C152,36 194,64 194,100 C194,136 152,164 100,164 C48,164 6,136 6,100 C6,64 48,36 100,36Z';
+    case 'ticket': return 'M14,40 H186 A12,12 0 0 0 186,64 V136 A12,12 0 0 0 186,160 H14 A12,12 0 0 0 14,136 V64 A12,12 0 0 0 14,40Z';
+    case 'bubble': return 'M30,16 H170 A22,22 0 0 1 192,38 V128 A22,22 0 0 1 170,150 H92 L56,184 V150 H30 A22,22 0 0 1 8,128 V38 A22,22 0 0 1 30,16Z';
+    case 'hexagon': return P(Array.from({ length: 6 }, (_, i) => { const a = -Math.PI / 2 + (i * Math.PI) / 3; return [c + r * Math.cos(a), c + r * Math.sin(a)]; }));
+    case 'shield': return 'M100,8 L184,34 V96 C184,146 148,178 100,194 C52,178 16,146 16,96 V34Z';
+    default: return `M${c - r},${c} A${r},${r} 0 1 1 ${c + r},${c} A${r},${r} 0 1 1 ${c - r},${c}Z`;
   }
 }
-const ringDash = (ring) => (ring === 'dashed' ? 'stroke-dasharray="9 7"' : ring === 'dotted' ? 'stroke-dasharray="1.5 8" stroke-linecap="round"' : '');
-export const stickerColors = (d) => { const p = PALETTES[d.palette] || PALETTES.aurora; const c = d.colors || {}; return { bg: hexOk(c.bg, p[0]), ring: hexOk(c.ring, p[1]), text: hexOk(c.text, p[2]), icon: hexOk(c.icon, p[3]), inner: hexOk(c.inner, p[4]) }; };
+const ROUND = ['circle', 'scallop', 'star', 'flower'];
+/** Path scaled around the centre: k > 1 grows (die-cut border), k < 1 shrinks (rings). */
+const scaled = (shape, k) => `<path d="${basePath(shape)}" transform="translate(100 100) scale(${k.toFixed(4)}) translate(-100 -100)"`;
+const ringDash = (ring, w) => (ring === 'dashed' ? `stroke-dasharray="${(w * 2.6).toFixed(1)} ${(w * 2).toFixed(1)}"` : ring === 'dotted' ? `stroke-dasharray="0.1 ${(w * 2.4).toFixed(1)}" stroke-linecap="round"` : '');
+export const stickerColors = (d) => { const p = PALETTES[d.palette] || PALETTES.aurora; const c = d.colors || {}; return { bg: hexOk(c.bg, p[0]), bg2: hexOk(c.bg2, p[4]), ring: hexOk(c.ring, p[1]), text: hexOk(c.text, p[2]), icon: hexOk(c.icon, p[3]), inner: hexOk(c.inner, p[4]), pattern: hexOk(c.pattern, p[2]), outline: hexOk(c.outline, '#FFFFFF') }; };
 
-/** SVG markup for a sticker design. `uid` keeps textPath ids unique when many stickers share a page. */
-export function stickerSvg(d, { size = 200, uid = d.id || 'x', title = '' } = {}) {
-  const col = stickerColors(d); const font = FONTS[d.font] || FONTS.bold; const round = ['circle', 'scallop', 'star'].includes(d.shape);
-  const base = shapePath(d.shape);
+function patternDef(id, kind, col, op) {
+  const o = `fill="${col}" fill-opacity="${op}"`; const st = `stroke="${col}" stroke-opacity="${op}"`;
+  switch (kind) {
+    case 'dots': return `<pattern id="${id}" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="7" cy="7" r="2.6" ${o}/></pattern>`;
+    case 'stripes': return `<pattern id="${id}" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="14" ${o}/></pattern>`;
+    case 'checks': return `<pattern id="${id}" width="20" height="20" patternUnits="userSpaceOnUse"><rect width="10" height="10" ${o}/><rect x="10" y="10" width="10" height="10" ${o}/></pattern>`;
+    case 'waves': return `<pattern id="${id}" width="24" height="12" patternUnits="userSpaceOnUse"><path d="M0,6 Q6,0 12,6 T24,6" fill="none" stroke-width="2" ${st}/></pattern>`;
+    case 'confetti': return `<pattern id="${id}" width="40" height="40" patternUnits="userSpaceOnUse"><rect x="4" y="6" width="6" height="3" rx="1.5" transform="rotate(30 7 7)" ${o}/><circle cx="28" cy="10" r="2.5" ${o}/><rect x="20" y="28" width="7" height="3" rx="1.5" transform="rotate(-25 23 29)" ${o}/><circle cx="8" cy="30" r="2" ${o}/></pattern>`;
+    default: return '';
+  }
+}
+const rays = (col, op) => Array.from({ length: 16 }, (_, i) => { const a = (i / 16) * Math.PI * 2; const b = a + Math.PI / 32; return `<path d="M100,100 L${(100 + 160 * Math.cos(a)).toFixed(1)},${(100 + 160 * Math.sin(a)).toFixed(1)} L${(100 + 160 * Math.cos(b)).toFixed(1)},${(100 + 160 * Math.sin(b)).toFixed(1)}Z" fill="${col}" fill-opacity="${op}"/>`; }).join('');
+
+/** SVG markup for a sticker design. `uid` keeps ids unique when many stickers share a page. */
+export function stickerSvg(input, { size = 200, uid = input?.id || 'x', title = '', bare = false } = {}) {
+  const d = normSticker(input); const col = stickerColors(d); const font = FONTS[d.font]; const round = ROUND.includes(d.shape);
+  const id = `k${String(uid).replace(/[^a-z0-9]/gi, '')}`; const up = (s) => (d.upper ? String(s).toUpperCase() : String(s));
+  const fillRef = d.fill === 'solid' ? col.bg : `url(#${id}g)`;
+  const grad = d.fill === 'gradient' ? `<linearGradient id="${id}g" gradientTransform="rotate(${d.gradAngle} .5 .5)"><stop offset="0" stop-color="${col.bg}"/><stop offset="1" stop-color="${col.bg2}"/></linearGradient>`
+    : d.fill === 'radial' ? `<radialGradient id="${id}g" cx=".5" cy=".42" r=".65"><stop offset="0" stop-color="${col.bg2}"/><stop offset="1" stop-color="${col.bg}"/></radialGradient>` : '';
+  const pat = d.pattern !== 'none' && d.pattern !== 'rays' ? patternDef(`${id}p`, d.pattern, col.pattern, d.patternOpacity) : '';
+  const shadow = d.shadow ? `<filter id="${id}s" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#1E1347" flood-opacity=".28"/></filter>` : '';
+  const k = 1 - d.ringInset / 92;
+  // the die-cut border sits outside the shape, so the shape shrinks to keep it inside the 200 box
+  const body = d.outline ? 92 / (92 + d.outline) : 1;
   const ring = d.ring === 'none' ? '' : d.ring === 'double'
-    ? `${shapePath(d.shape, 100, 84)} fill="none" stroke="${col.ring}" stroke-width="3"/>${shapePath(d.shape, 100, 77)} fill="none" stroke="${col.ring}" stroke-width="1.5"/>`
-    : `${shapePath(d.shape, 100, 82)} fill="none" stroke="${col.ring}" stroke-width="3.5" ${ringDash(d.ring)}/>`;
-  const inner = d.inner ? `<circle cx="100" cy="100" r="${round ? 44 : 40}" fill="${col.inner}"/>` : '';
-  const icon = ICONS[d.icon] ? `<g transform="translate(${100 - 20},${d.center ? 66 : 80}) scale(1.6667)" fill="none" stroke="${col.icon}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[d.icon]}</g>` : '';
-  const cLen = String(d.center || '').length; const cSize = cLen <= 4 ? 30 : cLen <= 7 ? 24 : cLen <= 10 ? 19 : 15;
-  const center = d.center ? `<text x="100" y="${ICONS[d.icon] ? 128 : 110}" text-anchor="middle" ${cLen * cSize * 0.7 > 120 ? 'textLength="120" lengthAdjust="spacingAndGlyphs"' : ''} font-family="${esc(font)}" font-weight="800" font-size="${cSize}" fill="${col.text}" letter-spacing=".5">${esc(String(d.center).slice(0, 14))}</text>` : '';
-  const tid = `t-${esc(uid)}`;
+    ? `${scaled(d.shape, k)} fill="none" stroke="${col.ring}" stroke-width="${d.ringWidth}"/>${scaled(d.shape, k - (d.ringWidth + 4) / 92)} fill="none" stroke="${col.ring}" stroke-width="${(d.ringWidth / 2).toFixed(1)}"/>`
+    : `${scaled(d.shape, k)} fill="none" stroke="${col.ring}" stroke-width="${d.ringWidth}" ${ringDash(d.ring, d.ringWidth)}/>`;
+  const inner = d.inner ? `<circle cx="100" cy="100" r="${d.innerSize}" fill="${col.inner}"/>` : '';
+  const ay = 100 + d.artY - (d.center ? 14 : 0); const as = d.artSize;
+  let art = '';
+  if (d.art === 'icon' && ICONS[d.icon]) art = `<g transform="translate(${100 - as / 2},${ay - as / 2}) scale(${(as / 24).toFixed(3)})" fill="none" stroke="${col.icon}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[d.icon]}</g>`;
+  if (d.art === 'emoji' && d.emoji) art = `<text x="100" y="${ay + as * 0.35}" text-anchor="middle" font-size="${as}" font-family="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif">${esc(d.emoji)}</text>`;
+  if (d.art === 'image' && d.image) art = `<defs><clipPath id="${id}c">${d.imageRound ? `<circle cx="100" cy="${ay}" r="${as / 2}"/>` : `<rect x="${100 - as / 2}" y="${ay - as / 2}" width="${as}" height="${as}" rx="${as * 0.12}"/>`}</clipPath></defs><image href="${esc(d.image)}" x="${100 - as / 2}" y="${ay - as / 2}" width="${as}" height="${as}" preserveAspectRatio="xMidYMid ${d.imageRound ? 'slice' : 'meet'}" clip-path="url(#${id}c)"/>`;
+  const stroke = d.textStroke ? `stroke="${col.bg}" stroke-width="3" paint-order="stroke" stroke-linejoin="round"` : '';
+  const cText = up(d.center).slice(0, 16); const cLen = cText.length;
+  const cSize = d.centerSize || (cLen <= 4 ? 30 : cLen <= 7 ? 24 : cLen <= 10 ? 19 : 15);
+  const cy = (art ? 100 + d.artY + as / 2 + cSize * 0.55 : 100 + cSize * 0.35) + d.centerY;
+  const center = cText ? `<text x="100" y="${cy.toFixed(1)}" text-anchor="middle" font-family="${esc(font)}" font-weight="800" font-size="${cSize}" fill="${col.text}" letter-spacing="${(d.spacing / 4).toFixed(2)}" ${stroke} ${cLen * cSize * 0.68 > 130 ? 'textLength="130" lengthAdjust="spacingAndGlyphs"' : ''}>${esc(cText)}</text>` : '';
   let around = '';
   if (round) {
-    const fit = (s, max) => String(s || '').slice(0, max);
-    around = `<defs><path id="${tid}a" d="M30,100 A70,70 0 0 1 170,100"/><path id="${tid}b" d="M24,100 A76,76 0 0 0 176,100"/></defs>
-      ${d.top ? `<text font-family="${esc(font)}" font-weight="700" font-size="${String(d.top).length > 18 ? 11 : 13}" fill="${col.text}" letter-spacing="2"><textPath href="#${tid}a" startOffset="50%" text-anchor="middle">${esc(fit(d.top, 28))}</textPath></text>` : ''}
-      ${d.bottom ? `<text font-family="${esc(font)}" font-weight="700" font-size="11" fill="${col.text}" letter-spacing="2"><textPath href="#${tid}b" startOffset="50%" text-anchor="middle">${esc(fit(d.bottom, 30))}</textPath></text>` : ''}`;
+    const R = d.arc; const R2 = d.arc + 6;
+    around = `<defs><path id="${id}a" d="M${100 - R},100 A${R},${R} 0 0 1 ${100 + R},100"/><path id="${id}b" d="M${100 - R2},100 A${R2},${R2} 0 0 0 ${100 + R2},100"/></defs>
+      ${d.top ? `<text font-family="${esc(font)}" font-weight="700" font-size="${d.topSize}" fill="${col.text}" letter-spacing="${d.spacing}" ${stroke}><textPath href="#${id}a" startOffset="50%" text-anchor="middle">${esc(up(d.top).slice(0, 30))}</textPath></text>` : ''}
+      ${d.bottom ? `<text font-family="${esc(font)}" font-weight="700" font-size="${d.bottomSize}" fill="${col.text}" letter-spacing="${d.spacing}" ${stroke}><textPath href="#${id}b" startOffset="50%" text-anchor="middle">${esc(up(d.bottom).slice(0, 32))}</textPath></text>` : ''}`;
   } else {
-    const y1 = d.shape === 'bubble' ? 46 : d.shape === 'ticket' ? 62 : 44; const y2 = d.shape === 'bubble' ? 140 : d.shape === 'ticket' ? 148 : 166;
-    const maxW = d.shape === 'bubble' ? 140 : d.shape === 'hexagon' ? 120 : 136;
-    const fitAttr = (txt, fs) => (String(txt).length * fs * 0.72 > maxW ? `textLength="${maxW}" lengthAdjust="spacingAndGlyphs"` : '');
-    around = `${d.top ? `<text x="100" y="${y1}" text-anchor="middle" font-family="${esc(font)}" font-weight="700" font-size="12" fill="${col.text}" letter-spacing="1.5" ${fitAttr(d.top, 12)}>${esc(String(d.top).slice(0, 24))}</text>` : ''}
-      ${d.bottom ? `<text x="100" y="${y2}" text-anchor="middle" font-family="${esc(font)}" font-weight="700" font-size="11" fill="${col.text}" letter-spacing="1.5" ${fitAttr(d.bottom, 11)}>${esc(String(d.bottom).slice(0, 26))}</text>` : ''}`;
+    const Y = { heart: [48, 150], oval: [62, 148], ticket: [62, 148], bubble: [44, 136], shield: [44, 160], hexagon: [48, 160], square: [38, 172] }[d.shape] || [44, 166];
+    const W = { heart: 110, oval: 150, ticket: 150, bubble: 150, shield: 120, hexagon: 120, square: 150 }[d.shape] || 136;
+    const fit = (txt, fs) => (txt.length * fs * (0.62 + d.spacing * 0.04) > W ? `textLength="${W}" lengthAdjust="spacingAndGlyphs"` : '');
+    const T = up(d.top).slice(0, 26); const B = up(d.bottom).slice(0, 28);
+    around = `${T ? `<text x="100" y="${Y[0]}" text-anchor="middle" font-family="${esc(font)}" font-weight="700" font-size="${d.topSize}" fill="${col.text}" letter-spacing="${d.spacing / 2}" ${stroke} ${fit(T, d.topSize)}>${esc(T)}</text>` : ''}
+      ${B ? `<text x="100" y="${Y[1]}" text-anchor="middle" font-family="${esc(font)}" font-weight="700" font-size="${d.bottomSize}" fill="${col.text}" letter-spacing="${d.spacing / 2}" ${stroke} ${fit(B, d.bottomSize)}>${esc(B)}</text>` : ''}`;
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="${size}" height="${size}" role="img" aria-label="${esc(title || [d.top, d.center, d.bottom].filter(Boolean).join(' · '))}">
-    <g transform="rotate(${Number(d.rotate) || 0} 100 100)">${base} fill="${col.bg}"/>${ring}${inner}${icon}${center}${around}</g></svg>`;
+  const clip = `<clipPath id="${id}x">${scaled(d.shape, 1)}/></clipPath>`;
+  const content = `<g transform="translate(100 100) scale(${body.toFixed(4)}) translate(-100 -100)">
+      ${d.outline ? `${scaled(d.shape, (92 + d.outline) / 92)} fill="${col.outline}"/>` : ''}
+      ${scaled(d.shape, 1)} fill="${fillRef}"/>
+      ${d.pattern === 'rays' ? `<g clip-path="url(#${id}x)">${rays(col.pattern, d.patternOpacity)}</g>` : pat ? `${scaled(d.shape, 1)} fill="url(#${id}p)"/>` : ''}
+      ${ring}${inner}${art}${center}${around}</g>`;
+  const inner_ = `<defs>${grad}${pat}${shadow}${clip}</defs><g transform="rotate(${d.rotate} 100 100)" ${d.shadow ? `filter="url(#${id}s)"` : ''}>${content}</g>`;
+  if (bare) return inner_;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="${size}" height="${size}" role="img" aria-label="${esc(title || [d.top, d.center, d.bottom].filter(Boolean).join(' · '))}">${inner_}</svg>`;
+}
+
+/** The sticker shown on an everyday object, for the preview only. */
+export function mockupSvg(d, scene = 'plain', { size = 420, uid = 'm' } = {}) {
+  const st = (x, y, w, rot = 0) => `<g transform="translate(${x} ${y}) rotate(${rot} ${w / 2} ${w / 2}) scale(${(w / 200).toFixed(4)})">${stickerSvg(d, { bare: true, uid })}</g>`;
+  let s;
+  switch (scene) {
+    case 'cup': s = `<rect width="400" height="400" fill="#F4EFE9"/><ellipse cx="200" cy="356" rx="118" ry="16" fill="#000" opacity=".08"/>
+      <path d="M96,96 L304,96 L282,348 Q280,360 266,360 L134,360 Q120,360 118,348Z" fill="#FFFFFF" stroke="#E6DED4" stroke-width="2"/>
+      <rect x="84" y="70" width="232" height="34" rx="10" fill="#3F2A1E"/><rect x="100" y="56" width="200" height="20" rx="8" fill="#5C3D2E"/>
+      <path d="M118,140 L282,140" stroke="#EFE7DD" stroke-width="2"/>${st(130, 160, 140, -4)}`; break;
+    case 'bag': s = `<rect width="400" height="400" fill="#EEF2FF"/><ellipse cx="200" cy="370" rx="130" ry="14" fill="#000" opacity=".08"/>
+      <path d="M150,80 Q150,40 200,40 Q250,40 250,80" fill="none" stroke="#B08B5E" stroke-width="10"/>
+      <path d="M86,90 L314,90 L330,366 L70,366Z" fill="#D9B98C"/><path d="M86,90 L314,90 L318,120 L82,120Z" fill="#C9A676"/>${st(120, 150, 160, 3)}`; break;
+    case 'window': s = `<rect width="400" height="400" fill="#DCEBF7"/><rect x="40" y="30" width="320" height="340" rx="12" fill="#BFD9EE" stroke="#8FB3CF" stroke-width="10"/>
+      <path d="M60,60 L150,60 L80,180Z" fill="#fff" opacity=".35"/><path d="M250,330 L340,240 L340,300 L310,330Z" fill="#fff" opacity=".25"/>
+      <text x="200" y="350" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#33546E" letter-spacing="4">OPEN</text>${st(110, 90, 180, 0)}`; break;
+    case 'laptop': s = `<rect width="400" height="400" fill="#F5F3FF"/><rect x="60" y="70" width="280" height="200" rx="16" fill="#9CA3AF"/><rect x="60" y="70" width="280" height="200" rx="16" fill="url(#lg${uid})"/>
+      <defs><linearGradient id="lg${uid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D1D5DB"/><stop offset="1" stop-color="#9CA3AF"/></linearGradient></defs>
+      <path d="M30,282 L370,282 L352,312 L48,312Z" fill="#6B7280"/><circle cx="200" cy="170" r="10" fill="#E5E7EB" opacity=".6"/>${st(230, 92, 92, 12)}${st(80, 150, 96, -10)}`; break;
+    default: return stickerSvg(d, { size, uid });
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="${size}" height="${size}" role="img" aria-label="${esc(d.top || 'sticker')}">${s}</svg>`;
 }
 
 /* ---------- social post graphic ---------- */
