@@ -80,6 +80,15 @@ node -e "const c=require('crypto');const s=c.randomBytes(16).toString('hex');con
 - `ARCTON_ADMIN_USER`: optional, to change the username.
 - `ARCTON_ADMIN_SECRET`: a long random string used to sign owner sessions. Without it, the key is derived from the server's other secret keys.
 
+## Launch page (coming soon)
+
+Until the launch moment, every visitor to www.arcton.site sees the launch page: a countdown, what the app does, *Tell a friend* and *Remind me* (a calendar file). The owner password unlocks the real app on that browser for 30 days (*I have early access* at the bottom); a signed-in owner goes straight in. When the countdown reaches zero the page reloads into the app by itself.
+
+- `ARCTON_LAUNCH`: the launch moment, ISO format. Default `2026-11-30T00:00:00+02:00` (midnight in Romania).
+- `ARCTON_MAINTENANCE`: `on` keeps the page up even after the date (for maintenance), `off` removes it now. Leave it unset to follow the date.
+
+Changing the owner password (`ARCTON_ADMIN_HASH`) also changes the early-access password. Anyone you give it to can also sign in as admin, so for testers, consider a separate password later.
+
 ## Try it without Supabase
 
 ```bash

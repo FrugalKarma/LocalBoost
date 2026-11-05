@@ -22,6 +22,7 @@ import { applyDisplay } from './display.js';
 import { isExample, loadExample, clearExample } from './example.js';
 import { currentPlan } from './plans.js';
 import { confetti } from './fun.js';
+import { launchGate } from './launch.js';
 import { journeyState } from './views/shared.js';
 import { displayName, getBiz } from './business.js';
 import './chat.js'; // "Ask Arcton" panel (registers its own actions)
@@ -296,6 +297,7 @@ async function boot() {
   if (q.get('theme') === 'dark' || q.get('theme') === 'light') { document.documentElement.dataset.theme = q.get('theme'); }
   registerSW();
   window.__arcton = window.__localboost = { go, getState }; // debug handle for QA
+  await launchGate(); // before launch day: the coming-soon page, until unlocked
   const link = readAuthHash(); // came back from an email link (confirm sign-up / reset password)
   const on = await loadAuthConfig();
   if (!on) return startApp();
