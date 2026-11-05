@@ -2,7 +2,8 @@
 import { html, icon, $, toast, confirmDialog } from '../core.js';
 import { t, getLang } from '../i18n.js';
 import { actions, inputs, go } from '../registry.js';
-import { api, isAdmin } from '../auth.js';
+import { api, isAdmin, authOn } from '../auth.js';
+import { loadExample, EXAMPLES } from '../example.js';
 import { openClient } from '../cloud.js';
 import { pageHead } from './shared.js';
 
@@ -18,7 +19,19 @@ const fmt = (iso) => {
 };
 const STAGE_ORDER = ['new', 'start', 'observe', 'diagnose', 'act', 'measure'];
 
+// Without Supabase (customer accounts off) the admin area runs as a demo with fictional clients,
+// so the owner can show how it works. Opening a client loads the matching example business.
+const demo = () => !authOn();
+const daysAgo = (d) => new Date(Date.now() - d * 864e5).toISOString();
+const DEMO = () => [
+  { id: 'demo-cafe', kind: 'cafe', email: 'salut@aurora.example', role: 'client', disabled: false, plan: 'business', created_at: daysAgo(40), business: { name: EXAMPLES.cafe.business.name, category: 'cafe', city: 'Iași', stage: 'act', updated_at: daysAgo(0.1) } },
+  { id: 'demo-salon', kind: 'salon', email: 'programari@lumen.example', role: 'client', disabled: false, plan: 'pro', created_at: daysAgo(22), business: { name: EXAMPLES.salon.business.name, category: 'salon', city: 'Iași', stage: 'diagnose', updated_at: daysAgo(2) } },
+  { id: 'demo-restaurant', kind: 'restaurant', email: 'rezervari@bistrocopou.example', role: 'client', disabled: false, plan: 'free', created_at: daysAgo(9), business: { name: EXAMPLES.restaurant.business.name, category: 'restaurant', city: 'Iași', stage: 'observe', updated_at: daysAgo(5) } },
+  { id: 'demo-new', kind: null, email: 'nou.client@example.ro', role: 'client', disabled: false, plan: 'free', created_at: daysAgo(1), business: null },
+  { id: 'demo-off', kind: null, email: 'spam.account@example.com', role: 'client', disabled: true, plan: 'free', created_at: daysAgo(60), business: null },
+];
 async function load() {
+  if (demo()) { clients ||= DEMO(); loadErr = null; paintBody(); return; }
   loading = true; loadErr = null; paintBody();
   const r = await api('/api/admin?op=clients');
   loading = false;
@@ -86,6 +99,7 @@ export const admin = {
   render() {
     if (!isAdmin()) return html`<div class="card empty-hero"><p>${t('admin.notAdmin')}</p></div>`;
     return html`${pageHead({ note: 'A', title: t('admin.title'), sub: t('admin.sub') })}
+      ${demo() ? html`<div class="example-bar demo-admin" role="status">${icon('sparkle', 18)}<p><b>${t('admin.demoTitle')}</b> ${t('admin.demoBody')}</p></div>` : ''}
       <div class="admin-bar">
         <div class="admin-kpis" id="admin-kpis">${kpis()}</div>
         <label class="field admin-search"><span class="sr-only">${t('admin.search')}</span>${icon('signals', 18)}
@@ -102,7 +116,9 @@ document.addEventListener('input', (e) => { if (e.target.matches?.('[data-in="ad
 actions['admin-reload'] = () => load();
 inputs['admin-plan'] = async (el) => {
   const c = find(el.dataset.id); if (!c) return;
-  const plan = el.value; busyId = c.id;
+  const plan = el.value;
+  if (demo()) { c.plan = plan; toast(t('admin.planSet', { email: c.email, plan: t(`plans.${plan}.name`) }), 'success'); return paintBody(); }
+  busyId = c.id;
   const r = await api('/api/admin', { method: 'POST', body: { op: 'plan', id: c.id, plan } });
   busyId = null;
   if (r.status === 200) { c.plan = plan; toast(t('admin.planSet', { email: c.email, plan: t(`plans.${plan}.name`) }), 'success'); }
@@ -111,6 +127,7 @@ inputs['admin-plan'] = async (el) => {
 };
 
 actions['admin-open'] = async (el) => {
+  if (demo()) { const c = find(el.dataset.id); if (!c?.kind) return toast(t('admin.demoEmpty'), 'info'); loadExample(c.kind); toast(t('admin.demoOpened', { name: c.business.name }), 'success'); go('overview'); return; }
   busyId = el.dataset.id; paintBody();
   const r = await openClient(el.dataset.id);
   busyId = null;
@@ -123,6 +140,7 @@ actions['admin-toggle'] = async (el) => {
   const c = find(el.dataset.id); if (!c) return;
   const off = !c.disabled;
   if (off && !(await confirmDialog(t('admin.confirmDisableTitle', { email: c.email }), t('admin.confirmDisableBody'), t('admin.disable')))) return;
+  if (demo()) { c.disabled = off; toast(t(off ? 'admin.toastDisabled' : 'admin.toastEnabled'), 'success'); return paintBody(); }
   busyId = c.id; paintBody();
   const r = await api('/api/admin', { method: 'POST', body: { op: off ? 'disable' : 'enable', id: c.id } });
   busyId = null;
@@ -133,6 +151,7 @@ actions['admin-toggle'] = async (el) => {
 actions['admin-delete'] = async (el) => {
   const c = find(el.dataset.id); if (!c) return;
   if (!(await confirmDialog(t('admin.confirmDeleteTitle', { email: c.email }), t('admin.confirmDeleteBody'), t('admin.delete')))) return;
+  if (demo()) { clients = clients.filter((x) => x.id !== c.id); toast(t('admin.toastDeleted'), 'success'); return paintBody(); }
   busyId = c.id; paintBody();
   const r = await api('/api/admin', { method: 'POST', body: { op: 'delete', id: c.id } });
   busyId = null;

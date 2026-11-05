@@ -24,7 +24,7 @@ export const userId = () => session?.user?.id || '';
 export const onAuthChange = (fn) => listeners.add(fn);
 
 export function setSession(s, reason = 'signin') {
-  session = s?.access_token ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Number(s.expires_at) || 0, user: s.user || {}, role: s.role || 'client', plan: s.plan || 'free', aiUsed: Number(s.aiUsed) || 0, aiLimit: Number(s.aiLimit) || 3, termsVersion: s.termsVersion || null, termsAt: s.termsAt || null } : null;
+  session = s?.access_token ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Number(s.expires_at) || 0, user: s.user || {}, role: s.role || 'client', plan: s.plan || 'free', aiUsed: Number(s.aiUsed) || 0, aiLimit: Number(s.aiLimit) || 3, termsVersion: s.termsVersion || null, termsAt: s.termsAt || null, owner: !!s.owner } : null;
   write(SKEY, session);
   listeners.forEach((fn) => fn(session, reason));
 }
@@ -50,6 +50,14 @@ async function post(body, token) {
 
 // Email links come back to the web app; inside the Android app (https://localhost) let Supabase use its Site URL.
 const redirectTo = () => (/^https:\/\/localhost$/.test(location.origin) || location.protocol === 'capacitor:' ? '' : `${location.origin}/`);
+
+/** Owner (admin) sign-in by username: works even when customer accounts are off. */
+export async function ownerSignIn(username, password) {
+  const j = await post({ op: 'owner-login', username, password });
+  if (j.session) setSession(j.session);
+  return j;
+}
+export const isOwner = () => !!session?.owner;
 
 export async function signIn(email, password) {
   const j = await post({ op: 'login', email, password });
@@ -79,6 +87,7 @@ async function refresh() {
   refreshing ||= (async () => {
     const j = await post({ op: 'refresh', refresh_token: session.refresh_token });
     if (j.session) { setSession(j.session, 'refresh'); return session.access_token; }
+    if (session?.owner) { await signOut('expired'); return null; } // owner sessions are not refreshed: sign in again
     if (j.error === 'network' || j.error === 'auth_unreachable' || j.error === 'database_unreachable') return session.access_token; // try again later
     await signOut(j.error === 'account_disabled' ? 'disabled' : 'expired');
     return null;
