@@ -614,6 +614,7 @@ export default {
       auth_not_configured: 'Ezen a szerveren még nincsenek beállítva a fiókok.',
       generic: 'Valami hiba történt. Kérjük, próbáld újra.',
       terms_required: 'A fiók létrehozásához fogadd el a Felhasználási feltételeket.',
+      not_launched: 'A fiókok az indulás napján nyílnak meg. Addig korai hozzáférési jelszó kell.',
       accounts_soon: 'Az ügyfélfiókok még nem indultak el. Fiók nélkül továbbra is használhatod az Arcton Ai-t.',
     },
     agree: 'Elfogadom a Felhasználási feltételeket és az AI-tájékoztatót, és elolvastam a(z) {company} Adatvédelmi tájékoztatóját:',

@@ -614,6 +614,7 @@ export default {
       auth_not_configured: 'Conturile nu sunt încă configurate pe acest server.',
       generic: 'Ceva n-a mers. Te rugăm să reîncerci.',
       terms_required: 'Te rugăm să accepți Termenii și condițiile ca să creezi un cont.',
+      not_launched: 'Conturile se deschid în ziua lansării. Până atunci ai nevoie de o parolă de acces în avans.',
       accounts_soon: 'Conturile pentru clienți nu sunt încă deschise. Poți folosi în continuare Arcton Ai fără cont.',
     },
     agree: 'Accept Termenii și condițiile și Notificarea privind AI și am citit Notificarea de confidențialitate a {company}:',

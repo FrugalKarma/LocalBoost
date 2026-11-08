@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   const gate = await aiAccess(req.headers, String(body?.role || '')); // accounts on: plan and monthly quota
   if (!gate.ok) return res.status(200).json({ error: gate.error });
   const result = await runAI(body || {}, { ip, code: String(req.headers['x-access-code'] || '') });
-  if (!result.error && gate.consume) await gate.consume().catch(() => {});
+  if (result.error && gate.release) await gate.release().catch(() => {});
   return res.status(200).json(result);
 }
 

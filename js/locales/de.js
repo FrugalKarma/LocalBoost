@@ -614,6 +614,7 @@ export default {
       auth_not_configured: 'Konten sind auf diesem Server noch nicht eingerichtet.',
       generic: 'Etwas ist schiefgelaufen. Bitte versuche es erneut.',
       terms_required: 'Bitte akzeptieren Sie die Nutzungsbedingungen, um ein Konto zu erstellen.',
+      not_launched: 'Konten öffnen am Starttag. Bis dahin brauchen Sie ein Vorabzugangs-Passwort.',
       accounts_soon: 'Kundenkonten sind noch nicht geöffnet. Sie können Arcton Ai weiterhin ohne Konto nutzen.',
     },
     agree: 'Ich akzeptiere die Nutzungsbedingungen und den KI-Hinweis und habe die Datenschutzerklärung der {company} gelesen:',

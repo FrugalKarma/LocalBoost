@@ -87,7 +87,9 @@ Until the launch moment, every visitor to www.arcton.site sees the launch page: 
 - `ARCTON_LAUNCH`: the launch moment, ISO format. Default `2026-11-30T00:00:00+02:00` (midnight in Romania).
 - `ARCTON_MAINTENANCE`: `on` keeps the page up even after the date (for maintenance), `off` removes it now. Leave it unset to follow the date.
 
-Changing the owner password (`ARCTON_ADMIN_HASH`) also changes the early-access password. Anyone you give it to can also sign in as admin, so for testers, consider a separate password later.
+Before launch the server also refuses customer sign-ups and sign-ins unless the browser has an early-access pass, so the page cannot be skipped by calling the API directly.
+
+- `ARCTON_PREVIEW_HASH`: a separate early-access password for testers (same `scrypt$salt$hash` format, made with the command above). Without it, the owner password is the early-access password, and anyone who has it could also sign in as admin.
 
 ## Try it without Supabase
 

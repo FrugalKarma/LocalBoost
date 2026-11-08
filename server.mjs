@@ -12,12 +12,15 @@ import { handleAccount, aiAccess } from './lib/auth-core.mjs';
 import { handleData } from './lib/places-core.mjs';
 import { handleSite, originOf, PUBLIC_CORS } from './lib/site-core.mjs';
 import { health } from './lib/health.mjs';
+import { APP_HEADERS } from './lib/security-headers.mjs';
+const PAGE_HEADERS = Object.fromEntries(Object.entries(APP_HEADERS).map(([k, v]) => [k.toLowerCase(), v]));
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = process.argv.includes('--dist') ? path.join(here, 'dist') : here;
 const PORT = Number(process.env.PORT) || 5173;
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8', '.md': 'text/markdown; charset=utf-8' };
-const BLOCKED = /^\/(server\.mjs|package\.json|scripts|docs|dist\/\.|\.|node_modules)/;
+// Only what the app needs is served (the same files the build copies to dist/): never .git, .env, server code or docs.
+const PUBLIC = /^\/(index\.html|manifest\.json|sw\.js|(css|js|icons)\/[\w./-]+)$/;
 
 const send = (res, code, body, type = 'application/json; charset=utf-8', extra = {}) => {
   type = type || 'application/json; charset=utf-8';
@@ -37,7 +40,7 @@ async function handleAI(req, res, cors) {
   const gate = await aiAccess(req.headers, String(body?.role || ''));
   if (!gate.ok) return send(res, 200, JSON.stringify({ error: gate.error }), undefined, cors);
   const out = await runAI(body, { ip: req.socket.remoteAddress || 'local', code: String(req.headers['x-access-code'] || '') });
-  if (!out.error && gate.consume) await gate.consume().catch(() => {});
+  if (out.error && gate.release) await gate.release().catch(() => {});
   return send(res, 200, JSON.stringify(out), undefined, cors);
 }
 
@@ -98,13 +101,13 @@ http.createServer(async (req, res) => {
     }
     if (/^\/s\/[^/]+\/?$/.test(p)) { url.searchParams.set('op', 'page'); url.searchParams.set('slug', p.split('/')[2]); return handleSiteReq(req, res, url, {}); }
     if (p === '/') p = '/index.html';
-    if (BLOCKED.test(p) || p.includes('..')) return send(res, 404, 'Not found', 'text/plain');
+    if (!PUBLIC.test(p) || p.includes('..') || p.includes('/.')) return send(res, 404, 'Not found', 'text/plain');
     const file = path.join(ROOT, p);
-    if (!file.startsWith(ROOT)) return send(res, 404, 'Not found', 'text/plain');
+    if (!file.startsWith(ROOT + path.sep)) return send(res, 404, 'Not found', 'text/plain');
     const data = await readFile(file);
     const type = MIME[path.extname(file)] || 'application/octet-stream';
     const noCache = p === '/sw.js' || p.endsWith('.html');
-    send(res, 200, data, type, { 'cache-control': noCache ? 'no-cache' : 'no-cache' });
+    send(res, 200, data, type, { ...PAGE_HEADERS, 'cache-control': noCache ? 'no-cache' : 'no-cache' });
   } catch {
     send(res, 404, 'Not found', 'text/plain');
   }

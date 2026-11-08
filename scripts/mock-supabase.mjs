@@ -82,12 +82,18 @@ function restRoute(method, table, q, body, h) {
   const t = tables[table]; if (!t) return [404, { message: 'no table' }];
   const [store, pk] = t;
   const filters = [...q.entries()].filter(([k]) => !['select', 'order', 'limit', 'on_conflict'].includes(k));
-  const match = (r) => filters.every(([k, v]) => {
+  const test = (r, k, v) => {
     if (v.startsWith('eq.')) return String(r[k]) === v.slice(3);
+    if (v.startsWith('neq.')) return r[k] != null && String(r[k]) !== v.slice(4);
     if (v.startsWith('gte.')) return String(r[k]) >= v.slice(4);
-    if (v.startsWith('is.')) return String(r[k]) === v.slice(3);
+    if (v.startsWith('gt.')) return Number(r[k]) > Number(v.slice(3));
+    if (v.startsWith('is.')) return String(r[k] ?? null) === v.slice(3);
     return true;
-  });
+  };
+  // or=(col.op.value,col.op.value): any of them (enough of PostgREST for the app's conditional updates)
+  const match = (r) => filters.every(([k, v]) => (k === 'or'
+    ? v.replace(/^\(|\)$/g, '').split(',').some((part) => { const i = part.indexOf('.'); return test(r, part.slice(0, i), part.slice(i + 1)); })
+    : test(r, k, v)));
   const prefer = String(h.prefer || '');
   const clean = (r) => { const { key, ...rest } = r; return table === 'site_stats' ? rest : r; };
   if (method === 'GET') {

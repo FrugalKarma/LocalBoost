@@ -12,7 +12,7 @@ const walk = (d, out = []) => { for (const f of readdirSync(d)) { const p = path
 const rel = (p) => path.relative(root, p).replaceAll('\\', '/');
 
 console.log('1. JavaScript syntax');
-const jsFiles = [...walk(path.join(root, 'js')), path.join(root, 'sw.js'), ...[path.join(root, 'server.mjs')].filter((f) => existsSync(f)), ...walk(path.join(root, 'scripts'))].filter((f) => /\.m?js$/.test(f));
+const jsFiles = [...walk(path.join(root, 'js')), path.join(root, 'sw.js'), ...[path.join(root, 'server.mjs')].filter((f) => existsSync(f)), ...walk(path.join(root, 'scripts')), ...walk(path.join(root, 'lib')), ...walk(path.join(root, 'api'))].filter((f) => /\.m?js$/.test(f));
 for (const f of jsFiles) { const r = spawnSync(process.execPath, ['--check', f], { encoding: 'utf8' }); if (r.status !== 0) fail(`${rel(f)}: ${r.stderr.split('\n').slice(0, 3).join(' ')}`); }
 if (!failures) ok(`${jsFiles.length} files parse`);
 
@@ -71,7 +71,28 @@ for (const f of [...walk(path.join(root, 'js')), path.join(root, 'index.html'), 
   const src = readFileSync(f, 'utf8');
   if (/sk-ant-|ANTHROPIC_API_KEY|x-api-key/i.test(src)) fail(`${rel(f)} references an API key`);
 }
-ok('no API keys or key headers in browser code');
+// real key values anywhere in the repository files (Anthropic, Supabase secret, Google, Resend, JWTs)
+const KEYLIKE = /(sk-ant-[A-Za-z0-9_-]{20,}|sb_secret_[A-Za-z0-9_-]{16,}|AIza[0-9A-Za-z_-]{35}|\bre_[A-Za-z0-9]{20,}|eyJhbGciOi[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,})/;
+for (const f of [...walk(path.join(root, 'js')), ...walk(path.join(root, 'lib')), ...walk(path.join(root, 'api')), ...walk(path.join(root, 'docs')), ...['server.mjs', 'README.md', 'vercel.json', 'index.html'].map((x) => path.join(root, x))]) {
+  if (existsSync(f) && KEYLIKE.test(readFileSync(f, 'utf8'))) fail(`${rel(f)} contains something that looks like a real key`);
+}
+ok('no API keys or key headers in browser code, no key values in the repository');
+
+console.log('7. Security headers');
+const { APP_HEADERS } = await import(pathToFileURL(path.join(root, 'lib/security-headers.mjs')).href);
+const vercelPath = path.join(root, 'vercel.json');
+const vercel = JSON.parse(readFileSync(vercelPath, 'utf8'));
+const want = Object.entries(APP_HEADERS).map(([key, value]) => ({ key, value }));
+const appRule = (vercel.headers || []).find((h) => h.source === '/((?!s/).*)');
+if (process.argv.includes('--fix-headers')) {
+  vercel.headers = [...(vercel.headers || []).filter((h) => h !== appRule && h.source !== '/(.*)'), { source: '/((?!s/).*)', headers: want }];
+  (await import('node:fs')).writeFileSync(vercelPath, JSON.stringify(vercel, null, 2) + '\n'); ok('vercel.json headers rewritten');
+} else if (!appRule || JSON.stringify(appRule.headers) !== JSON.stringify(want)) fail('vercel.json headers differ from lib/security-headers.mjs (run: node scripts/check.mjs --fix-headers)');
+else ok('vercel.json sends the same security headers as the local server');
+const indexHtml = readFileSync(path.join(root, 'index.html'), 'utf8');
+if (/<script(?![^>]*\bsrc=)[^>]*>/i.test(indexHtml)) fail('index.html has an inline script: the Content-Security-Policy blocks it, move it to a file');
+if (/ on[a-z]+=["']/i.test(indexHtml)) fail('index.html has an inline event handler');
+ok('no inline scripts in the app page');
 
 console.log(failures ? `\n${failures} check(s) failed` : '\nAll checks passed');
 process.exit(failures ? 1 : 0);

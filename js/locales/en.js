@@ -614,6 +614,7 @@ export default {
       auth_not_configured: 'Accounts are not set up on this server yet.',
       generic: 'Something went wrong. Please try again.',
       terms_required: 'Please accept the Terms of Service to create an account.',
+      not_launched: 'Accounts open on launch day. Until then you need an early-access password.',
       accounts_soon: 'Customer accounts are not open yet. You can keep using Arcton Ai without an account.',
     },
     agree: 'I accept the Terms of Service and the AI notice and have read the Privacy Notice of {company}:',
