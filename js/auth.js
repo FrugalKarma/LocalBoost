@@ -41,7 +41,7 @@ export async function loadAuthConfig() {
 async function post(body, token) {
   const headers = { 'content-type': 'application/json' };
   if (token) headers.authorization = `Bearer ${token}`;
-  try { const pass = localStorage.getItem('arcton.preview'); if (pass) headers['x-preview-pass'] = pass; } catch { /* storage blocked */ } // early access before launch
+  try { const pass = JSON.parse(localStorage.getItem('arcton.preview') || 'null')?.pass; if (pass) headers['x-preview-pass'] = pass; } catch { /* storage blocked */ } // early access before launch (launch.js stores { pass, exp })
   let r;
   try { r = await fetch(apiUrl('/api/auth'), { method: 'POST', headers, body: JSON.stringify(body), signal: AbortSignal.timeout(15000) }); }
   catch { return { error: 'network' }; }

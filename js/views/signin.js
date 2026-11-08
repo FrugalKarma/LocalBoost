@@ -16,7 +16,7 @@ let agreed = false;
 let done = () => {};
 
 const KNOWN = ['invalid_credentials', 'email_not_confirmed', 'account_disabled', 'email_taken', 'weak_password', 'same_password', 'invalid_email', 'rate_limited',
-  'signup_disabled', 'network', 'auth_unreachable', 'database_unreachable', 'session_expired', 'link_invalid', 'auth_not_configured', 'terms_required', 'accounts_soon'];
+  'signup_disabled', 'network', 'auth_unreachable', 'database_unreachable', 'session_expired', 'link_invalid', 'auth_not_configured', 'terms_required', 'accounts_soon', 'not_launched'];
 export const authErrorText = (code) => t(`signin.err.${code === 'otp_expired' || code === 'access_denied' ? 'link_invalid' : KNOWN.includes(code) ? code : 'generic'}`);
 
 /** onDone(kind) runs after a successful sign-in, sign-up or password change. */
