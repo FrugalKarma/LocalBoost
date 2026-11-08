@@ -11,7 +11,7 @@ What protects Arcton Ai, and what you must set yourself. `node scripts/check.mjs
 | `ARCTON_PREVIEW_HASH` | Optional separate early-access password for testers, so they never get the admin password. |
 | `LOCALBOOST_PUBLIC_URL` | `https://www.arcton.site`. Email and booking links are built from this, never from the request's Host header. |
 
-Keep these only on Vercel, never in the code: `ANTHROPIC_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_PLACES_API_KEY`, `RESEND_API_KEY`.
+Keep these only on Vercel, never in the code: `ANTHROPIC_API_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_PLACES_API_KEY`, `RESEND_API_KEY`, `CRON_SECRET`.
 
 In Supabase → Authentication: keep **Confirm email** on (stops account pre-hijacking), and set **Site URL** and **Redirect URLs** to `https://www.arcton.site` only.
 

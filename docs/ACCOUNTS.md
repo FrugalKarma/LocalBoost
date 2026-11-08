@@ -53,6 +53,7 @@ Accounts are **off** until the three Supabase variables below are set. With them
   - the public `site-media` storage bucket for website photos (3 MB each, JPG/PNG/WebP).
 - **Set a client's plan** in *Admin* (the Plan menu on each client) or in SQL: `update public.profiles set plan = 'business' where email = 'client@example.com';`. The client sees it the next time they open the app. Admins always have every feature.
 - Only **Business** can publish. If a client drops to Free or Pro, their site stops being served (it is kept, and comes back when they return to Business).
+- **Weekly digest (optional):** with `RESEND_API_KEY` and `CRON_SECRET` set, every Monday at 08:00 (Romania) each client with a business gets a short summary: booking requests, website visits, Google rating and their move for the week. Every email has a one-click unsubscribe and the company name and address (fill `address` in `js/brand.js`). Run the `digest_off` line in `supabase/schema.sql`.
 - **Booking emails (optional):** set `RESEND_API_KEY` and `LOCALBOOST_MAIL_FROM` (e.g. `LocalBoost <bookings@yourdomain.com>`, a domain verified in Resend). The owner gets an email for each new request, at the email in their business details or their account email.
 
 ### Optional

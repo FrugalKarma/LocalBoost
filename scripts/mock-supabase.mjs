@@ -108,7 +108,7 @@ function restRoute(method, table, q, body, h) {
     let rows = [...store.values()].filter(match).map((r) => clean({ ...r }));
     const sel = q.get('select') || '';
     if (table === 'sites' && /profiles\(/.test(sel)) rows = rows.map((r) => { const pr = profiles.get(r.owner); return { ...r, profiles: pr ? { plan: pr.plan || 'free', role: pr.role, email: pr.email, disabled: pr.disabled } : null }; });
-    if (/businesses\(/.test(sel)) rows = rows.map((r) => { const b = businesses.get(r.id); return { ...r, businesses: b ? { name: b.name, category: b.category, city: b.city, stage: b.stage, updated_at: b.updated_at } : null }; });
+    if (/businesses\(/.test(sel)) rows = rows.map((r) => { const b = businesses.get(r.id); const cols = (sel.match(/businesses\(([^)]*)\)/)?.[1] || '').split(','); return { ...r, businesses: b ? Object.fromEntries(cols.filter((c) => c in b).map((c) => [c, b[c]])) : null }; });
     const ord = q.get('order'); if (ord) { const [col, dir] = ord.split('.'); rows.sort((a, b) => String(a[col]).localeCompare(String(b[col])) * (dir === 'desc' ? -1 : 1)); }
     return [200, rows.slice(0, Number(q.get('limit')) || 1000)];
   }

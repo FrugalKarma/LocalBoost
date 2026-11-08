@@ -63,7 +63,8 @@ Business demo: **Cafeneaua Copou** (Iași), fictiv. Toate cifrele sunt etichetat
 | `LOCALBOOST_PUBLIC_URL` | optional: the public address used in published sites' links (default: the request's host) |
 | `LOCALBOOST_FREE_AI_PER_MONTH` | AI analyses per month on the Free plan (default 3) |
 | `LOCALBOOST_SUPPORT_EMAIL` | optional: where owners ask for a plan change (shown on the Plans page) |
-| `RESEND_API_KEY` / `LOCALBOOST_MAIL_FROM` | optional: email the owner when a booking request arrives (Resend; sender must be a verified domain) |
+| `RESEND_API_KEY` / `LOCALBOOST_MAIL_FROM` | optional: email the owner when a booking request arrives, and the weekly digest (Resend; sender must be a verified domain) |
+| `CRON_SECRET` | weekly digest: any random text of 16+ characters. Vercel's cron (Mondays 08:00 Romania) sends it; it also signs the unsubscribe links |
 | `ARCTON_ADMIN_HASH` / `ARCTON_ADMIN_SECRET` / `ARCTON_PREVIEW_HASH` / `LOCALBOOST_PUBLIC_URL` | admin password, session key, testers' early-access password, public address: set them before launch ([docs/SECURITY.md](docs/SECURITY.md)) |
 | `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` | turn on accounts and the admin area ([docs/ACCOUNTS.md](docs/ACCOUNTS.md)); the last one is secret, server only |
 
