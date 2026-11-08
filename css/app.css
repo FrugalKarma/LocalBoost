@@ -2532,9 +2532,9 @@ a.mtn-ann:hover .mtn-t { color: var(--bronze-300); }
 
 /* ---------- the climb (AI working) ---------- */
 .climb { display: grid; grid-template-columns: minmax(180px, 320px) minmax(0, 1fr); gap: clamp(20px, 4vw, 48px); align-items: center; padding: clamp(20px, 3vw, 36px); margin: 0 0 18px; }
-.climb-art .mtn-seg.is-todo { display: none; }
-.climb-art .mtn-seg { stroke: var(--ox-300) !important; stroke-opacity: 1 !important; stroke-width: 3 !important; stroke-dasharray: 1; stroke-dashoffset: 1; animation: climb 3.6s calc(var(--i) * 1.2s) var(--ease-heavy) infinite !important; }
-@keyframes climb { 0% { stroke-dashoffset: 1; } 30%, 80% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+
+.climb-art .mtn-seg, .climb-art .mtn-seg.is-todo { display: inline; stroke: var(--ox-300) !important; stroke-opacity: 1 !important; stroke-width: 4 !important; stroke-dasharray: 1 !important; stroke-dashoffset: 1; animation: climb 3.6s calc(var(--i) * .9s) linear infinite !important; }
+@keyframes climb { 0% { stroke-dashoffset: 1; opacity: 1; } 25%, 80% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
 .climb-art .mtn-mark { animation: fade-in .6s both; }
 .climb-steps { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 2px; }
 .climb-steps li { display: flex; align-items: baseline; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); color: var(--muted); transition: color .4s; }
@@ -2780,3 +2780,4 @@ body.trail-open #trail-root { pointer-events: auto; }
   body.is-scrolled .ridge .rl-crest .rl-l, body.is-scrolled .ridge .rl-peak .rl-l, body.is-scrolled .ridge .rl-base .rl-l { bottom: 12px; }
 }
 :root[data-theme='light'] .home-hero .stat-strip b.is-up, :root[data-theme='light'] .lp-rate b.up, :root[data-theme='light'] .lp-k2 { color: var(--bronze-700); }
+#main:focus, #main:focus-visible { outline: none; } /* focus moves to the page on navigation for screen readers; no ring around the whole page */

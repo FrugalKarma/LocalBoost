@@ -15,7 +15,8 @@ const STEPS = ['read', 'extract', 'prioritize', 'validate'];
 export async function runAnalysis() {
   if (run.active || needSignals()) return;
   run.active = true; run.step = 0; rerender();
-  const ticker = setInterval(() => { run.step = Math.min(run.step + 1, STEPS.length - 1); rerender({ soft: true }); }, 600);
+  // move the tick in place: a full redraw every 600 ms would restart the climb and the title animations
+  const ticker = setInterval(() => { run.step = Math.min(run.step + 1, STEPS.length - 1); document.querySelectorAll('.climb-steps li').forEach((li, i) => { li.className = i < run.step ? 'done' : i === run.step ? 'now' : ''; }); }, 600);
   try {
     const [res] = await Promise.all([runDiagnosis({ onStep: (n) => { run.step = Math.max(run.step, n); } }), sleep(2000)]);
     run.step = STEPS.length;
