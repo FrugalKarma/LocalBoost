@@ -181,9 +181,9 @@ export const overview = {
         <h1>${displayName()}</h1>
         <p class="home-step">${t('ledger.stepOf', { n: Math.min(done + 1, steps.length), total: steps.length })} · ${t(na.key)}</p>
         <dl class="stat-strip">
-          <div><dt>${t('fun.rating')}</dt><dd><b>${m.rating != null ? m.rating : '–'}</b></dd></div>
+          <div><dt>${t('fun.rating')}</dt><dd><b class="${m.rating >= 4.5 ? 'is-up' : ''}">${m.rating != null ? m.rating : '–'}</b></dd></div>
           <div><dt>${t('fun.plan')}</dt><dd><b>${Object.values(s.studio?.plan?.done || {}).filter(Boolean).length}</b><small>/7</small></dd></div>
-          <div><dt>${t('fun.streak')}</dt><dd><b>${streak()}</b></dd></div>
+          <div><dt>${t('fun.streak')}</dt><dd><b class="${streak() >= 2 ? 'is-up' : ''}">${streak()}</b></dd></div>
           <div><dt>${t('fun.stickers')}</dt><dd><b>${s.studio?.stickers?.length || 0}</b></dd></div>
         </dl></div>
       <div class="orb" aria-hidden="true"><span class="orb-glow"></span><span class="orb-core"></span><span class="orb-sheen"></span><img src="/icons/mark-light.svg" alt="" width="96" height="92"></div>
