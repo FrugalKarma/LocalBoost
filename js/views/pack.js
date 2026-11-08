@@ -338,13 +338,13 @@ actions['st-del'] = (el) => { setStudio((s) => ({ stickers: s.stickers.filter((x
 actions['st-template'] = (el) => { const tp = TEMPLATES()[+el.dataset.i]; if (!tp) return; const s = studio(); if (s.stickers.length >= 12) return toast(t('studio.max'), 'info'); const d = { ...tp.d, id: defaultSticker().id }; setStudio((x) => ({ stickers: [...x.stickers, d], active: d.id })); rerender(); };
 actions['st-random'] = () => { const r = (a) => a[Math.floor(Math.random() * a.length)]; const art = r(['icon', 'emoji', 'icon']);
   setSticker(() => ({ shape: r(SHAPES), palette: r(PALETTE_IDS), font: r(FONT_IDS), fill: r(FILLS), pattern: r(PATTERNS), art, icon: r(ICON_IDS.filter((x) => x !== 'none')), emoji: r(EMOJIS), ring: r(RINGS), colors: null, rotate: r([-8, -4, 0, 0, 4, 8]), outline: r([0, 6, 8, 10]), gradAngle: r([45, 90, 135, 180]) })); rerender(); };
-actions['st-png'] = async () => { if (!exportGate()) return; try { await downloadPng(`${fileBase()}-sticker.png`, stickerSvg(activeSticker(), { size: 200, uid: 'exp' }), 2000); toast(t('studio.saved'), 'success'); confetti($('#stk-stage')); } catch { toast(t('studio.pngFail'), 'error'); } };
+actions['st-png'] = async () => { if (!exportGate()) return; try { await downloadPng(`${fileBase()}-sticker.png`, stickerSvg(activeSticker(), { size: 200, uid: 'exp' }), 2000); toast(t('studio.saved'), 'success'); } catch { toast(t('studio.pngFail'), 'error'); } };
 actions['st-svg'] = () => { if (!exportGate()) return; downloadText(`${fileBase()}-sticker.svg`, stickerSvg(activeSticker(), { size: 1000, uid: 'exp' })); };
 actions['st-cm'] = (el) => { printCm = Number(el.dataset.v); rerender(); };
 actions['st-print'] = (el) => { if (!exportGate()) return; printSheet(el.dataset.all === '1' ? studio().stickers : [activeSticker()], printCm); };
 
 // plan
-inputs['plan-done'] = (el) => { const r = el.getBoundingClientRect(); setStudio((s) => ({ plan: { done: { ...(s.plan?.done || {}), [el.dataset.i]: el.checked } } })); rerender(); if (el.checked) confetti({ getBoundingClientRect: () => r }); };
+inputs['plan-done'] = (el) => { const r = el.getBoundingClientRect(); setStudio((s) => ({ plan: { done: { ...(s.plan?.done || {}), [el.dataset.i]: el.checked } } })); rerender(); if (el.checked && PLAN.every((_, i) => studio().plan?.done?.[i])) confetti({ getBoundingClientRect: () => r }); }; // only when the whole 7-day plan is done
 actions['plan-ics'] = () => {
   const pad = (n) => String(n).padStart(2, '0'); const ymd = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
   const ev = PLAN.map(([k], i) => { const d = new Date(); d.setDate(d.getDate() + i); const e = new Date(d); e.setDate(e.getDate() + 1);

@@ -22,7 +22,6 @@ import { needsConsent, showConsent } from './legal.js';
 import { applyDisplay } from './display.js';
 import { isExample, loadExample, clearExample } from './example.js';
 import { currentPlan } from './plans.js';
-import { confetti } from './fun.js';
 import { launchGate } from './launch.js';
 import { journeyState } from './views/shared.js';
 import { displayName, getBiz } from './business.js';
@@ -258,7 +257,7 @@ onInstallChange(() => { if (route === 'settings') rerender(); });
 actions['sign-out'] = async () => { await flush(); await signOut('signout'); };
 actions['example-load'] = async () => {
   if (getState().business.loaded && !isExample() && !(await confirmDialog(t('example.replaceTitle'), t('example.replaceBody'), t('example.load')))) return;
-  loadExample(); toast(t('example.loaded'), 'success'); go('overview'); renderAll(); confetti();
+  loadExample(); toast(t('example.loaded'), 'success'); go('overview'); renderAll();
 };
 actions['example-clear'] = async () => {
   if (!(await confirmDialog(t('example.clearTitle'), t('example.clearBody'), t('example.clear')))) return;

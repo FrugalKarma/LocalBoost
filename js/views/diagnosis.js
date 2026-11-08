@@ -18,7 +18,7 @@ export async function runAnalysis() {
   try {
     const [res] = await Promise.all([runDiagnosis({ onStep: (n) => { run.step = Math.max(run.step, n); } }), sleep(2000)]);
     run.step = STEPS.length;
-    if (res.mode === 'ai') { toast(t('diagnosis.toastAi'), 'success'); import('../fun.js').then((f) => f.confetti()); }
+    if (res.mode === 'ai') { toast(t('diagnosis.toastAi'), 'success'); }
     else toast(t('diagnosis.toastFallback'), 'info');
   } catch (e) {
     console.error('[Arcton] analysis', e);

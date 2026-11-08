@@ -1,12 +1,11 @@
 // Acceptance of the Terms, the Privacy Notice and the AI notice.
 // Asked once per version (LEGAL_VERSION). Kept on this device and, when signed in, on the account
 // (profiles.terms_version / terms_accepted_at) so there is a record of who accepted what and when.
-import { html, icon, $, toast } from './core.js';
+import { html, icon, $ } from './core.js';
 import { t } from './i18n.js';
 import { LEGAL_VERSION, BRAND } from './brand.js';
 import { authOn, signedIn, getSession, recordConsent } from './auth.js';
 import { viewingClient } from './cloud.js';
-import { confetti } from './fun.js';
 
 const KEY = 'arcton.consent';
 const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { return null; } };
@@ -45,7 +44,7 @@ export function showConsent() {
     const rec = { v: LEGAL_VERSION, at: new Date().toISOString() };
     try { localStorage.setItem(KEY, JSON.stringify(rec)); } catch { /* storage blocked: asked again next time */ }
     if (authOn() && signedIn()) recordConsent(LEGAL_VERSION).catch(() => {});
-    close(); toast(t('consent.thanks'), 'success'); confetti();
+    close();
   };
   const trap = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); } };
   m.addEventListener('click', onClick);
