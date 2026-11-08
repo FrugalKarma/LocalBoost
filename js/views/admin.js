@@ -62,7 +62,7 @@ function row(c) {
     </div>
     <div class="client-stage">${stagePill(b?.stage)}</div>
     <div class="client-when"><small>${t('admin.colUpdated')}</small>${fmt(b?.updated_at)}</div>
-    <div class="client-plan">${admin ? '' : html`<label><span class="sr-only">${t('admin.plan')}: ${c.email}</span><select data-in="admin-plan" data-id="${c.id}" ${busy ? 'disabled' : ''}>${['free', 'pro', 'business'].map((p) => html`<option value="${p}" ${c.plan === p ? 'selected' : ''}>${t(`plans.${p}.name`)}</option>`)}</select></label>`}</div>
+    <div class="client-plan">${admin ? '' : html`<label><span class="sr-only">${t('admin.plan')}: ${c.email}</span><select data-in="admin-plan" data-id="${c.id}" ${busy ? 'disabled' : ''}>${['free', 'pro', 'business'].map((p) => html`<option value="${p}" ${c.plan === p ? 'selected' : ''}>${t(`plans.${p}.name`)}</option>`)}</select></label>`}${c.planRequest ? html`<span class="pay-flag" title="${c.planRequestAt ? new Date(c.planRequestAt).toLocaleString(getLang()) : ''}">${t('pay.adminFlag', { plan: t(`plans.${c.planRequest}.name`) })}</span>` : ''}</div>
     <div class="client-status">${admin ? html`<span class="badge badge-admin">${t('admin.roleAdmin')}</span>`
       : html`<span class="badge ${c.disabled ? 'badge-off' : 'badge-on'}">${t(c.disabled ? 'admin.statusDisabled' : 'admin.statusActive')}</span>`}</div>
     <div class="client-acts">
@@ -122,7 +122,7 @@ inputs['admin-plan'] = async (el) => {
   busyId = c.id;
   const r = await api('/api/admin', { method: 'POST', body: { op: 'plan', id: c.id, plan } });
   busyId = null;
-  if (r.status === 200) { c.plan = plan; toast(t('admin.planSet', { email: c.email, plan: t(`plans.${plan}.name`) }), 'success'); }
+  if (r.status === 200) { c.plan = plan; c.planRequest = null; toast(t('admin.planSet', { email: c.email, plan: t(`plans.${plan}.name`) }), 'success'); }
   else { toast(t('common.errorGeneric'), 'error'); }
   paintBody();
 };

@@ -145,9 +145,18 @@ export async function refreshMe() {
   if (!signedIn()) return null;
   const tok = await freshToken(); if (!tok) return null;
   const j = await post({ op: 'me' }, tok);
-  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit, termsVersion: j.termsVersion, termsAt: j.termsAt }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
+  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit, termsVersion: j.termsVersion, termsAt: j.termsAt, planRequest: j.planRequest || null }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
   return j;
 }
+
+/** Tells Arcton Ai the client is paying for `plan` by bank transfer. The plan only changes when the admin sees the money. */
+export async function requestPlan(plan) {
+  const tok = await freshToken(); if (!tok) return { error: 'auth_required' };
+  const j = await post({ op: 'plan-request', plan }, tok);
+  if (j.planRequest && session) { session = { ...session, planRequest: j.planRequest }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
+  return j;
+}
+export const planRequest = () => session?.planRequest || null;
 
 /** Records on the account that the current Terms / Privacy / AI notice were accepted. */
 export async function recordConsent(version) {

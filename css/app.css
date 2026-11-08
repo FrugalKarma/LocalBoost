@@ -2347,3 +2347,12 @@ body[data-route='landing'] { background: var(--bg); }
   .auth-top .lang { border-color: rgba(184, 184, 255, .25); color: #E9EBFF; }
 }
 .auth-consent { align-items: flex-start; margin-top: 14px; } .auth-consent input { margin-top: 1px; accent-color: var(--blue); }
+
+/* ---------- bank-transfer upgrade ---------- */
+.plan-terms { margin: 8px 0 0; font-size: .78rem; line-height: 1.45; color: var(--muted); }
+.pay-dl { display: grid; gap: 2px; margin: 14px 0; padding: 6px 14px; border-radius: 14px; background: var(--bg-2); }
+.pay-dl > div { display: grid; grid-template-columns: 9rem 1fr; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); } .pay-dl > div:last-child { border: 0; }
+.pay-dl dt { color: var(--muted); } .pay-dl dd { margin: 0; display: flex; gap: 10px; justify-content: space-between; color: var(--head); font-weight: 600; font-variant-numeric: tabular-nums; word-break: break-all; }
+.pay-flag { display: inline-block; margin-top: 4px; padding: 3px 9px; border-radius: 999px; background: var(--good-bg); color: var(--good); font-size: .74rem; font-weight: 600; }
+@media (max-width: 520px) { .pay-dl > div { grid-template-columns: 1fr; gap: 2px; } }
+.pay-dl dd .link-btn { flex: none; white-space: nowrap; } .pay-dl dd { word-break: normal; } .pay-dl dd span { overflow-wrap: anywhere; }

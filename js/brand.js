@@ -13,6 +13,9 @@ export const BRAND = {
   email: '', // general contact, e.g. hello@arcton.ai
   privacyEmail: '', // privacy / data protection requests (can be the same as email)
   dpo: '', // data protection officer, if appointed (optional for a small company)
+  // ---- bank transfer for Pro / Business (shown to clients who choose a paid plan) ----
+  iban: '', // e.g. RO49AAAA1B31007593840000
+  bank: '', // e.g. Banca Transilvania
 };
 
 /** Version of the Terms, Privacy and AI notices. Raise it when they change: everyone is asked to accept again. */

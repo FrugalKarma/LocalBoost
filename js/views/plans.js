@@ -1,10 +1,13 @@
 // Plans: what each one includes, the owner's current plan and how to change it.
-// Online payment is not switched on yet; until then the Arcton Ai team sets the plan (Admin area).
-import { html, icon } from '../core.js';
+// Paid plans are bought by bank transfer: the client sees the details and a reference, tells us it is sent,
+// and the admin switches the plan when the money arrives (Admin area). Card payments are not used.
+import { html, icon, openModal, toast, copyText } from '../core.js';
+import { actions } from '../registry.js';
+import { BRAND } from '../brand.js';
 import { t, ta } from '../i18n.js';
 import { pageHead } from './shared.js';
 import { currentPlan, aiAllowance, PLAN_RANK } from '../plans.js';
-import { authOn, signedIn, userEmail, supportEmail } from '../auth.js';
+import { authOn, signedIn, userEmail, userId, supportEmail, requestPlan, planRequest } from '../auth.js';
 
 export const PLANS = [
   { id: 'free', price: 0 },
@@ -44,11 +47,34 @@ export const plans = {
       <p class="plan-price"><b>€${p.price}</b><span>${t('plans.perMonth')}</span></p>
       <ul>${ta(`plans.${p.id}.features`).map((f) => html`<li>${icon('check', 16)}${f}</li>`)}</ul>
       ${isCur ? html`<span class="btn btn-secondary is-static">${icon('check', 16)} ${t('plans.current')}</span>`
-        : lower || !accounts ? '' : html`<a class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" href="mailto:${supportEmail()}?subject=${encodeURIComponent(`Arcton Ai ${t(`plans.${p.id}.name`)}`)}&body=${encodeURIComponent(t('plans.mailBody', { plan: t(`plans.${p.id}.name`), email: userEmail() }))}">${t('plans.ask', { plan: t(`plans.${p.id}.name`) })}</a>`}
+        : lower || !accounts ? '' : planRequest() === p.id ? html`<span class="btn btn-secondary is-static">${icon('clock', 16)} ${t('pay.pending')}</span>`
+          : html`<button type="button" class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" data-act="plan-pay" data-plan="${p.id}">${t('plans.ask', { plan: t(`plans.${p.id}.name`) })}</button>`}
+      ${!isCur && !lower && accounts && p.price ? html`<p class="plan-terms">${t('pay.terms', { price: p.price })}</p>` : ''}
     </article>`; })}</div>
     <section class="card pc-card"><h2>${t('pc.title')}</h2>
       <div class="table-wrap"><table class="pc-table"><thead><tr><th scope="col">${t('pc.feature')}</th>${PLANS.map((p) => html`<th scope="col" class="${accounts && p.id === cur ? 'is-current' : ''}">${t(`plans.${p.id}.name`)}<small>€${p.price}</small></th>`)}</tr></thead>
         <tbody>${ROWS.map(([k, ...vals]) => html`<tr><th scope="row">${t(`pc.r.${k}`)}</th>${vals.map((v, i) => html`<td class="${accounts && PLANS[i].id === cur ? 'is-current' : ''}">${cell(v)}</td>`)}</tr>`)}</tbody></table></div></section>
     <p class="muted small plans-note">${t('plans.note')}</p>`;
   },
+};
+
+/** Reference the client writes on the transfer, so the admin can match the payment to the account. */
+const payRef = () => `ARCTON-${userId().replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+
+actions['plan-pay'] = async (el) => {
+  const plan = PLANS.find((x) => x.id === el.dataset.plan); if (!plan) return;
+  const name = t(`plans.${plan.id}.name`);
+  const row = (k, v, copy) => html`<div><dt>${t(`pay.${k}`)}</dt><dd><span>${v}</span>${copy ? html`<button type="button" class="link-btn" data-copy="${v}">${t('actions.copy')}</button>` : ''}</dd></div>`;
+  const ready = BRAND.iban && BRAND.cui;
+  const body = html`<p>${t('pay.intro', { plan: name, price: plan.price })}</p>
+    ${ready ? html`<dl class="pay-dl">${row('to', BRAND.company)}${row('iban', BRAND.iban, true)}${BRAND.bank ? row('bank', BRAND.bank) : ''}${row('amount', `${plan.price} EUR`)}${row('ref', payRef(), true)}</dl>`
+      : html`<p class="auth-notice auth-info">${t('pay.notReady', { email: supportEmail() || BRAND.email })}</p>`}
+    <p class="muted small">${t('pay.terms', { price: plan.price })}</p><p class="muted small">${t('pay.after')}</p>`;
+  const onCopy = (e) => { const b = e.target.closest('[data-copy]'); if (b) copyText(b.dataset.copy); };
+  document.addEventListener('click', onCopy);
+  const ok = await openModal({ title: t('pay.title', { plan: name }), body, actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: false }, ...(ready ? [{ label: t('pay.sent'), kind: 'btn-primary', value: true }] : [])] });
+  document.removeEventListener('click', onCopy);
+  if (!ok) return;
+  const j = await requestPlan(plan.id);
+  if (j.planRequest) toast(t('pay.thanks'), 'success'); else toast(t('pay.error'), 'error');
 };

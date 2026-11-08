@@ -101,6 +101,9 @@ alter table public.profiles add column if not exists ai_count int not null defau
 do $$ begin
   alter table public.profiles add constraint profiles_plan_check check (plan in ('free', 'pro', 'business'));
 exception when duplicate_object then null; end $$;
+-- Bank-transfer upgrades: the plan a client asked to pay for, until the admin sees the money and switches the plan.
+alter table public.profiles add column if not exists plan_request text check (plan_request in ('pro', 'business'));
+alter table public.profiles add column if not exists plan_request_at timestamptz;
 
 -- Photos for the websites (logo, cover, gallery). Public to read, only the server can write.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
