@@ -5,6 +5,7 @@ import { runDiagnosis, getDiagnosis, reasonKey, AI_TIMEOUT_MS } from '../ai.js';
 import { signalList } from '../insights.js';
 import { actions, rerender, go } from '../registry.js';
 import { pageHead, aiNotice } from './shared.js';
+import { climbLoader } from '../mountain.js';
 import { needSignals, hasSignals } from '../collect.js';
 import { meter } from '../charts.js';
 
@@ -41,9 +42,8 @@ export const diagnosis = {
     const head = pageHead({ title: t('diagnosis.title'), sub: t('diagnosis.sub'),
       actions: html`<button class="btn btn-primary" data-act="run-analysis" ${run.active ? 'disabled' : ''}>${icon('sparkle', 18)} ${d ? t('actions.rerun') : t('actions.runAnalysis')}</button>` });
     if (run.active) {
-      return html`${head}<section class="card loading-card" aria-live="polite"><p class="tag">${t('diagnosis.running')}</p>
-        <ol class="steps">${STEPS.map((k, i) => html`<li class="${i < run.step ? 'done' : i === run.step ? 'now' : ''}"><span class="dot"></span>${t(`diagnosis.step.${k}`)}</li>`)}</ol>
-        <p class="muted small">${t('diagnosis.timeoutNote', { s: AI_TIMEOUT_MS / 1000 })}</p><div class="bar-indet"><i></i></div></section>
+      return html`${head}${climbLoader(t('diagnosis.running'), STEPS.map((k) => t(`diagnosis.step.${k}`)), run.step)}
+        <p class="muted small climb-note">${t('diagnosis.timeoutNote', { s: AI_TIMEOUT_MS / 1000 })}</p>
         <div class="skel-opp" aria-hidden="true"><i class="skel w40"></i><i class="skel w80 tall"></i><div class="skel-row"><i class="skel"></i><i class="skel"></i><i class="skel"></i></div></div>`;
     }
     if (!d && !hasSignals()) {

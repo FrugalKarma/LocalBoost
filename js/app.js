@@ -43,10 +43,10 @@ const parseRoute = () => { const r = (location.hash.replace(/^#\/?/, '') || 'ove
 // Settings and Account are reached from the account menu; they belong to no stage.
 const STAGES = [
   { id: 'home', routes: ['overview'], n: '' },
-  { id: 'observe', routes: ['signals', 'competitors'], n: '01' },
-  { id: 'diagnose', routes: ['diagnosis'], n: '02' },
-  { id: 'act', routes: ['mission', 'website', 'pack'], n: '03' },
-  { id: 'measure', routes: ['proof'], n: '04' },
+  // three steps up the mountain; acting is the peak, so it comes last. Competitors and results belong to the analysis.
+  { id: 'observe', routes: ['signals'], n: 'I' },
+  { id: 'diagnose', routes: ['diagnosis', 'competitors', 'proof'], n: 'II' },
+  { id: 'act', routes: ['mission', 'website', 'pack'], n: 'III' },
 ];
 const stageOf = (r) => STAGES.find((s) => s.routes.includes(r)) || null;
 const stageLabel = (s) => (s.id === 'home' ? t('nav.home') : t(`journey.${s.id}`));
@@ -61,7 +61,7 @@ function stageTab(s) {
 }
 /** How far along the journey the business is, 0..1, for the line under the stages. */
 function journeyProgress() {
-  const st = journeyState(); const ids = ['observe', 'diagnose', 'act', 'measure'];
+  const st = journeyState(); const ids = ['observe', 'diagnose', 'act'];
   let n = 0; ids.forEach((id, i) => { if (st[id]) n = i + 1; });
   return n / ids.length;
 }
@@ -105,7 +105,7 @@ function shell() {
         <nav class="journey" aria-label="${t('brand.journey')}"><ol class="side-stages">${STAGES.map(stageTab)}</ol></nav>
         <div class="hdr-tools">
           <span class="badge badge-offline" id="offline-badge" hidden>${t('common.offline')}</span>
-          <button class="btn btn-ask" data-act="chat-open" aria-label="${t('chat.title')}">${icon('sparkle', 18)}<span class="hide-sm">${t('chat.open')}</span></button>
+          <button class="btn-ask" data-act="chat-open" aria-label="${t('chat.title')}"><span class="hide-sm">${t('chat.open')}</span><span class="ai-orb" aria-hidden="true"></span></button>
           <label class="lang"><span class="sr-only">${t('settings.language')}</span>${icon('globe', 16)}<select data-in="lang-select" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<option value="${l.code}" ${getLang() === l.code ? 'selected' : ''}>${l.label}</option>`)}</select></label>
           <button class="icon-btn ${spinTheme ? 'spin-once' : ''}" data-act="toggle-theme" aria-label="${t('settings.theme')}" title="${t('settings.theme')}">${icon(currentTheme() === 'dark' ? 'sun' : 'moon', 20)}</button>
           <div class="menu-wrap"><button class="icon-btn" data-act="account-menu" aria-haspopup="true" aria-expanded="false" aria-label="${t('nav.account')}">${icon('account', 20)}</button>

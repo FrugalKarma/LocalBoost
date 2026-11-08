@@ -2,9 +2,10 @@ import { html, icon } from '../core.js';
 import { t } from '../i18n.js';
 import { getState } from '../store.js';
 import { scan, hasSignals } from '../collect.js';
+import { climbLoader } from '../mountain.js';
 
 // Which step of the journey each screen belongs to, for the small label above its title.
-const STEP_OF = { signals: ['01', 'observe'], competitors: ['01', 'observe'], diagnosis: ['02', 'diagnose'], mission: ['03', 'act'], website: ['03', 'act'], pack: ['03', 'act'], proof: ['04', 'measure'] };
+const STEP_OF = { signals: ['I', 'observe'], diagnosis: ['II', 'diagnose'], competitors: ['II', 'diagnose'], proof: ['II', 'diagnose'], mission: ['III', 'act'], website: ['III', 'act'], pack: ['III', 'act'] };
 const eyebrow = () => { const st = STEP_OF[document.body.dataset.route]; return st ? `${st[0]} · ${t(`journey.${st[1]}`)}` : 'Arcton Ai'; };
 
 export function pageHead({ note, title, sub, actions }) {
@@ -20,8 +21,8 @@ export function journeyState() {
   return {
     observe: hasSignals(),
     diagnose: !!s.diagnosis,
-    act: s.mission?.status === 'active',
-    measure: !!s.checkpoint,
+    act: s.mission?.status === 'active' || !!s.site?.generated,
+    measure: !!s.checkpoint, // kept for the admin stage list; on screen it is part of Analyse
   };
 }
 
@@ -36,9 +37,9 @@ export function nextAction() {
 
 export function journey() {
   const j = journeyState();
-  const steps = [['observe', 'overview'], ['diagnose', 'diagnosis'], ['act', 'mission'], ['measure', 'proof']];
+  const steps = [['observe', 'signals'], ['diagnose', 'diagnosis'], ['act', 'mission']];
   return html`<ol class="journey">${steps.map(([k, route], i) => html`<li class="${j[k] ? 'done' : ''}">
-    <button class="journey-step" data-act="go" data-route="${route}"><span class="journey-n">${j[k] ? icon('check', 16) : i + 1}</span>
+    <button class="journey-step" data-act="go" data-route="${route}"><span class="journey-n">${j[k] ? icon('check', 16) : ['I', 'II', 'III'][i]}</span>
     <span><strong>${t(`journey.${k}`)}</strong><small>${t(`journey.${k}Sub`)}</small></span></button></li>`)}</ol>`;
 }
 
@@ -50,8 +51,13 @@ export function aiNotice() {
 
 /** Live scanning steps shown while signals are being collected. */
 export function scanCard() {
-  return html`<section class="card scan" aria-live="polite"><p class="tag">${t('start.scanning')}</p>
-    <ol class="steps">${scan.steps.map((k, i) => html`<li class="${i < scan.step ? 'done' : i === scan.step ? 'now' : ''}"><span class="dot"></span>${t(`collect.step.${k}`)}</li>`)}</ol>
-    <div class="bar-indet"><i></i></div></section>`;
+  return climbLoader(t('start.scanning'), scan.steps.map((k) => t(`collect.step.${k}`)), scan.step);
+}
+
+/** The three steps for the mountain: what is done, where each one leads. */
+export function climbSteps() {
+  const j = journeyState();
+  const steps = [['observe', '#/signals'], ['diagnose', '#/diagnosis'], ['act', '#/mission']].map(([k, href]) => ({ label: t(`journey.${k}`), sub: t(`journey.${k}Sub`), href, done: !!j[k] }));
+  return { steps, current: steps.findIndex((s) => !s.done) };
 }
 

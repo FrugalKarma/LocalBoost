@@ -5,6 +5,7 @@ import { t, LANGS, getLang } from '../i18n.js';
 import { signIn, signUp, sendReset, changePassword, ownerSignIn, authOn } from '../auth.js';
 import { BRAND, LEGAL_VERSION } from '../brand.js';
 import { openLegal } from '../legalText.js';
+import { mountain } from '../mountain.js';
 
 let mode = 'signin';
 let email = '';
@@ -83,7 +84,7 @@ function paint() {
   app.innerHTML = html`<div class="auth">
     <aside class="auth-side">
       <div class="auth-brand"><img src="/icons/logo.svg" alt="" width="40" height="40"><strong>${BRAND.app}</strong></div>
-      <div class="orb auth-orb" aria-hidden="true"><span class="orb-glow"></span><span class="orb-core"></span><span class="orb-sheen"></span><img src="/icons/mark-light.svg" alt="" width="96" height="92"></div>
+      ${mountain(['observe', 'diagnose', 'act'].map((k) => ({ label: t(`journey.${k}`), sub: t(`journey.${k}Sub`), done: k !== 'act' })), 2, { size: 'side', links: false })}
       <p class="auth-tag">${t('signin.tagline')}</p>
       ${points()}
     </aside>

@@ -6,7 +6,8 @@ import { streetMap, barSeries } from '../charts.js';
 import { scan, hasSignals } from '../collect.js';
 import { actions, inputs, rerender } from '../registry.js';
 import { CATEGORIES, GOALS, emptyDraft, getBiz, displayName, validate, saveBiz, cleanHandle } from '../business.js';
-import { journey, nextAction, scanCard } from './shared.js';
+import { journey, nextAction, scanCard, climbSteps } from './shared.js';
+import { mountain } from '../mountain.js';
 import { serverCaps, findPlaces } from '../sources.js';
 import { dayPart, streak } from '../fun.js';
 import { liveMetrics, competitorList, loadSiteData, dailySeries, getSiteData } from '../insights.js';
@@ -139,7 +140,7 @@ function preCollect() {
 
 /* ---------- Home: map + next-step card ---------- */
 const stepList = (s) => [s.business.loaded, hasSignals(), !!s.diagnosis, s.mission?.status === 'active', !!s.site?.generated, !!s.checkpoint];
-const STAGE_OF_NEXT = { analysis: 'diagnose', mission: 'act', website: 'act', proof: 'measure' };
+const STAGE_OF_NEXT = { analysis: 'diagnose', mission: 'act', website: 'act', proof: 'diagnose' };
 const num = (v, d = '—') => (v == null ? d : fmtNumber(v));
 
 /** Pins at their real positions relative to the business (equirectangular is fine at street scale). */
@@ -222,18 +223,22 @@ export const overview = {
     const m = liveMetrics();
     const first = String(s.profile?.name || '').split(' ')[0];
     const steps = stepList(s); const done = steps.filter(Boolean).length;
+    const climb = climbSteps();
+    const week = (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); return Math.ceil(((d - Date.UTC(d.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7); })();
     return html`
-    <header class="home-head fun-head">
-      <div class="home-copy"><p class="greet">${t(`fun.greet.${dayPart()}`)}${first ? `, ${first}` : ''}</p>
-        <h1>${displayName()}</h1>
-        <p class="home-step">${t('ledger.stepOf', { n: Math.min(done + 1, steps.length), total: steps.length })} · ${t(na.key)}</p>
+    <header class="home-head home-hero">
+      <div class="home-copy"><p class="eyebrow">${t('home.week', { n: week })} · ${displayName()}</p>
+        <h1 class="reveal-h">${opp ? opp.title : displayName()}</h1>
+        <p class="home-step">${t(`fun.greet.${dayPart()}`)}${first ? `, ${first}` : ''}. ${t('ledger.stepOf', { n: Math.min(done + 1, steps.length), total: steps.length })}: ${t(na.key)}.</p>
+        <div class="hero-cta">${na.key === 'next.analysis' ? html`<button class="btn btn-primary btn-lg" data-act="run-analysis-go">${t(na.key)}</button>` : html`<button class="btn btn-primary btn-lg" data-act="go" data-route="${na.route}">${t(na.key)}</button>`}
+          ${opp ? html`<a class="link-arrow" href="#/diagnosis">${t('home.seeAnalysis')}</a>` : ''}</div>
         <dl class="stat-strip">
           <div><dt>${t('fun.rating')}</dt><dd><b class="${m.rating >= 4.5 ? 'is-up' : ''}">${m.rating != null ? m.rating : '–'}</b></dd></div>
           <div><dt>${t('fun.plan')}</dt><dd><b>${Object.values(s.studio?.plan?.done || {}).filter(Boolean).length}</b><small>/7</small></dd></div>
           <div><dt>${t('fun.streak')}</dt><dd><b class="${streak() >= 2 ? 'is-up' : ''}">${streak()}</b></dd></div>
           <div><dt>${t('fun.stickers')}</dt><dd><b>${s.studio?.stickers?.length || 0}</b></dd></div>
         </dl></div>
-      <div class="orb" aria-hidden="true"><span class="orb-glow"></span><span class="orb-core"></span><span class="orb-sheen"></span><img src="/icons/mark-light.svg" alt="" width="96" height="92"></div>
+      ${mountain(climb.steps, climb.current)}
     </header>
     <div class="home-grid">
       ${mapCard(m)}

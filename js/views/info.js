@@ -28,7 +28,7 @@ function about() {
   return html`<section class="info-hero"><div><p class="tag">${BRAND.company}</p><h2>${t('info.heroTitle')}</h2><p>${t('info.heroBody', { app: BRAND.app })}</p><p>${t('info.heroBody2')}</p></div>
       <div class="hero-mark" aria-hidden="true"><img src="/icons/logo.svg" alt="" width="260" height="260"></div></section>
     <h2>${t('info.howTitle')}</h2>
-    <div class="info-grid">${['observe', 'diagnose', 'act', 'measure'].map((s, i) => html`<article class="card info-card"><span class="info-ic">${i + 1}</span><h3>${t(`journey.${s}`)}</h3><p>${t(`info.how.${s}`)}</p></article>`)}</div>
+    <div class="info-grid">${['observe', 'diagnose', 'act'].map((s, i) => html`<article class="card info-card"><span class="info-ic">${i + 1}</span><h3>${t(`journey.${s}`)}</h3><p>${t(`info.how.${s}`)}</p></article>`)}</div>
     <h2>${t('info.valuesTitle')}</h2>
     <div class="info-grid">${VALUES.map(([ic, k]) => html`<article class="card info-card"><span class="info-ic">${icon(ic, 18)}</span><h3>${t(`info.${k}t`)}</h3><p>${t(`info.${k}`)}</p></article>`)}</div>`;
 }

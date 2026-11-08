@@ -6,12 +6,13 @@ import { t, ta, LANGS, getLang, setLang } from '../i18n.js';
 import { BRAND } from '../brand.js';
 import { openLegal } from '../legalText.js';
 import { PLANS } from './plans.js';
+import { mountain } from '../mountain.js';
 
 let handlers = { signup() {}, signin() {}, example() {} };
 let shown = false;
 let io = null;
 
-const STEPS = ['observe', 'analyse', 'act', 'measure'];
+const STEPS = ['observe', 'analyse', 'act'];
 const FEATURES = [['diagnosis', 'diagnosis'], ['website', 'website'], ['compare', 'competitors'], ['pack', 'studio'], ['reply', 'replies'], ['sparkle', 'chat']];
 const FAQ = ['tech', 'data', 'ai', 'price', 'cancel', 'fit'];
 
@@ -22,10 +23,7 @@ function langSelect() {
 /** The hero picture: the orb with three glass cards from the example café. Built from HTML, so it is sharp and follows the language. */
 function heroVisual() {
   return html`<div class="lp-visual" aria-hidden="true">
-    <div class="orb lp-orb"><span class="orb-glow"></span><span class="orb-core"></span><span class="orb-sheen"></span><img src="/icons/mark-light.svg" alt="" width="96" height="92"></div>
-    <div class="lp-float lp-f1"><p class="lp-k">${t('land.v.read')}</p><b class="lp-big">218</b>
-      <ul class="lp-bars"><li><span>${t('land.v.t1')}</span><i class="pos" style="--w:100%"></i><em>6</em></li><li><span>${t('land.v.t2')}</span><i class="gap" style="--w:66%"></i><em>4</em></li><li><span>${t('land.v.t3')}</span><i class="gap" style="--w:34%"></i><em>2</em></li></ul></div>
-    <div class="lp-float lp-f2"><p class="lp-k">${t('land.v.move')}</p><p class="lp-move">${t('land.v.moveText')}</p><span class="lp-conf">${t('land.v.conf')}</span></div>
+    ${mountain([{ label: t('journey.observe'), sub: `218 ${t('land.v.read').toLowerCase()}` }, { label: t('journey.diagnose'), sub: t('land.v.conf') }, { label: t('journey.act'), sub: t('land.v.moveText') }].map((x, i) => ({ ...x, done: i < 2 })), 2, { links: false })}
     <div class="lp-float lp-f3"><p class="lp-k">${t('land.v.rating')}</p><p class="lp-rate"><b>4,6</b><span>→</span><b class="up">4,7</b></p><p class="lp-k2">${t('land.v.requests')}</p></div>
     <p class="lp-caption">${t('land.v.caption')}</p>
   </div>`;
@@ -56,7 +54,7 @@ function render() {
 
   <section class="lp-sec lp-how" id="how" aria-labelledby="how-h">
     <div class="lp-sec-head"><p class="eyebrow">${t('land.how.eyebrow')}</p><h2 id="how-h">${t('land.how.title')}</h2></div>
-    <ol class="lp-steps">${STEPS.map((k, i) => html`<li class="lp-reveal" style="--d:${i * 90}ms"><span class="lp-n">0${i + 1}</span><h3>${t(`land.how.${k}`)}</h3><p>${t(`land.how.${k}Body`)}</p></li>`)}</ol>
+    <ol class="lp-steps">${STEPS.map((k, i) => html`<li class="lp-reveal" style="--d:${i * 90}ms"><span class="lp-n">${['I', 'II', 'III'][i]}</span><h3>${t(`land.how.${k}`)}</h3><p>${t(`land.how.${k}Body`)}</p></li>`)}</ol>
   </section>
 
   <section class="lp-sec" aria-labelledby="feat-h">

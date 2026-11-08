@@ -75,7 +75,7 @@ export const mission = {
     <h2 class="section-h">${t('mission.assets')}</h2>
     <div class="kit">
       ${[['website', getState().site.generated], ['pack', !!assets], ['proof', !!getState().checkpoint]].map(([r, ok]) => html`
-        <button class="kit-tile" data-act="go" data-route="${r}" data-stage="${r === 'proof' ? 'measure' : 'act'}">
+        <button class="kit-tile" data-act="go" data-route="${r}" data-stage="${r === 'proof' ? 'diagnose' : 'act'}">
           <span class="kit-ic">${icon(r, 24)}</span><strong>${t(`nav.${r}`)}</strong>
           <span class="badge badge-${ok ? 'live' : 'inference'}">${t(ok ? 'common.ready' : 'common.pending')}</span>
           <span class="kit-go">${t('common.open')} ${icon('next', 16)}</span></button>`)}
