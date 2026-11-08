@@ -288,7 +288,7 @@ actions['lookup-go'] = async () => {
   lookup.q = q; lookup.busy = true; lookup.error = null; rerender();
   const r = await findPlaces(q);
   lookup.busy = false;
-  if (r.ok) lookup.results = r.data.places; else { lookup.results = null; lookup.error = ['rate_limited', 'network', 'places_key'].includes(r.error) ? r.error : 'failed'; }
+  if (r.ok) lookup.results = r.data.places; else { lookup.results = null; lookup.error = ['rate_limited', 'network', 'places_key', 'quota_reached'].includes(r.error) ? r.error : 'failed'; }
   rerender();
 };
 actions['lookup-pick'] = (el) => {

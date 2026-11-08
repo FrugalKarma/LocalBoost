@@ -105,6 +105,7 @@ export default {
     apiSave: 'Cím mentése',
     apiSaved: 'Szervercím mentve.',
     apiInvalid: 'Adj meg egy teljes https:// címet.',
+    err_daily_limit: 'Elérted a mai kérdéskeretet. Gyere vissza holnap.',
   },
   tag: {
     signal: 'jel',
@@ -180,7 +181,11 @@ export default {
     googleNotLinked: 'Nincs összekapcsolva: keresd meg a vállalkozásodat a Google-on az adataidban',
     googleOk: '★ {r} · {n} vélemény · a legújabb {m} beolvasva',
     pending: 'Még nincs begyűjtve',
-    err: { places: 'A Google még nincs beállítva ezen a szerveren', failed: 'Most nem sikerült beolvasni; próbáld újra' },
+    err: {
+      places: 'A Google még nincs beállítva ezen a szerveren',
+      failed: 'Most nem sikerült beolvasni; próbáld újra',
+      quota: 'Elérted a havi Google-keretet; 1-jén megújul',
+    },
     siteError: 'A weboldalad nem nyílt meg',
     siteOk: 'Pontszám {score}/100',
     yourNotes: 'Amit hozzáadtál',
@@ -254,6 +259,7 @@ export default {
       not_run: 'Futtasd az elemzést a frissítéshez.',
       plan_required: 'Ehhez magasabb csomag kell.',
       quota_reached: 'Ebben a hónapban felhasználtad az összes ingyenes AI-elemzést.',
+      daily_limit: 'Elérted a mai AI-keretet. Gyere vissza holnap.',
     },
     needsOwner: [
       'Erősítsd meg, mit tudsz kínálni a következő 48 órában (időpont, kapacitás, ár).',
@@ -812,6 +818,7 @@ export default {
       network: 'Nincs kapcsolat. Próbáld újra.',
       places_key: 'A Google elutasította a kérést. Ellenőrizni kell a szerver Google-kulcsát.',
       failed: 'A Google nem válaszolt. Próbáld újra.',
+      quota_reached: 'Ebben a hónapban elfogyott az összes Google-keresés. A keret 1-jén megújul; addig az adatokat kézzel is megadhatod.',
     },
   },
   names: {
@@ -879,6 +886,7 @@ export default {
     attribution: 'Értékelések, vélemények és helyek © Google.',
     errRate: 'Túl sok keresés. Próbáld újra egy perc múlva.',
     errFailed: 'A Google nem válaszolt. Próbáld újra.',
+    errQuota: 'Ebben a hónapban elfogyott az összes Google-keresés. A keret 1-jén megújul.',
   },
   pwa: {
     installed: 'Az Arcton Ai telepítve.',

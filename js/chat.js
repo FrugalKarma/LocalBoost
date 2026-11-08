@@ -144,7 +144,7 @@ async function ask(text) {
         else if (ev.type === 'error') {
           if (ev.error === 'ai_not_configured' || ev.error === 'auth_required') { live = false; return finish({ fallback: routeFor(q) }); }
           if (ev.error === 'aborted') return finish({ stopped: true });
-          throw Object.assign(new Error(ev.error), { kind: ['rate_limited', 'timeout', 'too_long'].includes(ev.error) ? ev.error : 'http' });
+          throw Object.assign(new Error(ev.error), { kind: ['rate_limited', 'timeout', 'too_long', 'daily_limit'].includes(ev.error) ? ev.error : 'http' });
         }
       }
     }

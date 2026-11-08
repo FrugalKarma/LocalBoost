@@ -135,7 +135,7 @@ async function callRole(role, payload, signal) {
     }
     if (!res.ok) throw new AiError('http', `HTTP ${res.status}`);
     const body = await res.json();
-    if (body.error) throw new AiError(body.error === 'ai_not_configured' || body.error === 'auth_required' ? 'not_configured' : ['timeout', 'plan_required', 'quota_reached'].includes(body.error) ? body.error : 'http', body.error);
+    if (body.error) throw new AiError(body.error === 'ai_not_configured' || body.error === 'auth_required' ? 'not_configured' : ['timeout', 'plan_required', 'quota_reached', 'daily_limit'].includes(body.error) ? body.error : 'http', body.error);
     const parsed = repairJSON(body.text ?? body.json);
     const valid = validators[role](parsed);
     if (!valid) throw new AiError('invalid_json');
@@ -312,5 +312,5 @@ export async function runNames() {
 }
 
 export function reasonKey(reason) {
-  return ['timeout', 'not_configured', 'invalid_json', 'unreachable', 'http', 'not_run', 'plan_required', 'quota_reached'].includes(reason) ? `ai.reason.${reason}` : 'ai.reason.error';
+  return ['timeout', 'not_configured', 'invalid_json', 'unreachable', 'http', 'not_run', 'plan_required', 'quota_reached', 'daily_limit'].includes(reason) ? `ai.reason.${reason}` : 'ai.reason.error';
 }

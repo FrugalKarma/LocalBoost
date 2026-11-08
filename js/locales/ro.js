@@ -105,6 +105,7 @@ export default {
     apiSave: 'Salvează adresa',
     apiSaved: 'Adresa serverului a fost salvată.',
     apiInvalid: 'Introdu o adresă completă https://.',
+    err_daily_limit: 'Ai atins limita zilnică de întrebări pentru azi. Revino mâine.',
   },
   tag: {
     signal: 'semnal',
@@ -180,7 +181,11 @@ export default {
     googleNotLinked: 'Nelegat: caută afacerea pe Google în detaliile tale',
     googleOk: '★ {r} · {n} recenzii · ultimele {m} citite',
     pending: 'Necolectat încă',
-    err: { places: 'Google nu e configurat încă pe acest server', failed: 'Nu a putut fi citit de data asta; încearcă din nou' },
+    err: {
+      places: 'Google nu e configurat încă pe acest server',
+      failed: 'Nu a putut fi citit de data asta; încearcă din nou',
+      quota: 'Limita lunară de citiri Google a fost atinsă; se reînnoiește pe 1 ale lunii',
+    },
     siteError: 'Site-ul tău nu a putut fi deschis',
     siteOk: 'Scor {score}/100',
     yourNotes: 'Ce ai adăugat',
@@ -254,6 +259,7 @@ export default {
       not_run: 'Rulează analiza ca să o actualizezi.',
       plan_required: 'Ai nevoie de un plan superior.',
       quota_reached: 'Ai folosit toate analizele AI gratuite din această lună.',
+      daily_limit: 'Ai atins limita zilnică de cereri AI. Revino mâine.',
     },
     needsOwner: [
       'Confirmă ce poți oferi în următoarele 48 de ore (oră, capacitate, preț).',
@@ -812,6 +818,7 @@ export default {
       network: 'Fără conexiune. Încearcă din nou.',
       places_key: 'Google a refuzat cererea. Cheia Google de pe server trebuie verificată.',
       failed: 'Google nu a răspuns. Încearcă din nou.',
+      quota_reached: 'Ai folosit toate căutările Google din luna asta. Limita se reînnoiește pe 1 ale lunii; până atunci poți completa datele manual.',
     },
   },
   names: {
@@ -879,6 +886,7 @@ export default {
     attribution: 'Note, recenzii și locuri © Google.',
     errRate: 'Prea multe căutări. Încearcă din nou peste un minut.',
     errFailed: 'Google nu a răspuns. Încearcă din nou.',
+    errQuota: 'Ai folosit toate căutările Google din luna asta. Limita se reînnoiește pe 1 ale lunii.',
   },
   pwa: {
     installed: 'Arcton Ai a fost instalat.',

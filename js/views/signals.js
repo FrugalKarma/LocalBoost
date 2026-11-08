@@ -20,7 +20,7 @@ function sourceCards() {
   const g = s.google; const site = s.site; const th = s.themes;
   const card = (ic, title, body, ok) => html`<div class="src-card ${ok ? 'ok' : ''}"><span class="src-ic">${icon(ic, 18)}</span><div><strong>${title}</strong><small>${body}</small></div></div>`;
   return html`<div class="src-cards">
-    ${card('star', 'Google', !b.place ? t('signals.googleNotLinked') : err.google ? t(`signals.err.${err.google === 'places_not_configured' ? 'places' : 'failed'}`) : g ? t('signals.googleOk', { r: g.rating ?? '–', n: g.reviewCount ?? 0, m: (g.reviews || []).length }) : t('signals.pending'), !!g)}
+    ${card('star', 'Google', !b.place ? t('signals.googleNotLinked') : err.google ? t(`signals.err.${err.google === 'places_not_configured' ? 'places' : err.google === 'quota_reached' ? 'quota' : 'failed'}`) : g ? t('signals.googleOk', { r: g.rating ?? '–', n: g.reviewCount ?? 0, m: (g.reviews || []).length }) : t('signals.pending'), !!g)}
     ${card('website', t('signals.siteCheck'), !b.website ? t('signals.noWebsiteShort') : err.website ? t('signals.err.failed') : site ? (site.error ? t('signals.siteError') : t('signals.siteOk', { score: site.score })) : t('signals.pending'), !!site && !site.error)}
     ${card('upload', t('signals.yourNotes'), t('signals.notesN', { n: s.notes?.length || 0 }), (s.notes?.length || 0) > 0)}
     ${card('sparkle', t('signals.themes'), th?.items?.length ? t('signals.themesN', { n: th.items.length }) : th?.mode === 'none' ? t('signals.themesNoAi') : t('signals.themesNeed'), !!th?.items?.length)}

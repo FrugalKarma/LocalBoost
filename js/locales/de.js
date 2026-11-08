@@ -105,6 +105,7 @@ export default {
     apiSave: 'Adresse speichern',
     apiSaved: 'Serveradresse gespeichert.',
     apiInvalid: 'Gib eine vollständige https://-Adresse ein.',
+    err_daily_limit: 'Sie haben das heutige Fragen-Limit erreicht. Kommen Sie morgen wieder.',
   },
   tag: {
     signal: 'signal',
@@ -180,7 +181,11 @@ export default {
     googleNotLinked: 'Nicht verknüpft: suche dein Geschäft bei Google in deinen Angaben',
     googleOk: '★ {r} · {n} Bewertungen · {m} neueste gelesen',
     pending: 'Noch nicht gesammelt',
-    err: { places: 'Google ist auf diesem Server noch nicht eingerichtet', failed: 'Diesmal nicht lesbar; versuche es erneut' },
+    err: {
+      places: 'Google ist auf diesem Server noch nicht eingerichtet',
+      failed: 'Diesmal nicht lesbar; versuche es erneut',
+      quota: 'Monatliches Google-Limit erreicht; es erneuert sich am 1.',
+    },
     siteError: 'Deine Website konnte nicht geöffnet werden',
     siteOk: 'Wert {score}/100',
     yourNotes: 'Deine Einträge',
@@ -254,6 +259,7 @@ export default {
       not_run: 'Starte die Analyse, um sie zu aktualisieren.',
       plan_required: 'Dafür ist ein höherer Tarif nötig.',
       quota_reached: 'Sie haben alle kostenlosen KI-Analysen dieses Monats genutzt.',
+      daily_limit: 'Sie haben das heutige KI-Limit erreicht. Kommen Sie morgen wieder.',
     },
     needsOwner: [
       'Bestätige, was du in den nächsten 48 Stunden anbieten kannst (Zeit, Kapazität, Preis).',
@@ -812,6 +818,7 @@ export default {
       network: 'Keine Verbindung. Versuch es erneut.',
       places_key: 'Google hat die Anfrage abgelehnt. Der Google-Schlüssel des Servers muss geprüft werden.',
       failed: 'Google hat nicht geantwortet. Versuch es erneut.',
+      quota_reached: 'Sie haben alle Google-Suchen dieses Monats verbraucht. Das Limit erneuert sich am 1.; bis dahin können Sie die Angaben selbst eintragen.',
     },
   },
   names: {
@@ -879,6 +886,7 @@ export default {
     attribution: 'Bewertungen, Rezensionen und Orte © Google.',
     errRate: 'Zu viele Suchen. Versuch es in einer Minute erneut.',
     errFailed: 'Google hat nicht geantwortet. Versuch es erneut.',
+    errQuota: 'Sie haben alle Google-Suchen dieses Monats verbraucht. Das Limit erneuert sich am 1.',
   },
   pwa: {
     installed: 'Arcton Ai wurde installiert.',

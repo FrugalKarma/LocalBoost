@@ -96,7 +96,7 @@ actions['scan-comp'] = async () => {
   busy = true; rerender();
   const r = await nearbyPlaces({ lat: b.place.lat, lng: b.place.lng, category: b.category, self: b.place.id, q: `${t(`biz.cat.${b.category}`)} ${b.city}` });
   busy = false;
-  if (!r.ok) { toast(t(r.error === 'rate_limited' ? 'comp.errRate' : 'comp.errFailed'), 'error'); return rerender(); }
+  if (!r.ok) { toast(t(r.error === 'rate_limited' ? 'comp.errRate' : r.error === 'quota_reached' ? 'comp.errQuota' : 'comp.errFailed'), 'error'); return rerender(); }
   update((st) => ({ competitors: { ...st.competitors, list: r.data.places, fetchedAt: r.data.fetchedAt } }));
   toast(t('comp.scanned', { n: r.data.places.length }), 'success'); rerender();
 };

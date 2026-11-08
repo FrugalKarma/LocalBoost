@@ -105,6 +105,7 @@ export default {
     apiSave: 'Save address',
     apiSaved: 'Server address saved.',
     apiInvalid: 'Enter a full https:// address.',
+    err_daily_limit: 'You have reached today\'s question limit. Come back tomorrow.',
   },
   tag: {
     signal: 'signal',
@@ -180,7 +181,11 @@ export default {
     googleNotLinked: 'Not linked: find your business on Google in your details',
     googleOk: '★ {r} · {n} reviews · {m} latest read',
     pending: 'Not collected yet',
-    err: { places: 'Google is not set up on this server yet', failed: 'Could not be read this time; try again' },
+    err: {
+      places: 'Google is not set up on this server yet',
+      failed: 'Could not be read this time; try again',
+      quota: 'Monthly Google limit reached; it renews on the 1st',
+    },
     siteError: 'Your website could not be opened',
     siteOk: 'Score {score}/100',
     yourNotes: 'What you added',
@@ -254,6 +259,7 @@ export default {
       not_run: 'Run the analysis to refresh it.',
       plan_required: 'This needs a higher plan.',
       quota_reached: 'You used all free AI analyses for this month.',
+      daily_limit: 'You have reached today\'s AI limit. Come back tomorrow.',
     },
     needsOwner: [
       'Confirm what you can offer in the next 48 hours (time, capacity, price).',
@@ -812,6 +818,7 @@ export default {
       network: 'No connection. Try again.',
       places_key: 'Google rejected the request. The server’s Google key needs checking.',
       failed: 'Google did not answer. Try again.',
+      quota_reached: 'You have used all Google lookups for this month. The limit renews on the 1st; until then you can fill in the details yourself.',
     },
   },
   names: {
@@ -879,6 +886,7 @@ export default {
     attribution: 'Ratings, reviews and places © Google.',
     errRate: 'Too many searches. Try again in a minute.',
     errFailed: 'Google did not answer. Try again.',
+    errQuota: 'You have used all Google lookups for this month. The limit renews on the 1st.',
   },
   pwa: {
     installed: 'Arcton Ai installed.',

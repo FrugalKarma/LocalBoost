@@ -105,6 +105,7 @@ export default {
     apiSave: 'Enregistrer l’adresse',
     apiSaved: 'Adresse du serveur enregistrée.',
     apiInvalid: 'Saisissez une adresse https:// complète.',
+    err_daily_limit: 'Vous avez atteint la limite de questions du jour. Revenez demain.',
   },
   tag: {
     signal: 'signal',
@@ -180,7 +181,11 @@ export default {
     googleNotLinked: 'Non liée : trouvez votre établissement sur Google dans vos informations',
     googleOk: '★ {r} · {n} avis · {m} derniers lus',
     pending: 'Pas encore collecté',
-    err: { places: 'Google n’est pas encore configuré sur ce serveur', failed: 'Lecture impossible cette fois ; réessayez' },
+    err: {
+      places: 'Google n’est pas encore configuré sur ce serveur',
+      failed: 'Lecture impossible cette fois ; réessayez',
+      quota: 'Limite Google mensuelle atteinte ; elle se renouvelle le 1er',
+    },
     siteError: 'Votre site n’a pas pu être ouvert',
     siteOk: 'Score {score}/100',
     yourNotes: 'Ce que vous avez ajouté',
@@ -254,6 +259,7 @@ export default {
       not_run: 'Lancez l’analyse pour l’actualiser.',
       plan_required: 'Il faut une formule supérieure.',
       quota_reached: 'Vous avez utilisé toutes les analyses IA gratuites du mois.',
+      daily_limit: 'Vous avez atteint la limite IA du jour. Revenez demain.',
     },
     needsOwner: [
       'Confirmez ce que vous pouvez proposer dans les 48 prochaines heures (horaire, capacité, prix).',
@@ -812,6 +818,7 @@ export default {
       network: 'Pas de connexion. Réessayez.',
       places_key: 'Google a refusé la requête. La clé Google du serveur doit être vérifiée.',
       failed: 'Google n’a pas répondu. Réessayez.',
+      quota_reached: 'Vous avez utilisé toutes les recherches Google de ce mois. La limite se renouvelle le 1er ; d’ici là, vous pouvez saisir les informations vous-même.',
     },
   },
   names: {
@@ -879,6 +886,7 @@ export default {
     attribution: 'Notes, avis et lieux © Google.',
     errRate: 'Trop de recherches. Réessayez dans une minute.',
     errFailed: 'Google n’a pas répondu. Réessayez.',
+    errQuota: 'Vous avez utilisé toutes les recherches Google de ce mois. La limite se renouvelle le 1er.',
   },
   pwa: {
     installed: 'Arcton Ai est installé.',

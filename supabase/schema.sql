@@ -119,3 +119,8 @@ on conflict (id) do nothing;
 -- Record of accepted Terms / Privacy / AI notice (version = date of the texts). Safe to rerun.
 alter table public.profiles add column if not exists terms_version text;
 alter table public.profiles add column if not exists terms_accepted_at timestamptz;
+-- Fair-use limits per client: Google lookups per month, AI requests per day (lib/auth-core.mjs LIMITS).
+alter table public.profiles add column if not exists places_month text;
+alter table public.profiles add column if not exists places_count int not null default 0;
+alter table public.profiles add column if not exists ai_day text;
+alter table public.profiles add column if not exists ai_day_count int not null default 0;
