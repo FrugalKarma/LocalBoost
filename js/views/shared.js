@@ -3,9 +3,13 @@ import { t } from '../i18n.js';
 import { getState } from '../store.js';
 import { scan, hasSignals } from '../collect.js';
 
+// Which step of the journey each screen belongs to, for the small label above its title.
+const STEP_OF = { signals: ['01', 'observe'], competitors: ['01', 'observe'], diagnosis: ['02', 'diagnose'], mission: ['03', 'act'], website: ['03', 'act'], pack: ['03', 'act'], proof: ['04', 'measure'] };
+const eyebrow = () => { const st = STEP_OF[document.body.dataset.route]; return st ? `${st[0]} · ${t(`journey.${st[1]}`)}` : 'Arcton Ai'; };
+
 export function pageHead({ note, title, sub, actions }) {
   return html`<header class="page-head">
-    <div><h1>${title}</h1>${sub ? html`<p class="lede">${sub}</p>` : ''}</div>
+    <div><p class="eyebrow">${eyebrow()}</p><h1>${title}</h1>${sub ? html`<p class="lede">${sub}</p>` : ''}</div>
     ${actions ? html`<div class="page-actions">${actions}</div>` : ''}</header>`;
 }
 

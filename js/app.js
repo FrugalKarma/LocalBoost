@@ -55,14 +55,20 @@ function stageTab(s) {
   const cur = stageOf(route)?.id === s.id;
   const done = s.id !== 'home' && journeyState()[s.id];
   const mark = s.id === 'home' ? icon('overview', 16) : done ? icon('check', 15) : html`<b>${s.n}</b>`;
-  const sub = cur && s.routes.length > 1 ? html`<ul class="side-sub">${s.routes.map((r) => html`<li><a href="#/${r}" ${raw(r === route ? 'aria-current="page"' : '')}>${t(`nav.${r}`)}</a></li>`)}</ul>` : '';
-  return html`<li><a class="stage-tab" data-stage="${s.id}" href="#/${s.routes[0]}" ${raw(cur ? 'aria-current="page"' : '')} title="${stageLabel(s)}">
-    <span class="stage-n ${done ? 'is-done' : ''}" aria-hidden="true">${mark}</span><span class="stage-label">${stageLabel(s)}${s.id === 'home' ? '' : html`<small>${t(`journey.${s.id}Sub`)}</small>`}</span></a>${sub}</li>`;
+  const tip = s.id === 'home' ? stageLabel(s) : `${stageLabel(s)}: ${t(`journey.${s.id}Sub`)}`;
+  return html`<li><a class="stage-tab" data-stage="${s.id}" href="#/${s.routes[0]}" ${raw(cur ? 'aria-current="page"' : '')} title="${tip}">
+    <span class="stage-n ${done ? 'is-done' : ''}" aria-hidden="true">${mark}</span><span class="stage-label">${stageLabel(s)}</span></a></li>`;
 }
-const SIDE_LINKS = [['info', 'help'], ['plans', 'star'], ['settings', 'settings']];
-function sideLinks() {
-  return html`${SIDE_LINKS.map(([r, ic]) => html`<li><a href="#/${r}" ${raw(route === r ? 'aria-current="page"' : '')}>${icon(ic, 17)} ${t(`nav.${r}`)}</a></li>`)}
-    ${isAdmin() ? html`<li><a href="#/admin" ${raw(route === 'admin' ? 'aria-current="page"' : '')}>${icon('overview', 17)} ${t('nav.admin')}</a></li>` : ''}`;
+/** How far along the journey the business is, 0..1, for the line under the stages. */
+function journeyProgress() {
+  const st = journeyState(); const ids = ['observe', 'diagnose', 'act', 'measure'];
+  let n = 0; ids.forEach((id, i) => { if (st[id]) n = i + 1; });
+  return n / ids.length;
+}
+const FOOT_LINKS = [['info', 'help'], ['plans', 'star'], ['settings', 'settings'], ['account', 'account']];
+function footLinks() {
+  return html`${FOOT_LINKS.map(([r]) => html`<li><a href="#/${r}">${t(`nav.${r}`)}</a></li>`)}
+    ${isAdmin() ? html`<li><a href="#/admin">${t('nav.admin')}</a></li>` : ''}<li><a href="#/info?legal">${t('info.tab.legal')}</a></li>`;
 }
 
 function subnav() {
@@ -73,7 +79,8 @@ function subnav() {
 
 function updateChrome() {
   const tabs = $('.side-stages'); if (tabs) tabs.innerHTML = html`${STAGES.map(stageTab)}`.s;
-  const links = $('.side-links'); if (links) links.innerHTML = sideLinks().s;
+  const jr = $('.journey'); if (jr) jr.style.setProperty('--prog', String(journeyProgress()));
+  const links = $('.foot-links'); if (links) links.innerHTML = footLinks().s;
   const sub = $('#subnav-slot'); if (sub) sub.innerHTML = subnav().s;
   const biz = $('#top-biz'); const b = getState().business;
   if (biz) biz.textContent = b.loaded ? `${displayName()} · ${getBiz().city || ''}` : '';
@@ -85,52 +92,58 @@ function updateChrome() {
   if (ex) ex.innerHTML = isExample() && !vc ? html`<div class="example-bar" role="status">${icon('sparkle', 18)}<p><b>${t('example.barTitle')}</b> ${t('example.barBody', { name: displayName() })}</p>
     <button class="btn btn-sm btn-secondary" data-act="example-clear">${t('example.clear')}</button></div>`.s : '';
   const promo = $('#side-promo');
-  if (promo) promo.innerHTML = currentPlan() !== 'business' && !vc ? html`<div class="side-promo"><b>${t('promo.title', { plan: t(`plans.${currentPlan() === 'free' ? 'pro' : 'business'}.name`) })}</b><span>${t(currentPlan() === 'free' ? 'promo.pro' : 'promo.business')}</span><a href="#/plans">${t('promo.cta')}</a></div>`.s : '';
+  if (promo) promo.innerHTML = currentPlan() !== 'business' && !vc ? html`<div class="foot-promo"><b>${t('promo.title', { plan: t(`plans.${currentPlan() === 'free' ? 'pro' : 'business'}.name`) })}</b><span>${t(currentPlan() === 'free' ? 'promo.pro' : 'promo.business')}</span><a href="#/plans">${t('promo.cta')}</a></div>`.s : '';
 }
 
 function shell() {
   return html`
   <a class="skip" href="#main">${t('common.skip')}</a>
   <div class="content">
-    <header class="topbar">
-      <a class="top-brand" href="#/overview"><img class="brand-logo" src="/icons/logo.svg" alt="" width="34" height="34"><strong>${BRAND.app}</strong></a>
-      <span class="top-biz" id="top-biz"></span>
-      <span class="spacer"></span>
-      <span class="badge badge-offline" id="offline-badge" hidden>${t('common.offline')}</span>
-      <button class="btn btn-ask" data-act="chat-open" aria-label="${t('chat.title')}">${icon('sparkle', 18)}<span class="hide-sm">${t('chat.open')}</span></button>
-      <label class="lang"><span class="sr-only">${t('settings.language')}</span>${icon('globe', 16)}<select data-in="lang-select" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<option value="${l.code}" ${getLang() === l.code ? 'selected' : ''}>${l.label}</option>`)}</select></label>
-      <button class="icon-btn ${spinTheme ? 'spin-once' : ''}" data-act="toggle-theme" aria-label="${t('settings.theme')}" title="${t('settings.theme')}">${icon(currentTheme() === 'dark' ? 'sun' : 'moon', 20)}</button>
-      <div class="menu-wrap"><button class="icon-btn" data-act="account-menu" aria-haspopup="true" aria-expanded="false" aria-label="${t('nav.account')}">${icon('account', 20)}</button>
-        <div class="menu" id="account-menu" hidden role="menu">
-          <p class="menu-name">${getState().profile.name || displayName()}<small>${signedIn() ? userEmail() : t('account.roleClient')}</small></p>
-          ${isAdmin() ? html`<a role="menuitem" href="#/admin">${icon('overview', 16)} ${t('nav.admin')}</a>` : ''}
-          <a role="menuitem" href="#/account">${icon('account', 16)} ${t('nav.account')}</a><a role="menuitem" href="#/plans">${icon('star', 16)} ${t('nav.plans')}</a><a role="menuitem" href="#/settings">${icon('settings', 16)} ${t('nav.settings')}</a>
-          <a role="menuitem" href="#/info">${icon('help', 16)} ${t('nav.info')}</a><a role="menuitem" href="#/info?legal">${icon('info', 16)} ${t('info.tab.legal')}</a>
-          ${signedIn() ? html`<button role="menuitem" data-act="sign-out">${icon('external', 16)} ${t('account.signOut')}</button>` : html`<button role="menuitem" data-act="open-signin">${icon('account', 16)} ${t('signin.signIn')}</button>`}</div></div>
+    <header class="hdr">
+      <div class="hdr-in">
+        <a class="hdr-brand" href="#/overview"><img src="/icons/logo.svg" alt="" width="34" height="34"><span><strong>${BRAND.app}</strong><small class="top-biz" id="top-biz"></small></span></a>
+        <nav class="journey" aria-label="${t('brand.journey')}"><ol class="side-stages">${STAGES.map(stageTab)}</ol></nav>
+        <div class="hdr-tools">
+          <span class="badge badge-offline" id="offline-badge" hidden>${t('common.offline')}</span>
+          <button class="btn btn-ask" data-act="chat-open" aria-label="${t('chat.title')}">${icon('sparkle', 18)}<span class="hide-sm">${t('chat.open')}</span></button>
+          <label class="lang"><span class="sr-only">${t('settings.language')}</span>${icon('globe', 16)}<select data-in="lang-select" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<option value="${l.code}" ${getLang() === l.code ? 'selected' : ''}>${l.label}</option>`)}</select></label>
+          <button class="icon-btn ${spinTheme ? 'spin-once' : ''}" data-act="toggle-theme" aria-label="${t('settings.theme')}" title="${t('settings.theme')}">${icon(currentTheme() === 'dark' ? 'sun' : 'moon', 20)}</button>
+          <div class="menu-wrap"><button class="icon-btn" data-act="account-menu" aria-haspopup="true" aria-expanded="false" aria-label="${t('nav.account')}">${icon('account', 20)}</button>
+            <div class="menu" id="account-menu" hidden role="menu">
+              <p class="menu-name">${getState().profile.name || displayName()}<small>${signedIn() ? userEmail() : t('account.roleClient')}</small></p>
+              ${isAdmin() ? html`<a role="menuitem" href="#/admin">${icon('overview', 16)} ${t('nav.admin')}</a>` : ''}
+              <a role="menuitem" href="#/account">${icon('account', 16)} ${t('nav.account')}</a><a role="menuitem" href="#/plans">${icon('star', 16)} ${t('nav.plans')}</a><a role="menuitem" href="#/settings">${icon('settings', 16)} ${t('nav.settings')}</a>
+              <a role="menuitem" href="#/info">${icon('help', 16)} ${t('nav.info')}</a><a role="menuitem" href="#/info?legal">${icon('info', 16)} ${t('info.tab.legal')}</a>
+              ${signedIn() ? html`<button role="menuitem" data-act="sign-out">${icon('external', 16)} ${t('account.signOut')}</button>` : html`<button role="menuitem" data-act="open-signin">${icon('account', 16)} ${t('signin.signIn')}</button>`}</div></div>
+        </div>
+      </div>
+      <div id="subnav-slot"></div>
     </header>
     <div id="viewing-slot"></div>
     <div id="example-slot"></div>
-    <div id="subnav-slot"></div>
     <main id="main" tabindex="-1"></main>
-  </div>
-  <nav class="side" aria-label="${t('common.navigation')}">
-    <a class="side-brand" href="#/overview"><img src="/icons/logo.svg" alt="" width="38" height="38"><span><strong>${BRAND.app}</strong><small>${t('brand.tagline')}</small></span></a>
-    <p class="side-h">${t('brand.journey')}</p>
-    <ul class="side-stages">${STAGES.map(stageTab)}</ul>
-    <span class="side-spacer"></span>
-    <div id="side-promo"></div>
-    <ul class="side-links">${sideLinks()}</ul>
-    <p class="side-foot">© ${new Date().getFullYear()} ${BRAND.company}<br><a href="#/info?legal">${t('info.tab.legal')}</a></p>
-  </nav>`;
+    <footer class="foot">
+      <div class="foot-in">
+        <div class="foot-brand"><img src="/icons/logo.svg" alt="" width="40" height="40"><div><strong>${BRAND.app}</strong><p>${t('brand.tagline')}</p></div></div>
+        <div id="side-promo"></div>
+        <ul class="foot-links">${footLinks()}</ul>
+      </div>
+      <p class="foot-legal">© ${new Date().getFullYear()} ${BRAND.company}</p>
+    </footer>
+  </div>`;
 }
 
 let lastShown = ''; // numbers count up when a screen opens, not on every small update
+/** When a screen opens: a label naming its step of the journey above the title, and one short entrance. */
+function enterPage(main) {
+  main.classList.remove('page-in'); void main.offsetWidth; main.classList.add('page-in');
+}
 function renderView(keepScroll = false) {
   const main = $('#main'); if (!main) return;
   const y = window.scrollY;
   const v = views[route];
   document.body.dataset.route = route;
-  try { main.innerHTML = v.render().s; v.mount?.(); if (route !== lastShown) { lastShown = route; animateNumbers(main); } }
+  try { main.innerHTML = v.render().s; v.mount?.(); if (route !== lastShown) { lastShown = route; enterPage(main); animateNumbers(main); } }
   catch (e) { console.error('[Arcton] render failed', e); main.innerHTML = html`<div class="card empty-hero"><h2>${t('common.errorGeneric')}</h2><button class="btn btn-primary" data-act="go" data-route="overview">${t('nav.overview')}</button></div>`.s; }
   updateChrome();
   document.title = `${t(`nav.${route}`)} · ${BRAND.app}`;
