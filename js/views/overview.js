@@ -5,11 +5,57 @@ import { getDiagnosis } from '../ai.js';
 import { streetMap, barSeries } from '../charts.js';
 import { scan, hasSignals } from '../collect.js';
 import { actions, inputs, rerender } from '../registry.js';
-import { CATEGORIES, GOALS, emptyDraft, getBiz, displayName, validate, saveBiz } from '../business.js';
+import { CATEGORIES, GOALS, emptyDraft, getBiz, displayName, validate, saveBiz, cleanHandle } from '../business.js';
 import { journey, nextAction, scanCard } from './shared.js';
 import { serverCaps, findPlaces } from '../sources.js';
 import { dayPart, streak } from '../fun.js';
 import { liveMetrics, competitorList, loadSiteData, dailySeries, getSiteData } from '../insights.js';
+
+/* ---------- first run: find the business on Google, confirm two things, start ---------- */
+const quick = { picked: null, category: null, goal: 'bookings', instagram: '' };
+let manual = false; // "not on Google" or no Places key: the full form
+const typeToCategory = (type = '') => (/cafe|coffee|bakery|tea_house|dessert|ice_cream/.test(type) ? 'cafe'
+  : /restaurant|bistro|bar|pub|pizza|meal|food|steak|sushi|brunch/.test(type) ? 'restaurant'
+    : /salon|beauty|hair|nail|spa|barber|massage|cosmetic/.test(type) ? 'salon'
+      : /store|shop|market|boutique|florist|jewel/.test(type) ? 'shop' : 'other');
+const cityOf = (address = '') => address.split(',').map((x) => x.trim()).filter((x) => x && !/\d{4,}/.test(x) && !/^(romania|românia)$/i.test(x)).slice(-1)[0] || '';
+
+function qsSearch() {
+  const busy = lookup.busy || !caps;
+  return html`<div class="qs-search"><label class="sr-only" for="lookup-q">${t('qs.title')}</label>
+      <div class="qs-field">${icon('pin', 20)}<input type="search" id="lookup-q" data-in="lookup-q" value="${lookup.q}" placeholder="${t('qs.ph')}" maxlength="120" autocomplete="off" enterkeyhint="search">
+        <button type="button" class="btn btn-primary" data-act="lookup-go" ${busy ? 'disabled' : ''}>${lookup.busy ? html`<i class="spin"></i>` : t('qs.find')}</button></div>
+      ${lookup.error ? html`<p class="small err-line" role="alert">${t(`biz.googleErr.${lookup.error}`)}</p>` : ''}
+      ${lookup.results ? (lookup.results.length ? html`<ul class="qs-results">${lookup.results.map((p, i) => html`<li><button type="button" data-act="qs-pick" data-i="${i}">
+        <span class="qs-pin" aria-hidden="true">${icon('pin', 18)}</span><span class="qs-res"><strong>${p.name}</strong><small>${p.address}</small></span>
+        ${p.rating ? html`<span class="qs-rate">★ ${p.rating}<small>${fmtNumber(p.reviewCount || 0)}</small></span>` : ''}</button></li>`)}</ul>`
+        : html`<p class="muted small qs-none">${t('qs.none')} <button type="button" class="link-btn" data-act="qs-manual">${t('qs.manual')}</button></p>`) : ''}</div>`;
+}
+
+function qsConfirm(p) {
+  const cat = quick.category || typeToCategory(p.type);
+  const chips = (name, list, cur, pre) => html`<div class="qs-chips" role="radiogroup" aria-label="${t(`qs.${name}`)}">${list.map((c) => html`<button type="button" role="radio" aria-checked="${c === cur}" class="qs-chip" data-act="qs-set" data-k="${name}" data-v="${c}">${t(`${pre}.${c}`)}</button>`)}</div>`;
+  return html`<div class="qs-picked"><span class="qs-ok" aria-hidden="true">${icon('check', 20)}</span>
+      <div><strong>${p.name}</strong><small>${p.address}</small>${p.rating ? html`<span class="qs-rate-line">★ ${p.rating} · ${t('qs.reviews', { n: fmtNumber(p.reviewCount || 0) })}</span>` : ''}</div>
+      <button type="button" class="btn btn-ghost btn-sm" data-act="qs-change">${t('biz.googleChange')}</button></div>
+    <div class="qs-q"><p class="qs-label">${t('qs.category')}</p>${chips('category', CATEGORIES, cat, 'biz.cat')}</div>
+    <div class="qs-q"><p class="qs-label">${t('qs.goal')}</p>${chips('goal', GOALS, quick.goal, 'biz.goalOpt')}</div>
+    <label class="qs-q qs-ig"><span class="qs-label">${t('qs.instagram')} <small class="muted">· ${t('biz.optional')}</small></span>
+      <span class="input-wrap"><i class="prefix">@</i><input type="text" class="has-prefix" data-in="qs-ig" value="${quick.instagram}" maxlength="30" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="aurora.cafe"></span></label>
+    <button type="button" class="btn btn-primary btn-lg qs-go" data-act="qs-go">${icon('sparkle', 18)} ${t('qs.go')}</button>
+    <p class="muted small qs-after">${t('qs.after')}</p>`;
+}
+
+function quickStart() {
+  const p = quick.picked;
+  return html`<section class="qs">
+    <div class="qs-head"><p class="eyebrow">${t(p ? 'qs.step2' : 'qs.step1')}</p>
+      <h1>${t(p ? 'qs.confirmTitle' : 'qs.title')}</h1><p class="qs-lede">${t(p ? 'qs.confirmSub' : 'qs.sub')}</p></div>
+    <div class="qs-card">${p ? qsConfirm(p) : qsSearch()}</div>
+    ${p ? '' : html`<p class="qs-alt"><button type="button" class="link-btn" data-act="qs-manual">${t('qs.manual')}</button><span aria-hidden="true">·</span><button type="button" class="link-btn" data-act="example-load">${t('qs.example')}</button></p>`}
+    <ul class="qs-promise">${['p1', 'p2', 'p3'].map((k) => html`<li>${icon('check', 16)}<span><b>${t(`qs.${k}t`)}</b> ${t(`qs.${k}`)}</span></li>`)}</ul>
+  </section>`;
+}
 
 /* ---------- business details form ---------- */
 let draft = emptyDraft();
@@ -168,7 +214,8 @@ export const overview = {
   id: 'overview',
   render() {
     const s = getState();
-    if (!s.business.loaded || editing) return bizForm();
+    if (editing || (!s.business.loaded && (manual || (caps && !caps.places)))) return bizForm();
+    if (!s.business.loaded) return quickStart();
     if (!hasSignals()) return preCollect();
     const d = getDiagnosis(); const opp = s.diagnosis ? d?.data.opportunity : null;
     const na = nextAction();
@@ -248,3 +295,16 @@ actions['lookup-pick'] = (el) => {
   lookup.results = null; rerender();
 };
 actions['lookup-clear'] = () => { draft = { ...draft, place: null }; rerender(); };
+actions['qs-pick'] = (el) => { const p = lookup.results?.[Number(el.dataset.i)]; if (!p) return; quick.picked = { ...p, fetchedAt: new Date().toISOString() }; quick.category = null; lookup.results = null; rerender(); };
+actions['qs-change'] = () => { quick.picked = null; rerender(); requestAnimationFrame(() => document.getElementById('lookup-q')?.focus()); };
+actions['qs-set'] = (el) => { quick[el.dataset.k] = el.dataset.v; rerender(); };
+actions['qs-manual'] = () => { manual = true; if (quick.picked) draft = { ...draft, place: quick.picked }; rerender(); };
+inputs['qs-ig'] = (el) => { quick.instagram = cleanHandle(el.value); };
+document.addEventListener('input', (e) => { if (e.target.matches?.('[data-in="qs-ig"]')) quick.instagram = cleanHandle(e.target.value); });
+actions['qs-go'] = () => {
+  const p = quick.picked; if (!p) return;
+  const d = { ...emptyDraft(), place: p, name: p.name, address: p.address, city: cityOf(p.address) || p.address, category: quick.category || typeToCategory(p.type), goal: quick.goal,
+    website: p.website ? p.website.replace(/^https?:\/\//, '').replace(/\/$/, '') : '', instagram: quick.instagram, phone: p.phone || '' };
+  saveBiz(d); quick.picked = null; manual = false; rerender();
+  actions['collect-signals']?.(); // straight into the first scan: one tap from "that's us" to results
+};
