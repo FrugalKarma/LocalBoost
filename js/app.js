@@ -28,6 +28,7 @@ import { displayName, getBiz } from './business.js';
 import './chat.js'; // "Ask Arcton" panel (registers its own actions)
 import { admin } from './views/admin.js';
 import { showSignin, repaintSignin, authErrorText } from './views/signin.js';
+import { showLanding, repaintLanding } from './views/landing.js';
 import { loadAuthConfig, authOn, signedIn, isAdmin, userEmail, userId, onAuthChange, readAuthHash, adoptLinkSession, signOut, refreshMe } from './auth.js';
 import { loadOwn, flush, viewingClient, closeClient, onCloud, localOwner } from './cloud.js';
 
@@ -250,7 +251,7 @@ document.addEventListener('mouseover', () => { tipScrollY = window.scrollY; }, {
 window.addEventListener('hashchange', () => { if (/(^|[#&])(access_token|error_description)=/.test(location.hash)) location.reload(); else onRoute(); });
 window.addEventListener('online', updateOnline);
 window.addEventListener('offline', updateOnline);
-onLang(() => { if (screen === 'signin') repaintSignin(); else renderAll(); closeModal(); });
+onLang(() => { if (screen === 'signin') repaintSignin(); else if (screen === 'landing') repaintLanding(); else renderAll(); closeModal(); });
 onInstallChange(() => { if (route === 'settings') rerender(); });
 
 /* ---------- accounts ---------- */
@@ -294,6 +295,13 @@ async function enterApp(kind = 'resume') {
   startApp();
 }
 
+/** Front page for visitors; its buttons lead to sign-up, sign-in or the example business. */
+function openLanding() {
+  screen = 'landing';
+  const auth = (mode) => () => { screen = 'signin'; showSignin({ mode, onDone: enterApp, onBack: openLanding, backKey: 'signin.backHome' }); };
+  showLanding({ signup: auth('signup'), signin: auth('signin'), example: () => { loadExample(); startApp(); go('overview'); } });
+}
+
 function startApp() {
   screen = 'app';
   route = parseRoute();
@@ -322,7 +330,7 @@ async function boot() {
     if (link.type === 'recovery') { screen = 'signin'; return showSignin({ mode: 'newpw', onDone: enterApp }); }
     return enterApp('link');
   }
-  if (!signedIn()) { screen = 'signin'; return showSignin({ onDone: enterApp }); }
+  if (!signedIn()) return openLanding();
   return enterApp('resume');
 }
 boot();

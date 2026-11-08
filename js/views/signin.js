@@ -20,15 +20,16 @@ export const authErrorText = (code) => t(`signin.err.${code === 'otp_expired' ||
 
 /** onDone(kind) runs after a successful sign-in, sign-up or password change. */
 let onBack = null;
+let backKey = 'signin.backToApp';
 export function showSignin(opts = {}) {
-  onBack = opts.onBack || null;
+  onBack = opts.onBack || null; backKey = opts.backKey || 'signin.backToApp';
   mode = opts.mode || 'signin';
   notice = opts.notice || null;
   if (opts.onDone) done = opts.onDone;
   busy = false; paint();
 }
 
-const stages = () => html`<ol class="auth-stages" aria-hidden="true">${['observe', 'diagnose', 'act', 'measure'].map((s, i) => html`<li data-stage="${s}"><span>0${i + 1}</span>${t(`journey.${s}`)}</li>`)}</ol>`;
+const points = () => html`<ul class="auth-points">${['qs.p1', 'land.truth.p2', 'qs.p3'].map((k) => html`<li>${icon('check', 16)}<span>${t(k)}</span></li>`)}</ul>`;
 
 function pwField(id, label, autocomplete) {
   return html`<label class="field"><span>${label}</span>
@@ -82,11 +83,12 @@ function paint() {
   app.innerHTML = html`<div class="auth">
     <aside class="auth-side">
       <div class="auth-brand"><img src="/icons/logo.svg" alt="" width="40" height="40"><strong>${BRAND.app}</strong></div>
+      <div class="orb auth-orb" aria-hidden="true"><span class="orb-glow"></span><span class="orb-core"></span><span class="orb-sheen"></span><img src="/icons/mark-light.svg" alt="" width="96" height="92"></div>
       <p class="auth-tag">${t('signin.tagline')}</p>
-      ${stages()}
+      ${points()}
     </aside>
     <main class="auth-main" id="main" tabindex="-1">
-      <div class="auth-top">${onBack ? html`<button type="button" class="btn btn-ghost btn-sm auth-back" data-auth="back">${icon('prev', 16)} ${t('signin.backToApp')}</button>` : ''}<label class="lang"><span class="sr-only">${t('settings.language')}</span>${icon('globe', 16)}<select data-in="lang-select" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<option value="${l.code}" ${getLang() === l.code ? 'selected' : ''}>${l.label}</option>`)}</select></label></div>
+      <div class="auth-top">${onBack ? html`<button type="button" class="btn btn-ghost btn-sm auth-back" data-auth="back">${icon('prev', 16)} ${t(backKey)}</button>` : ''}<label class="lang"><span class="sr-only">${t('settings.language')}</span>${icon('globe', 16)}<select data-in="lang-select" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<option value="${l.code}" ${getLang() === l.code ? 'selected' : ''}>${l.label}</option>`)}</select></label></div>
       <section class="auth-card">
         ${notice ? html`<p class="auth-notice auth-${notice.kind}" role="${notice.kind === 'error' ? 'alert' : 'status'}">${notice.text}</p>` : ''}
         ${form()}

@@ -8,7 +8,7 @@ const SHELL = ['/', '/index.html', '/manifest.json', '/css/styles.css', '/css/le
   '/js/app.js', '/js/boot.js', '/js/ai.js', '/js/api.js', '/js/auth.js', '/js/cloud.js', '/js/chat.js', '/js/business.js', '/js/charts.js', '/js/collect.js', '/js/core.js', '/js/i18n.js', '/js/insights.js', '/js/mission.js', '/js/names.js', '/js/prompts.js',
   '/js/plans.js', '/js/qr.js', '/js/images.js', '/js/brand.js', '/js/example.js', '/js/studio.js', '/js/fun.js', '/js/launch.js', '/js/motion.js', '/js/legal.js', '/js/legalText.js', '/js/display.js', '/js/pwa.js', '/js/registry.js', '/js/siteTemplate.js', '/js/sources.js', '/js/store.js', '/js/theme.js', '/js/website.js',
   '/js/locales/en.js', '/js/locales/ro.js', '/js/locales/fr.js', '/js/locales/de.js', '/js/locales/hu.js',
-  '/js/views/account.js', '/js/views/admin.js', '/js/views/plans.js', '/js/views/signin.js', '/js/views/competitors.js', '/js/views/diagnosis.js', '/js/views/mission.js', '/js/views/overview.js', '/js/views/pack.js',
+  '/js/views/account.js', '/js/views/admin.js', '/js/views/plans.js', '/js/views/signin.js', '/js/views/landing.js', '/js/views/competitors.js', '/js/views/diagnosis.js', '/js/views/mission.js', '/js/views/overview.js', '/js/views/pack.js',
   '/js/views/proof.js', '/js/views/settings.js', '/js/views/shared.js', '/js/views/signals.js', '/js/views/tools.js', '/js/views/info.js', '/js/views/website.js'];
 
 self.addEventListener('install', (e) => {
