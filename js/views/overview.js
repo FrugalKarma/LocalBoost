@@ -8,7 +8,7 @@ import { actions, inputs, rerender } from '../registry.js';
 import { CATEGORIES, GOALS, emptyDraft, getBiz, displayName, validate, saveBiz } from '../business.js';
 import { journey, nextAction, scanCard } from './shared.js';
 import { serverCaps, findPlaces } from '../sources.js';
-import { dayPart, PART_EMOJI, streak } from '../fun.js';
+import { dayPart, streak } from '../fun.js';
 import { liveMetrics, competitorList, loadSiteData, dailySeries, getSiteData } from '../insights.js';
 
 /* ---------- business details form ---------- */
@@ -177,15 +177,15 @@ export const overview = {
     const steps = stepList(s); const done = steps.filter(Boolean).length;
     return html`
     <header class="home-head fun-head">
-      <div><p class="greet"><span class="greet-emoji" aria-hidden="true">${PART_EMOJI[dayPart()]}</span>${t(`fun.greet.${dayPart()}`)}${first ? `, ${first}` : ''}!</p>
+      <div><p class="greet">${t(`fun.greet.${dayPart()}`)}${first ? `, ${first}` : ''}</p>
         <h1>${displayName()}</h1>
         <p class="home-step">${t('ledger.stepOf', { n: Math.min(done + 1, steps.length), total: steps.length })} · ${t(na.key)}</p></div>
-      <div class="fun-chips">
-        <span class="fchip"><i aria-hidden="true">🔥</i><b>${streak()}</b>${t('fun.streak')}</span>
-        <span class="fchip"><i aria-hidden="true">✅</i><b>${Object.values(s.studio?.plan?.done || {}).filter(Boolean).length}/7</b>${t('fun.plan')}</span>
-        <span class="fchip"><i aria-hidden="true">⭐</i><b>${m.rating != null ? m.rating : '–'}</b>${t('fun.rating')}</span>
-        <span class="fchip"><i aria-hidden="true">🎨</i><b>${s.studio?.stickers?.length || 0}</b>${t('fun.stickers')}</span>
-      </div>
+      <dl class="stat-strip">
+        <div><dt>${t('fun.rating')}</dt><dd><b>${m.rating != null ? m.rating : '–'}</b></dd></div>
+        <div><dt>${t('fun.plan')}</dt><dd><b>${Object.values(s.studio?.plan?.done || {}).filter(Boolean).length}</b><small>/7</small></dd></div>
+        <div><dt>${t('fun.streak')}</dt><dd><b>${streak()}</b></dd></div>
+        <div><dt>${t('fun.stickers')}</dt><dd><b>${s.studio?.stickers?.length || 0}</b></dd></div>
+      </dl>
     </header>
     <div class="home-grid">
       ${mapCard(m)}

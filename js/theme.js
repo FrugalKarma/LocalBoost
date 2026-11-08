@@ -7,7 +7,21 @@ export function currentTheme() {
 export function applyTheme(mode) {
   document.documentElement.dataset.theme = mode;
   try { localStorage.setItem(KEY, mode); } catch { /* ignore */ }
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', mode === 'dark' ? '#260B18' : '#54172A');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0A1422');
+}
+
+/**
+ * Switches from the launch page's stylesheets to the app's (css/app.css), so the countdown page and the app
+ * never style each other. The app opens dark unless the person picked a theme before.
+ */
+export function useAppStyles() {
+  const root = document.documentElement;
+  if (root.classList.contains('in-app')) return;
+  document.querySelectorAll('link[data-css="launch"]').forEach((l) => { l.media = 'not all'; });
+  document.querySelectorAll('link[data-css="app"]').forEach((l) => { l.media = 'all'; });
+  root.classList.add('in-app');
+  let saved = null; try { saved = localStorage.getItem(KEY); } catch { /* ignore */ }
+  if (!saved && !new URLSearchParams(location.search).get('theme')) root.dataset.theme = 'dark';
 }
 
 export function initTheme() {

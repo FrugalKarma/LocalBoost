@@ -115,13 +115,13 @@ export default {
   status: { live: 'Élő', inference: 'Következtetés' },
   journey: {
     observe: 'Megfigyelés',
-    observeSub: 'Értékelések, weboldal, vendégek',
+    observeSub: 'Tudod, mit mondanak a vendégek',
     diagnose: 'Elemzés',
-    diagnoseSub: 'A lehetőség megtalálása',
+    diagnoseSub: 'A legjobb lépésed, kiválasztva',
     act: 'Cselekvés',
-    actSub: 'Weboldal, ajánlat, posztok',
+    actSub: 'Weboldal, ajánlat, posztok: kész',
     measure: 'Mérés',
-    measureSub: 'Mi változott',
+    measureSub: 'Bizonyíték, hogy működött',
   },
   next: {
     analysis: 'Az AI-elemzés indítása',
@@ -152,7 +152,7 @@ export default {
   },
   signals: {
     title: 'Jelek',
-    sub: 'Mit mondanak a vásárlók és mit mutat nekik a weboldalad, csak valós forrásokból.',
+    sub: 'Minden értékelés, megjegyzés és weboldal-hiány egy helyen. Már tudod, mit gondolnak a vendégeid.',
     importCsv: 'Fájl importálása',
     filter: 'Szűrés a jel típusa szerint',
     type: {
@@ -206,7 +206,7 @@ export default {
   },
   diagnosis: {
     title: 'AI-diagnózis',
-    sub: 'Jelek be, egyetlen rangsorolt lehetőség ki, a mögötte álló bizonyítékokkal.',
+    sub: 'Az e heti legjobb lépésed, a mellette szóló bizonyítékokkal.',
     emptyTitle: 'Készen áll az elemzésre',
     emptyBody: 'Az elemzés szétválasztja a tényeket a következtetésektől, és megmondja, mit kell a tulajdonosnak megerősítenie.',
     running: 'Jelek elemzése…',
@@ -275,7 +275,7 @@ export default {
   },
   mission: {
     title: 'Mission Control',
-    sub: 'Egy hipotézis, egy ajánlat, egy 48 órás kísérlet.',
+    sub: 'Az ajánlatod, a terved és a következő 48 óra, már összeállítva.',
     status: {
       idle: 'Nem indult el',
       running: 'Fut',
@@ -432,7 +432,7 @@ export default {
   },
   proof: {
     title: 'Proof Board',
-    sub: 'Mit indítottál el, mi változott, és mi a következő lépés.',
+    sub: 'A megszerzett foglalások, értékelések és látogatások, előtte és utána.',
     record: 'Mérés most',
     update: 'Újramérés',
     status: {
@@ -820,7 +820,7 @@ export default {
   },
   comp: {
     title: 'Versenytársak',
-    sub: 'A tiédhez hasonló közeli helyek, valós Google-értékeléseikkel.',
+    sub: 'Minden hely a környékeden, valódi Google-értékelések szerint. Pontosan látod, hol nyersz.',
     emptyTitle: 'A közeli versenytársak megtekintése',
     emptyBody: 'Keress a Google-on a tiédhez hasonló helyeket 1,5 km-en belül, és hasonlítsd össze az értékeléseket, véleményeket és weboldalakat.',
     scan: 'Közeli helyek keresése',
@@ -992,7 +992,7 @@ export default {
   },
   plans: {
     title: 'Csomagok',
-    sub: 'Minden csomag tartalmazza a teljes weboldal-szerkesztőt. A Business online teszi a weboldalad.',
+    sub: 'Minden csomag felépíti a teljes weboldaladat. A Business online is teszi.',
     soon: 'A fizetős csomagok még nem érhetők el. Addig mindenki az Ingyenes csomagot használja, minden funkcióval.',
     popular: 'A legnépszerűbb',
     perMonth: '/ hó',
@@ -1293,7 +1293,7 @@ export default {
     s: { brand: 'A te színeid', mono: 'Fekete-fehér' },
   },
   bld: {
-    sub2: 'Tervezd meg a weboldalad: kattints az előnézet bármely részére a szerkesztéshez.',
+    sub2: 'A weboldalad, a valódi adataidból felépítve. Kattints bármelyik részére a módosításhoz.',
     tab: {
       sections: 'Részek',
       design: 'Dizájn',
@@ -1647,7 +1647,7 @@ export default {
   },
   studio: {
     title: 'Akció stúdió',
-    sub: 'Egy ajánlat, mindenhol megtervezve: a weboldalon, egy posztban, matricákon és a pultnál.',
+    sub: 'Az ajánlatod mindenhol készen: weboldalon, posztokban, matricákon és a pult plakátján.',
     modeLocal: 'Sablonokból írva (az AI ki van kapcsolva). Használat előtt bármit szerkeszthetsz.',
     tab: {
       offer: 'Ajánlat',

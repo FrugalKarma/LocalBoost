@@ -115,13 +115,13 @@ export default {
   status: { live: 'Live', inference: 'Inference' },
   journey: {
     observe: 'Observe',
-    observeSub: 'Reviews, website, customers',
+    observeSub: 'Know what customers say',
     diagnose: 'Analyse',
-    diagnoseSub: 'Find the opportunity',
+    diagnoseSub: 'Your best move, picked',
     act: 'Act',
-    actSub: 'Website, offer, posts',
+    actSub: 'Site, offer and posts, ready',
     measure: 'Measure',
-    measureSub: 'See what changed',
+    measureSub: 'Proof it worked',
   },
   next: {
     analysis: 'Run the AI analysis',
@@ -152,7 +152,7 @@ export default {
   },
   signals: {
     title: 'Signals',
-    sub: 'What customers say and what your website shows them, from real sources only.',
+    sub: 'Every review, comment and website gap in one place. You already know what customers think.',
     importCsv: 'Import file',
     filter: 'Filter by signal type',
     type: {
@@ -206,7 +206,7 @@ export default {
   },
   diagnosis: {
     title: 'AI Diagnosis',
-    sub: 'Signals in, one prioritised opportunity out, with the evidence behind it.',
+    sub: 'Your one best move for this week, with the evidence that backs it.',
     emptyTitle: 'Ready to analyse',
     emptyBody: 'The analysis separates facts from inferences and tells you what the owner must confirm.',
     running: 'Analysing signals…',
@@ -275,7 +275,7 @@ export default {
   },
   mission: {
     title: 'Mission Control',
-    sub: 'One hypothesis, one offer, one 48-hour experiment.',
+    sub: 'Your offer, your plan and the next 48 hours, already laid out.',
     status: {
       idle: 'Not started',
       running: 'Running',
@@ -432,7 +432,7 @@ export default {
   },
   proof: {
     title: 'Proof Board',
-    sub: 'What you started, what changed, and what to do next.',
+    sub: 'The bookings, reviews and visits you gained, before and after.',
     record: 'Measure now',
     update: 'Measure again',
     status: {
@@ -820,7 +820,7 @@ export default {
   },
   comp: {
     title: 'Competitors',
-    sub: 'Nearby places like yours, with their real Google ratings and reviews.',
+    sub: 'Every place near you, ranked by real Google ratings. See exactly where you win.',
     emptyTitle: 'See the nearby competition',
     emptyBody: 'Search Google for places like yours within 1.5 km and compare ratings, reviews and websites.',
     scan: 'Find places nearby',
@@ -977,7 +977,7 @@ export default {
   },
   plans: {
     title: 'Plans',
-    sub: 'Every plan includes the full website designer. Business puts your website online.',
+    sub: 'Every plan builds your full website. Business puts it online.',
     soon: 'Paid plans are not available yet. Everyone uses Free with everything switched on until then.',
     popular: 'Most popular',
     perMonth: '/ month',
@@ -1275,7 +1275,7 @@ export default {
     s: { brand: 'Your colours', mono: 'Black and white' },
   },
   bld: {
-    sub2: 'Design your website: click any part of the preview to edit it.',
+    sub2: 'Your website, built from your real details. Click any part to change it.',
     tab: {
       sections: 'Sections',
       design: 'Design',
@@ -1629,7 +1629,7 @@ export default {
   },
   studio: {
     title: 'Action Studio',
-    sub: 'One offer, designed everywhere: on your website, in a post, on stickers and on your counter.',
+    sub: 'Your offer, finished everywhere: website, posts, stickers and the poster on your counter.',
     modeLocal: 'Written from templates (the AI is off). Edit anything before using it.',
     tab: {
       offer: 'Offer',

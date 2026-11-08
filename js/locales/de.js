@@ -115,13 +115,13 @@ export default {
   status: { live: 'Live', inference: 'Schluss' },
   journey: {
     observe: 'Beobachten',
-    observeSub: 'Bewertungen, Website, Kunden',
+    observeSub: 'Wissen, was Kunden sagen',
     diagnose: 'Analysieren',
-    diagnoseSub: 'Die Chance finden',
+    diagnoseSub: 'Ihr bester Schritt, gewählt',
     act: 'Handeln',
-    actSub: 'Website, Angebot, Posts',
+    actSub: 'Website, Angebot, Posts: fertig',
     measure: 'Messen',
-    measureSub: 'Sehen, was sich ändert',
+    measureSub: 'Der Beweis, dass es wirkt',
   },
   next: {
     analysis: 'KI-Analyse starten',
@@ -152,7 +152,7 @@ export default {
   },
   signals: {
     title: 'Signale',
-    sub: 'Was Kunden sagen und was deine Website ihnen zeigt, nur aus echten Quellen.',
+    sub: 'Jede Bewertung, jeder Kommentar und jede Lücke Ihrer Website an einem Ort. Sie wissen schon, was Ihre Kunden denken.',
     importCsv: 'Datei importieren',
     filter: 'Nach Signaltyp filtern',
     type: {
@@ -206,7 +206,7 @@ export default {
   },
   diagnosis: {
     title: 'KI-Diagnose',
-    sub: 'Signale hinein, eine priorisierte Chance heraus, samt Belegen.',
+    sub: 'Ihr bester Schritt für diese Woche, mit den Belegen dafür.',
     emptyTitle: 'Bereit zur Analyse',
     emptyBody: 'Die Analyse trennt Fakten von Schlussfolgerungen und zeigt, was der Inhaber bestätigen muss.',
     running: 'Signale werden analysiert…',
@@ -275,7 +275,7 @@ export default {
   },
   mission: {
     title: 'Mission Control',
-    sub: 'Eine Hypothese, ein Angebot, ein 48-Stunden-Experiment.',
+    sub: 'Ihr Angebot, Ihr Plan und die nächsten 48 Stunden, schon vorbereitet.',
     status: {
       idle: 'Nicht gestartet',
       running: 'Läuft',
@@ -432,7 +432,7 @@ export default {
   },
   proof: {
     title: 'Proof Board',
-    sub: 'Was du gestartet hast, was sich geändert hat und wie es weitergeht.',
+    sub: 'Die gewonnenen Buchungen, Bewertungen und Besuche, vorher und nachher.',
     record: 'Jetzt messen',
     update: 'Erneut messen',
     status: {
@@ -820,7 +820,7 @@ export default {
   },
   comp: {
     title: 'Konkurrenz',
-    sub: 'Orte wie deiner in der Nähe, mit ihren echten Google-Bewertungen.',
+    sub: 'Alle Orte in Ihrer Nähe, nach echten Google-Bewertungen. Sehen Sie genau, wo Sie vorne liegen.',
     emptyTitle: 'Die Konkurrenz in der Nähe ansehen',
     emptyBody: 'Suche bei Google nach Orten wie deinem im Umkreis von 1,5 km und vergleiche Bewertungen, Rezensionen und Websites.',
     scan: 'Orte in der Nähe finden',
@@ -1012,7 +1012,7 @@ export default {
   },
   plans: {
     title: 'Tarife',
-    sub: 'Jeder Tarif enthält den vollständigen Website-Editor. Business bringt Ihre Website online.',
+    sub: 'Jeder Tarif baut Ihre komplette Website. Business stellt sie online.',
     soon: 'Bezahlte Tarife sind noch nicht verfügbar. Bis dahin nutzen alle Kostenlos mit allen Funktionen.',
     popular: 'Am beliebtesten',
     perMonth: '/ Monat',
@@ -1318,7 +1318,7 @@ export default {
     s: { brand: 'Ihre Farben', mono: 'Schwarz-Weiß' },
   },
   bld: {
-    sub2: 'Gestalten Sie Ihre Website: Klicken Sie auf einen Teil der Vorschau, um ihn zu bearbeiten.',
+    sub2: 'Ihre Website, aus Ihren echten Daten gebaut. Klicken Sie auf einen Teil, um ihn zu ändern.',
     tab: {
       sections: 'Bereiche',
       design: 'Design',
@@ -1672,7 +1672,7 @@ export default {
   },
   studio: {
     title: 'Aktionsstudio',
-    sub: 'Ein Angebot, überall gestaltet: auf Ihrer Website, in einem Post, auf Stickern und an der Theke.',
+    sub: 'Ihr Angebot, überall fertig: Website, Posts, Sticker und das Plakat an der Theke.',
     modeLocal: 'Aus Vorlagen geschrieben (KI aus). Passen Sie alles vor der Nutzung an.',
     tab: {
       offer: 'Angebot',

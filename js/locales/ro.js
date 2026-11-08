@@ -115,13 +115,13 @@ export default {
   status: { live: 'Live', inference: 'Inferență' },
   journey: {
     observe: 'Observă',
-    observeSub: 'Recenzii, site, clienți',
+    observeSub: 'Știi ce spun clienții',
     diagnose: 'Analizează',
-    diagnoseSub: 'Găsește oportunitatea',
+    diagnoseSub: 'Cea mai bună mutare, aleasă',
     act: 'Acționează',
-    actSub: 'Site, ofertă, postări',
+    actSub: 'Site, ofertă și postări, gata',
     measure: 'Măsoară',
-    measureSub: 'Vezi ce s-a schimbat',
+    measureSub: 'Dovada că a mers',
   },
   next: {
     analysis: 'Rulează analiza AI',
@@ -152,7 +152,7 @@ export default {
   },
   signals: {
     title: 'Semnale',
-    sub: 'Ce spun clienții și ce le arată site-ul tău, doar din surse reale.',
+    sub: 'Fiecare recenzie, comentariu și lipsă de pe site, într-un singur loc. Știi deja ce cred clienții.',
     importCsv: 'Importă fișier',
     filter: 'Filtrează după tipul semnalului',
     type: {
@@ -206,7 +206,7 @@ export default {
   },
   diagnosis: {
     title: 'Diagnostic AI',
-    sub: 'Semnale la intrare, o singură oportunitate prioritizată la ieșire, cu dovezile din spate.',
+    sub: 'Cea mai bună mutare a ta pentru săptămâna asta, cu dovezile care o susțin.',
     emptyTitle: 'Gata de analiză',
     emptyBody: 'Analiza separă faptele de inferențe și îți spune ce trebuie să confirme proprietarul.',
     running: 'Analizez semnalele…',
@@ -275,7 +275,7 @@ export default {
   },
   mission: {
     title: 'Mission Control',
-    sub: 'O ipoteză, o ofertă, un experiment de 48 de ore.',
+    sub: 'Oferta ta, planul tău și următoarele 48 de ore, deja puse la punct.',
     status: {
       idle: 'Nepornită',
       running: 'În desfășurare',
@@ -432,7 +432,7 @@ export default {
   },
   proof: {
     title: 'Proof Board',
-    sub: 'Ce ai pornit, ce s-a schimbat și ce faci mai departe.',
+    sub: 'Rezervările, recenziile și vizitele câștigate, înainte și după.',
     record: 'Măsoară acum',
     update: 'Măsoară din nou',
     status: {
@@ -820,7 +820,7 @@ export default {
   },
   comp: {
     title: 'Concurență',
-    sub: 'Locuri ca al tău din apropiere, cu notele și recenziile lor reale de pe Google.',
+    sub: 'Toate locurile din jurul tău, după notele reale de pe Google. Vezi exact unde câștigi.',
     emptyTitle: 'Vezi concurența din zonă',
     emptyBody: 'Caută pe Google locuri ca al tău pe o rază de 1,5 km și compară note, recenzii și site-uri.',
     scan: 'Găsește locuri din apropiere',
@@ -981,7 +981,7 @@ export default {
   },
   plans: {
     title: 'Abonamente',
-    sub: 'Fiecare plan include editorul complet de site. Business îți pune site-ul online.',
+    sub: 'Fiecare plan îți construiește site-ul complet. Business îl pune online.',
     soon: 'Abonamentele plătite nu sunt disponibile încă. Până atunci, toată lumea folosește Gratuit cu tot ce e pornit.',
     popular: 'Cel mai ales',
     perMonth: '/ lună',
@@ -1282,7 +1282,7 @@ export default {
     s: { brand: 'Culorile tale', mono: 'Alb-negru' },
   },
   bld: {
-    sub2: 'Creează-ți site-ul: dă clic pe orice parte din previzualizare ca să o editezi.',
+    sub2: 'Site-ul tău, construit din datele tale reale. Dă clic pe orice parte ca să o schimbi.',
     tab: {
       sections: 'Secțiuni',
       design: 'Design',
@@ -1636,7 +1636,7 @@ export default {
   },
   studio: {
     title: 'Studio de acțiune',
-    sub: 'O singură ofertă, prezentă peste tot: pe site, într-o postare, pe autocolante și pe tejghea.',
+    sub: 'Oferta ta, gata peste tot: pe site, în postări, pe autocolante și pe afișul de pe tejghea.',
     modeLocal: 'Scris din șabloane (AI este oprit). Editează orice înainte să folosești.',
     tab: {
       offer: 'Ofertă',

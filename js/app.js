@@ -1,6 +1,7 @@
 import { html, raw, icon, $, $$, toast, closeModal, confirmDialog } from './core.js';
 import { t, initLang, setLang, onLang, LANGS, getLang } from './i18n.js';
-import { initTheme, toggleTheme, currentTheme, themeTransition } from './theme.js';
+import { initTheme, toggleTheme, currentTheme, themeTransition, useAppStyles } from './theme.js';
+import { animateNumbers } from './motion.js';
 import { getState, subscribe } from './store.js';
 import { actions, inputs, setRerender, ROUTES, go } from './registry.js';
 import { registerSW, onInstallChange } from './pwa.js';
@@ -47,17 +48,16 @@ const STAGES = [
   { id: 'act', routes: ['mission', 'website', 'pack'], n: '03' },
   { id: 'measure', routes: ['proof'], n: '04' },
 ];
-const STAGE_EMOJI = { home: '🏠', observe: '👀', diagnose: '🧠', act: '🚀', measure: '📈' };
 const stageOf = (r) => STAGES.find((s) => s.routes.includes(r)) || null;
 const stageLabel = (s) => (s.id === 'home' ? t('nav.home') : t(`journey.${s.id}`));
 
 function stageTab(s) {
   const cur = stageOf(route)?.id === s.id;
   const done = s.id !== 'home' && journeyState()[s.id];
-  const mark = html`<span class="stage-emoji">${STAGE_EMOJI[s.id]}</span>${done ? html`<i class="stage-done">${icon('check', 10)}</i>` : ''}`;
+  const mark = s.id === 'home' ? icon('overview', 16) : done ? icon('check', 15) : html`<b>${s.n}</b>`;
   const sub = cur && s.routes.length > 1 ? html`<ul class="side-sub">${s.routes.map((r) => html`<li><a href="#/${r}" ${raw(r === route ? 'aria-current="page"' : '')}>${t(`nav.${r}`)}</a></li>`)}</ul>` : '';
   return html`<li><a class="stage-tab" data-stage="${s.id}" href="#/${s.routes[0]}" ${raw(cur ? 'aria-current="page"' : '')} title="${stageLabel(s)}">
-    <span class="stage-n" aria-hidden="true">${mark}</span><span class="stage-label">${stageLabel(s)}${s.id === 'home' ? '' : html`<small>${t(`journey.${s.id}Sub`)}</small>`}</span></a>${sub}</li>`;
+    <span class="stage-n ${done ? 'is-done' : ''}" aria-hidden="true">${mark}</span><span class="stage-label">${stageLabel(s)}${s.id === 'home' ? '' : html`<small>${t(`journey.${s.id}Sub`)}</small>`}</span></a>${sub}</li>`;
 }
 const SIDE_LINKS = [['info', 'help'], ['plans', 'star'], ['settings', 'settings']];
 function sideLinks() {
@@ -124,12 +124,13 @@ function shell() {
   </nav>`;
 }
 
+let lastShown = ''; // numbers count up when a screen opens, not on every small update
 function renderView(keepScroll = false) {
   const main = $('#main'); if (!main) return;
   const y = window.scrollY;
   const v = views[route];
   document.body.dataset.route = route;
-  try { main.innerHTML = v.render().s; v.mount?.(); }
+  try { main.innerHTML = v.render().s; v.mount?.(); if (route !== lastShown) { lastShown = route; animateNumbers(main); } }
   catch (e) { console.error('[Arcton] render failed', e); main.innerHTML = html`<div class="card empty-hero"><h2>${t('common.errorGeneric')}</h2><button class="btn btn-primary" data-act="go" data-route="overview">${t('nav.overview')}</button></div>`.s; }
   updateChrome();
   document.title = `${t(`nav.${route}`)} · ${BRAND.app}`;
@@ -298,6 +299,7 @@ async function boot() {
   registerSW();
   window.__arcton = window.__localboost = { go, getState }; // debug handle for QA
   await launchGate(); // before launch day: the coming-soon page, until unlocked
+  useAppStyles(); // the app has its own stylesheet; the launch page keeps its own
   const link = readAuthHash(); // came back from an email link (confirm sign-up / reset password)
   const on = await loadAuthConfig();
   if (!on) return startApp();

@@ -115,13 +115,13 @@ export default {
   status: { live: 'Réel', inference: 'Inférence' },
   journey: {
     observe: 'Observer',
-    observeSub: 'Avis, site, clients',
+    observeSub: 'Ce disent vos clients',
     diagnose: 'Analyser',
-    diagnoseSub: 'Trouver l’opportunité',
+    diagnoseSub: 'Votre meilleur coup, choisi',
     act: 'Agir',
-    actSub: 'Site, offre, publications',
+    actSub: 'Site, offre et posts, prêts',
     measure: 'Mesurer',
-    measureSub: 'Voir ce qui a changé',
+    measureSub: 'La preuve que ça marche',
   },
   next: {
     analysis: 'Lancer l’analyse IA',
@@ -152,7 +152,7 @@ export default {
   },
   signals: {
     title: 'Signaux',
-    sub: 'Ce que disent les clients et ce que votre site leur montre, uniquement depuis des sources réelles.',
+    sub: 'Chaque avis, commentaire et manque de votre site, au même endroit. Vous savez déjà ce que pensent vos clients.',
     importCsv: 'Importer un fichier',
     filter: 'Filtrer par type de signal',
     type: {
@@ -206,7 +206,7 @@ export default {
   },
   diagnosis: {
     title: 'Diagnostic IA',
-    sub: 'Des signaux en entrée, une opportunité prioritaire en sortie, avec les preuves.',
+    sub: 'Votre meilleure action de la semaine, avec les preuves qui la justifient.',
     emptyTitle: 'Prêt pour l’analyse',
     emptyBody: 'L’analyse sépare les faits des inférences et indique ce que le propriétaire doit confirmer.',
     running: 'Analyse des signaux…',
@@ -275,7 +275,7 @@ export default {
   },
   mission: {
     title: 'Mission Control',
-    sub: 'Une hypothèse, une offre, une expérience de 48 heures.',
+    sub: 'Votre offre, votre plan et les 48 prochaines heures, déjà prêts.',
     status: {
       idle: 'Non démarrée',
       running: 'En cours',
@@ -432,7 +432,7 @@ export default {
   },
   proof: {
     title: 'Proof Board',
-    sub: 'Ce que vous avez lancé, ce qui a changé et la suite.',
+    sub: 'Les réservations, avis et visites gagnés, avant et après.',
     record: 'Mesurer maintenant',
     update: 'Mesurer à nouveau',
     status: {
@@ -820,7 +820,7 @@ export default {
   },
   comp: {
     title: 'Concurrence',
-    sub: 'Les lieux comme le vôtre à proximité, avec leurs vraies notes et avis Google.',
+    sub: 'Tous les lieux autour de vous, classés par leurs vraies notes Google. Voyez exactement où vous gagnez.',
     emptyTitle: 'Voir la concurrence proche',
     emptyBody: 'Cherchez sur Google les lieux comme le vôtre dans un rayon de 1,5 km et comparez notes, avis et sites.',
     scan: 'Trouver les lieux à proximité',
@@ -995,7 +995,7 @@ export default {
   },
   plans: {
     title: 'Offres',
-    sub: 'Chaque formule inclut l’éditeur de site complet. Business met votre site en ligne.',
+    sub: 'Chaque formule construit votre site complet. Business le met en ligne.',
     soon: 'Les offres payantes ne sont pas encore disponibles. D’ici là, tout le monde utilise Gratuit avec tout activé.',
     popular: 'La plus choisie',
     perMonth: '/ mois',
@@ -1296,7 +1296,7 @@ export default {
     s: { brand: 'Vos couleurs', mono: 'Noir et blanc' },
   },
   bld: {
-    sub2: 'Créez votre site : cliquez sur n’importe quelle partie de l’aperçu pour la modifier.',
+    sub2: 'Votre site, construit à partir de vos vraies infos. Cliquez sur une partie pour la modifier.',
     tab: {
       sections: 'Sections',
       design: 'Design',
@@ -1650,7 +1650,7 @@ export default {
   },
   studio: {
     title: 'Studio d’action',
-    sub: 'Une seule offre, partout : sur votre site, dans une publication, sur des autocollants et au comptoir.',
+    sub: 'Votre offre, finie partout : site, publications, autocollants et affiche au comptoir.',
     modeLocal: 'Rédigé à partir de modèles (IA désactivée). Modifiez tout avant de l’utiliser.',
     tab: {
       offer: 'Offre',
