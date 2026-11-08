@@ -1,7 +1,8 @@
 // Launch page ("coming soon"): shown instead of the app until the launch moment set on the server
 // (/api/auth?op=config → maintenance). The owner password unlocks it for 30 days on that browser;
 // a signed-in owner passes straight through. When the countdown ends the page reloads into the app.
-import { html, icon, toast, copyText, $ } from './core.js';
+import { html, raw, toast, copyText, $ } from './core.js';
+import { scene } from './scene.js';
 import { t, LANGS, getLang, setLang, onLang } from './i18n.js';
 import { apiUrl } from './api.js';
 import { BRAND } from './brand.js';
@@ -49,31 +50,51 @@ function parts(ms) {
 const pad = (n) => String(n).padStart(2, '0');
 const dateText = (ms) => new Intl.DateTimeFormat(getLang(), { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Bucharest' }).format(ms);
 
+// The climb to launch day: the trail runs from the foot of the mountain to the peak (30 days), the diamond is today.
+const WINDOW = 30 * 86400e3;
+const TRAIL = 'M600 900 C 760 760, 880 520, 900 380 S 1020 260, 1060 170';
+const climbed = (launch) => Math.min(1, Math.max(0, 1 - (launch - Date.now()) / WINDOW));
+
 function page(launch, unlockOpen, err) {
   const p = parts(launch - Date.now());
-  const unit = (k, v) => html`<div class="cd-unit"><b data-cd="${k}">${k === 'd' ? v : pad(v)}</b><span>${t(`soon.unit.${k}`)}</span></div>`;
-  return html`<div class="soon">
-    <div class="soon-blob b1"></div><div class="soon-blob b2"></div><div class="soon-blob b3"></div>
-    <header class="soon-top"><span class="soon-brand"><img src="/icons/logo.svg" alt="" width="40" height="40"><b>${BRAND.app}</b></span>
-      <label class="lang"><span class="sr-only">${t('settings.language')}</span>${icon('globe', 16)}<select data-soon="lang" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<option value="${l.code}" ${getLang() === l.code ? 'selected' : ''}>${l.label}</option>`)}</select></label></header>
-    <main class="soon-main" id="main">
-      <p class="soon-badge"><span aria-hidden="true">🚧</span> ${t('soon.badge', { date: dateText(launch) })}</p>
-      <h1>${t('soon.title')}</h1>
-      <p class="soon-lede">${t('soon.lede', { app: BRAND.app })}</p>
-      <div class="countdown" role="timer" aria-live="off" aria-label="${t('soon.left')}">${unit('d', p.d)}<i>:</i>${unit('h', p.h)}<i>:</i>${unit('m', p.m)}<i>:</i>${unit('s', p.s)}</div>
-      <div class="soon-actions">
-        <button class="btn btn-primary btn-lg" data-soon="share">${icon('share', 18)} ${t('soon.share')}</button>
-        <button class="btn btn-secondary btn-lg" data-soon="calendar">${icon('calendar', 18)} ${t('soon.remind')}</button></div>
-      <ul class="soon-feats">${[['👀', 'f1'], ['🌐', 'f2'], ['🎨', 'f3'], ['📈', 'f4']].map(([e, k]) => html`<li><span class="sf-e" aria-hidden="true">${e}</span><div><b>${t(`soon.${k}t`)}</b><span>${t(`soon.${k}`)}</span></div></li>`)}</ul>
+  const unit = (k, v) => html`<div class="cd-unit ${k === 's' ? 'is-s' : ''}"><b data-cd="${k}">${k === 'd' ? v : pad(v)}</b><span>${t(`soon.unit.${k}`)}</span></div>`;
+  const pct = Math.round(climbed(launch) * 100);
+  return html`<div class="cd">
+    <div class="cd-scene" aria-hidden="true">${raw(scene(2))}
+      <svg class="cd-trail" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice"><path class="cd-route" d="${TRAIL}"/><path class="cd-walked" id="cd-walked" d="${TRAIL}" pathLength="1" style="stroke-dashoffset:${1 - pct / 100}"/>
+        <g id="cd-me"><rect x="-7" y="-7" width="14" height="14" transform="rotate(45)" class="cd-me"/><rect x="-14" y="-14" width="28" height="28" transform="rotate(45)" class="cd-me-ring"/>
+          <text x="20" y="5" class="cd-here">${t('soon.here', { p: pct })}</text></g>
+        <rect x="1053" y="163" width="14" height="14" transform="rotate(45 1060 170)" class="cd-peak"/><line x1="1060" y1="150" x2="1060" y2="112" class="cd-leader"/></svg>
+      <p class="cd-peak-l"><b>III</b>${t('soon.peak', { date: new Intl.DateTimeFormat(getLang(), { day: '2-digit', month: '2-digit', timeZone: 'Europe/Bucharest' }).format(launch) })}<small>${t('soon.peakSub')}</small></p></div>
+    <header class="cd-top"><span class="cd-brand"><img src="/icons/logo.svg" alt="" width="28" height="28"><b>${BRAND.app}</b></span>
+      <label class="cd-lang"><span class="sr-only">${t('settings.language')}</span><select data-soon="lang" aria-label="${t('settings.language')}">${LANGS.map((l) => html`<option value="${l.code}" ${getLang() === l.code ? 'selected' : ''}>${l.label}</option>`)}</select></label></header>
+    <main class="cd-main" id="main">
+      <p class="cd-k">${t('soon.badge', { date: dateText(launch) })}</p>
+      <h1>${t('soon.headA')} <em>${t('soon.headB')}</em> ${t('soon.headC')}</h1>
+      <p class="cd-lede">${t('soon.lede', { app: BRAND.app })}</p>
+      <div class="cd-clock" role="timer" aria-live="off" aria-label="${t('soon.left')}">${unit('d', p.d)}${unit('h', p.h)}${unit('m', p.m)}${unit('s', p.s)}</div>
+      <div class="cd-actions">
+        <button class="cd-btn is-primary" data-soon="calendar">${t('soon.remind')}</button>
+        <button class="cd-btn" data-soon="share">${t('soon.share')}</button></div>
+      <ol class="cd-feats">${['f1', 'f2', 'f3', 'f4'].map((k, i) => html`<li><i>${['I', 'II', 'III', 'IV'][i]}</i><div><b>${t(`soon.${k}t`)}</b><span>${t(`soon.${k}`)}</span></div></li>`)}</ol>
     </main>
-    <footer class="soon-foot">
-      ${unlockOpen ? html`<form class="soon-unlock" data-soon-form novalidate><label class="field"><span>${t('soon.pw')}</span>
+    <footer class="cd-foot">
+      ${unlockOpen ? html`<form class="cd-unlock" data-soon-form novalidate><label><span>${t('soon.pw')}</span>
           <input id="soon-pw" type="password" autocomplete="current-password" maxlength="200"></label>
-          <button type="submit" class="btn btn-primary">${icon('check', 16)} ${t('soon.unlock')}</button>
-          ${err ? html`<p class="soon-err" role="alert">${t(err === 'rate_limited' ? 'signin.err.rate_limited' : err === 'network' ? 'signin.err.network' : 'soon.wrong')}</p>` : ''}</form>`
-        : html`<button class="link-btn" data-soon="unlock">${icon('account', 15)} ${t('soon.access')}</button>`}
-      <p>© ${new Date().getFullYear()} ${BRAND.company} · <button class="link-btn" data-soon="privacy">${t('legal.privacy')}</button></p>
+          <button type="submit" class="cd-btn is-primary">${t('soon.unlock')}</button>
+          ${err ? html`<p class="cd-err" role="alert">${t(err === 'rate_limited' ? 'signin.err.rate_limited' : err === 'network' ? 'signin.err.network' : 'soon.wrong')}</p>` : ''}</form>`
+        : html`<button class="cd-link" data-soon="unlock">${t('soon.access')}</button>`}
+      <p>© ${new Date().getFullYear()} ${BRAND.company} · <button class="cd-link" data-soon="privacy">${t('legal.privacy')}</button></p>
     </footer></div>`;
+}
+
+/** Puts the diamond at today's point on the trail. */
+function placeMe(launch) {
+  const path = document.getElementById('cd-walked'); const me = document.getElementById('cd-me'); if (!path || !me) return;
+  const L = path.getTotalLength(); const pt = path.getPointAtLength(L * climbed(launch));
+  me.setAttribute('transform', `translate(${pt.x.toFixed(1)} ${pt.y.toFixed(1)})`);
+  const peak = document.querySelector('.cd-leader')?.getBoundingClientRect(); const l = document.querySelector('.cd-peak-l');
+  if (peak && l) { l.style.left = `${peak.left}px`; l.style.top = `${peak.top - 8}px`; }
 }
 
 function show(launch, resolve) {
@@ -81,8 +102,9 @@ function show(launch, resolve) {
   const app = document.getElementById('app');
   document.body.dataset.route = 'soon';
   document.title = `${BRAND.app} · ${t('soon.short', { date: dateText(launch) })}`;
-  const paint = () => { app.innerHTML = page(launch, open, err).s; if (open) $('#soon-pw')?.focus(); };
+  const paint = () => { app.innerHTML = page(launch, open, err).s; placeMe(launch); if (open) $('#soon-pw')?.focus(); };
   paint();
+  const onResize = () => placeMe(launch); window.addEventListener('resize', onResize);
   clearInterval(timer);
   timer = setInterval(() => {
     const left = launch - Date.now();
@@ -91,7 +113,7 @@ function show(launch, resolve) {
     Object.entries(p).forEach(([k, v]) => { const el = app.querySelector(`[data-cd="${k}"]`); const txt = k === 'd' ? String(v) : pad(v); if (el && el.textContent !== txt) { el.textContent = txt; el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick'); } });
   }, 1000);
   const stopLang = onLang(() => { document.title = `${BRAND.app} · ${t('soon.short', { date: dateText(launch) })}`; paint(); });
-  const finish = () => { clearInterval(timer); app.removeEventListener('click', onClick); app.removeEventListener('submit', onSubmit); app.removeEventListener('change', onChange); stopLang?.(); delete document.body.dataset.route; resolve(); };
+  const finish = () => { window.removeEventListener('resize', onResize); clearInterval(timer); app.removeEventListener('click', onClick); app.removeEventListener('submit', onSubmit); app.removeEventListener('change', onChange); stopLang?.(); delete document.body.dataset.route; resolve(); };
   const onChange = (e) => { if (e.target.matches('[data-soon="lang"]')) setLang(e.target.value); };
   const onClick = async (e) => {
     const b = e.target.closest('[data-soon]'); if (!b) return;

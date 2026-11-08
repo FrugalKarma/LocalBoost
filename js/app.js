@@ -1,9 +1,9 @@
-import { html, raw, icon, $, $$, toast, closeModal, confirmDialog } from './core.js';
+import { html, icon, $, $$, toast, closeModal, confirmDialog } from './core.js';
 import { t, initLang, setLang, onLang, LANGS, getLang } from './i18n.js';
 import { initTheme, toggleTheme, currentTheme, themeTransition, useAppStyles } from './theme.js';
 import { animateNumbers } from './motion.js';
 import { getState, subscribe } from './store.js';
-import { actions, inputs, setRerender, ROUTES, go } from './registry.js';
+import { actions, inputs, setRerender, go } from './registry.js';
 import { registerSW, onInstallChange } from './pwa.js';
 import { overview } from './views/overview.js';
 import { signals } from './views/signals.js';
@@ -29,6 +29,8 @@ import './chat.js'; // "Ask Arcton" panel (registers its own actions)
 import { admin } from './views/admin.js';
 import { showSignin, repaintSignin, authErrorText } from './views/signin.js';
 import { showLanding, repaintLanding } from './views/landing.js';
+import { ridge, animateRidge, trailButton, trailMap } from './ridge.js';
+import { scene } from './scene.js';
 import { loadAuthConfig, authOn, signedIn, isAdmin, userEmail, userId, onAuthChange, readAuthHash, adoptLinkSession, signOut, refreshMe } from './auth.js';
 import { loadOwn, flush, viewingClient, closeClient, onCloud, localOwner } from './cloud.js';
 
@@ -39,47 +41,29 @@ let screen = 'boot'; // boot | signin | loading | app
 
 const parseRoute = () => { const r = (location.hash.replace(/^#\/?/, '') || 'overview').split('?')[0]; return views[r] && (r !== 'admin' || isAdmin()) ? r : 'overview'; };
 
-/* ---------- journey navigation: Home + the four stages, each with its own colour ---------- */
-// Settings and Account are reached from the account menu; they belong to no stage.
-const STAGES = [
-  { id: 'home', routes: ['overview'], n: '' },
-  // three steps up the mountain; acting is the peak, so it comes last. Competitors and results belong to the analysis.
-  { id: 'observe', routes: ['signals'], n: 'I' },
-  { id: 'diagnose', routes: ['diagnosis', 'competitors', 'proof'], n: 'II' },
-  { id: 'act', routes: ['mission', 'website', 'pack'], n: 'III' },
-];
-const stageOf = (r) => STAGES.find((s) => s.routes.includes(r)) || null;
-const stageLabel = (s) => (s.id === 'home' ? t('nav.home') : t(`journey.${s.id}`));
-
-function stageTab(s) {
-  const cur = stageOf(route)?.id === s.id;
-  const done = s.id !== 'home' && journeyState()[s.id];
-  const mark = s.id === 'home' ? icon('overview', 16) : done ? icon('check', 15) : html`<b>${s.n}</b>`;
-  const tip = s.id === 'home' ? stageLabel(s) : `${stageLabel(s)}: ${t(`journey.${s.id}Sub`)}`;
-  return html`<li><a class="stage-tab" data-stage="${s.id}" href="#/${s.routes[0]}" ${raw(cur ? 'aria-current="page"' : '')} title="${tip}">
-    <span class="stage-n ${done ? 'is-done' : ''}" aria-hidden="true">${mark}</span><span class="stage-label">${stageLabel(s)}</span></a></li>`;
-}
-/** How far along the journey the business is, 0..1, for the line under the stages. */
-function journeyProgress() {
-  const st = journeyState(); const ids = ['observe', 'diagnose', 'act'];
-  let n = 0; ids.forEach((id, i) => { if (st[id]) n = i + 1; });
-  return n / ids.length;
-}
+/* ---------- navigation: the ridge (js/ridge.js); Settings and Account are in the account menu ---------- */
 const FOOT_LINKS = [['info', 'help'], ['plans', 'star'], ['settings', 'settings'], ['account', 'account']];
 function footLinks() {
   return html`${FOOT_LINKS.map(([r]) => html`<li><a href="#/${r}">${t(`nav.${r}`)}</a></li>`)}
     ${isAdmin() ? html`<li><a href="#/admin">${t('nav.admin')}</a></li>` : ''}<li><a href="#/info?legal">${t('info.tab.legal')}</a></li>`;
 }
 
-function subnav() {
-  const s = stageOf(route);
-  if (!s || s.routes.length < 2) return html``;
-  return html`<nav class="subnav" data-stage="${s.id}" aria-label="${stageLabel(s)}">${s.routes.map((r) => html`<a class="subnav-item" href="#/${r}" ${raw(r === route ? 'aria-current="page"' : '')}>${icon(ROUTES.find((x) => x.id === r)?.icon || 'next', 18)}${t(`nav.${r}`)}</a>`)}</nav>`;
-}
+const subnav = () => html``; // sub-pages live on the ridge (laptop) and on the route map (phone)
 
+const levelOf = (r) => (['diagnosis', 'competitors', 'proof'].includes(r) ? 1 : ['mission', 'website', 'pack'].includes(r) ? 2 : 0);
+function paintScene() {
+  const layer = $('#scene-layer'); if (!layer) return;
+  const lv = levelOf(route); const cur = layer.lastElementChild;
+  if (cur && Number(cur.dataset.lv) === lv) return;
+  const up = cur && lv > Number(cur.dataset.lv);
+  const el = document.createElement('div'); el.className = `scene-pane ${cur ? (up ? 'in-up' : 'in-down') : ''}`; el.dataset.lv = String(lv); el.innerHTML = scene(lv);
+  if (cur) { cur.classList.add(up ? 'out-up' : 'out-down'); setTimeout(() => cur.remove(), 1400); }
+  layer.append(el);
+}
 function updateChrome() {
-  const tabs = $('.side-stages'); if (tabs) tabs.innerHTML = html`${STAGES.map(stageTab)}`.s;
-  const jr = $('.journey'); if (jr) jr.style.setProperty('--prog', String(journeyProgress()));
+  const rg = $('.ridge'); if (rg) { rg.innerHTML = ridge(route, journeyState()).s; animateRidge(rg, route); }
+  const ts = $('#trail-slot'); if (ts) ts.innerHTML = trailButton(route).s;
+  paintScene();
   const links = $('.foot-links'); if (links) links.innerHTML = footLinks().s;
   const sub = $('#subnav-slot'); if (sub) sub.innerHTML = subnav().s;
   const biz = $('#top-biz'); const b = getState().business;
@@ -98,11 +82,13 @@ function updateChrome() {
 function shell() {
   return html`
   <a class="skip" href="#main">${t('common.skip')}</a>
+  <div class="scene-layer" id="scene-layer" aria-hidden="true"></div>
   <div class="content">
     <header class="hdr">
       <div class="hdr-in">
         <a class="hdr-brand" href="#/overview"><img src="/icons/logo.svg" alt="" width="34" height="34"><span><strong>${BRAND.app}</strong><small class="top-biz" id="top-biz"></small></span></a>
-        <nav class="journey" aria-label="${t('brand.journey')}"><ol class="side-stages">${STAGES.map(stageTab)}</ol></nav>
+        <nav class="ridge" aria-label="${t('brand.journey')}">${ridge(route, journeyState())}</nav>
+        <div class="trail-slot" id="trail-slot">${trailButton(route)}</div>
         <div class="hdr-tools">
           <span class="badge badge-offline" id="offline-badge" hidden>${t('common.offline')}</span>
           <button class="btn-ask" data-act="chat-open" aria-label="${t('chat.title')}"><span class="hide-sm">${t('chat.open')}</span><span class="ai-orb" aria-hidden="true"></span></button>
@@ -202,6 +188,15 @@ actions.go = (el) => {
   const target = `#/${el.dataset.route}`;
   if (location.hash === target) onRoute(); else location.hash = target;
 };
+window.addEventListener('scroll', () => document.body.classList.toggle('is-scrolled', window.scrollY > 40), { passive: true });
+actions['trail-open'] = () => {
+  let root = document.getElementById('trail-root');
+  if (!root) { root = document.createElement('div'); root.id = 'trail-root'; document.body.append(root); }
+  root.innerHTML = trailMap(route, journeyState()).s; document.body.classList.add('trail-open');
+  root.querySelector('.tm-pt.is-cur, .tm-pt')?.focus();
+};
+actions['trail-close'] = () => { const root = document.getElementById('trail-root'); if (root) root.innerHTML = ''; document.body.classList.remove('trail-open'); };
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('trail-open')) actions['trail-close'](); });
 actions['account-menu'] = (el) => {
   const m = $('#account-menu'); m.hidden = !m.hidden; el.setAttribute('aria-expanded', String(!m.hidden));
   if (!m.hidden) $('a', m).focus();

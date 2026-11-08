@@ -1960,6 +1960,12 @@ export default {
     copied: 'Lien copié. Partagez-le !',
     calTitle: 'lancement',
     short: 'lancement le {date}',
+    headA: 'Voyez ce qui se cache sous',
+    headB: 'la surface',
+    headC: 'de votre établissement.',
+    here: 'ICI · {p} % DU CHEMIN',
+    peak: 'LE SOMMET · {date}',
+    peakSub: 'Le lancement',
   },
   qs: {
     step1: 'Étape 1 sur 2',
@@ -2092,4 +2098,5 @@ export default {
     adminFlag: 'Paie pour {plan}',
   },
   home: { week: 'Semaine {n}', seeAnalysis: 'Voir l’analyse →' },
+  trail: { eyebrow: 'Votre itinéraire', title: 'Où aller ?', foot: 'Chaque page est un point sur la montagne. Vous êtes à {n} sur {total}.' },
 };

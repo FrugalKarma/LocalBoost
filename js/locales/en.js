@@ -1939,6 +1939,12 @@ export default {
     copied: 'Link copied. Paste it anywhere!',
     calTitle: 'launch',
     short: 'launching {date}',
+    headA: 'See what lies beneath',
+    headB: 'the surface',
+    headC: 'of your business.',
+    here: 'HERE · {p}% OF THE WAY',
+    peak: 'THE PEAK · {date}',
+    peakSub: 'Launch day',
   },
   qs: {
     step1: 'Step 1 of 2',
@@ -2071,4 +2077,5 @@ export default {
     adminFlag: 'Paying for {plan}',
   },
   home: { week: 'Week {n}', seeAnalysis: 'See the analysis →' },
+  trail: { eyebrow: 'Your route', title: 'Where to?', foot: 'Every page is a point on the mountain. You are at {n} of {total}.' },
 };

@@ -1946,6 +1946,12 @@ export default {
     copied: 'Link copiat. Trimite-l oriunde!',
     calTitle: 'lansare',
     short: 'lansare pe {date}',
+    headA: 'Vezi ce e sub',
+    headB: 'suprafața',
+    headC: 'afacerii tale.',
+    here: 'AICI · {p}% DIN DRUM',
+    peak: 'VÂRFUL · {date}',
+    peakSub: 'Lansarea',
   },
   qs: {
     step1: 'Pasul 1 din 2',
@@ -2078,4 +2084,5 @@ export default {
     adminFlag: 'Plătește pentru {plan}',
   },
   home: { week: 'Săptămâna {n}', seeAnalysis: 'Vezi analiza →' },
+  trail: { eyebrow: 'Traseul tău', title: 'Unde mergi?', foot: 'Fiecare pagină e un punct pe munte. Ești la {n} din {total}.' },
 };

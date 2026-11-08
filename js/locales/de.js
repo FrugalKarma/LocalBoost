@@ -1982,6 +1982,12 @@ export default {
     copied: 'Link kopiert. Überall teilen!',
     calTitle: 'Start',
     short: 'Start am {date}',
+    headA: 'Sehen Sie, was unter',
+    headB: 'der Oberfläche',
+    headC: 'Ihres Geschäfts liegt.',
+    here: 'HIER · {p} % DES WEGES',
+    peak: 'DER GIPFEL · {date}',
+    peakSub: 'Der Start',
   },
   qs: {
     step1: 'Schritt 1 von 2',
@@ -2114,4 +2120,5 @@ export default {
     adminFlag: 'Zahlt für {plan}',
   },
   home: { week: 'Woche {n}', seeAnalysis: 'Analyse ansehen →' },
+  trail: { eyebrow: 'Ihre Route', title: 'Wohin?', foot: 'Jede Seite ist ein Punkt am Berg. Sie sind bei {n} von {total}.' },
 };

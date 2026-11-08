@@ -1957,6 +1957,12 @@ export default {
     copied: 'Link másolva. Oszd meg bárhol!',
     calTitle: 'indulás',
     short: 'indulás: {date}',
+    headA: 'Lásd, mi van',
+    headB: 'a felszín alatt',
+    headC: 'a vállalkozásodban.',
+    here: 'ITT · AZ ÚT {p}%-A',
+    peak: 'A CSÚCS · {date}',
+    peakSub: 'Az indulás',
   },
   qs: {
     step1: '1. lépés / 2',
@@ -2089,4 +2095,5 @@ export default {
     adminFlag: '{plan} csomagért fizet',
   },
   home: { week: '{n}. hét', seeAnalysis: 'Elemzés megtekintése →' },
+  trail: { eyebrow: 'Az útvonalad', title: 'Merre tovább?', foot: 'Minden oldal egy pont a hegyen. Itt tartasz: {n} / {total}.' },
 };
