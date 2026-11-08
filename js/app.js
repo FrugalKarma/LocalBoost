@@ -294,7 +294,7 @@ async function enterApp(kind = 'resume') {
 function openLanding() {
   screen = 'landing';
   const auth = (mode) => () => { screen = 'signin'; showSignin({ mode, onDone: enterApp, onBack: openLanding, backKey: 'signin.backHome' }); };
-  showLanding({ signup: auth('signup'), signin: auth('signin'), example: () => { loadExample(); startApp(); go('overview'); } });
+  showLanding({ signup: auth('signup'), signin: auth('signin') });
 }
 
 function startApp() {

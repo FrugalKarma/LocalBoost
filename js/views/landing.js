@@ -1,5 +1,5 @@
 // Public front page: what a visitor sees when nobody is signed in (after launch day).
-// It explains Arcton Ai in one screen, shows the four steps, the plans and the questions people ask,
+// It explains Arcton Ai in one screen, shows the three steps, the plans and the questions people ask,
 // and leads to "Create a free account". Everything on the hero mock-up is the fictional example café, and says so.
 import { html, icon } from '../core.js';
 import { t, ta, LANGS, getLang, setLang } from '../i18n.js';
@@ -8,7 +8,7 @@ import { openLegal } from '../legalText.js';
 import { PLANS } from './plans.js';
 import { mountain } from '../mountain.js';
 
-let handlers = { signup() {}, signin() {}, example() {} };
+let handlers = { signup() {}, signin() {} };
 let shown = false;
 let io = null;
 
@@ -45,8 +45,7 @@ function render() {
       <p class="eyebrow">${t('land.eyebrow')}</p>
       <h1>${t('land.h1a')}<span>${t('land.h1b')}</span></h1>
       <p class="lp-lede">${t('land.lede')}</p>
-      <div class="lp-cta"><button type="button" class="btn btn-primary btn-lg" data-land="signup">${t('land.cta')} ${icon('next', 18)}</button>
-        <button type="button" class="btn btn-secondary btn-lg" data-land="example">${t('land.example')}</button></div>
+      <div class="lp-cta"><button type="button" class="btn btn-primary btn-lg" data-land="signup">${t('land.cta')} ${icon('next', 18)}</button></div>
       <p class="lp-note">${icon('check', 15)} ${t('land.note')}</p>
     </div>
     ${heroVisual()}
