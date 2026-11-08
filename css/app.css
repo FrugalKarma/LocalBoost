@@ -2656,3 +2656,22 @@ main .journey .done .journey-n { background: var(--bronze); color: var(--ink-950
 .content .plan.is-featured::before, .content .plan.is-featured::after { display: none !important; }
 .content .plan .plan-flag { color: #F6EEE6 !important; padding: 4px 10px; }
 .plan-price b { font-family: var(--f-display); font-stretch: 62%; font-weight: 800; }
+/* fixes: hero and accent cards were built for a dark "feature" panel; in Bordo they are ordinary cards in both themes */
+.content :is(.hero-card, .card-accent) { background: var(--card) !important; color: var(--text) !important; border-top: 2px solid var(--ox) !important; }
+.content :is(.hero-card, .card-accent)::before, .content :is(.hero-card, .card-accent)::after { display: none !important; }
+.content .hero-card :is(h1, .hero-title, h2), .content .card-accent :is(h2, h3, .card-title, strong) { color: var(--head) !important; }
+.content .hero-card :is(.hero-lede, .hero-meta, p), .content .card-accent p { color: var(--muted) !important; }
+.content :is(.field-note.on-dark, .on-dark.tag) { color: var(--bronze) !important; }
+.content .btn.on-dark { color: var(--head); border-color: var(--line-2); }
+.content .plan { overflow: visible !important; }
+.content .plan .plan-flag { top: 0; transform: translateY(-50%); }
+/* sign-in: the mountain fills the panel width and never squeezes its labels together */
+.auth-side .mtn { flex: none; width: 100%; max-width: min(620px, calc(58vh * 820 / 720)); max-height: none; margin: auto 0 0 -2%; }
+.auth-side .mtn-sub { display: none; }
+/* lighter menus: glass over the mountain instead of a solid bar */
+.hdr { background: color-mix(in srgb, var(--bg) 42%, transparent); backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); }
+.lp-nav-in { background: color-mix(in srgb, var(--bg) 42%, transparent) !important; backdrop-filter: blur(18px) saturate(1.2); }
+@media (max-width: 900px) {
+  .hdr { backdrop-filter: none; -webkit-backdrop-filter: none; background: color-mix(in srgb, var(--bg) 70%, transparent); }
+  .journey, :root[data-theme='light'] .journey { background: color-mix(in srgb, var(--bg) 48%, transparent) !important; backdrop-filter: blur(18px) saturate(1.2); -webkit-backdrop-filter: blur(18px) saturate(1.2); }
+}
