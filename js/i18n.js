@@ -24,17 +24,16 @@ function flatten(obj, prefix = '', out = {}) {
 export const dictionaries = { en: flatten(en), ro: flatten(ro), fr: flatten(fr), de: flatten(de), hu: flatten(hu) };
 const STORAGE_KEY = 'localboost.lang';
 const listeners = new Set();
-let current = 'en';
+let current = 'ro';
 
 function detect() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && dictionaries[saved]) return saved;
   } catch { /* storage unavailable */ }
-  const nav = (navigator.language || 'en').slice(0, 2).toLowerCase();
-  const first = dictionaries[nav] ? nav : 'en';
-  try { localStorage.setItem(STORAGE_KEY, first); } catch { /* ignore */ }
-  return first;
+  // Arcton Ai is a Romanian product: everyone starts in Romanian and can switch from the language menu.
+  // The first choice is not stored, so a later change to the default still reaches people who never picked one.
+  return 'ro';
 }
 
 export function initLang() {
