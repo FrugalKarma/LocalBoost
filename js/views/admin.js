@@ -1,5 +1,5 @@
 // Admin area: every client account, with open (view and edit), disable / enable and delete.
-import { html, icon, $, toast, confirmDialog } from '../core.js';
+import { html, icon, $, toast, confirmDialog, openModal, copyText } from '../core.js';
 import { t, getLang } from '../i18n.js';
 import { actions, inputs, go } from '../registry.js';
 import { api, isAdmin, authOn } from '../auth.js';
@@ -105,6 +105,7 @@ export const admin = {
         <label class="field admin-search"><span class="sr-only">${t('admin.search')}</span>${icon('signals', 18)}
           <input type="search" data-in="admin-q" placeholder="${t('admin.search')}" value="${q}" autocomplete="off"></label>
         <button class="icon-btn" data-act="admin-reload" aria-label="${t('actions.retry')}" title="${t('actions.retry')}">${icon('refresh', 18)}</button>
+        <button class="btn btn-primary" data-act="admin-new">${icon('plus', 18)} ${t('admin.new.button')}</button>
       </div>
       <div id="admin-body" aria-live="polite">${body()}</div>`;
   },
@@ -158,4 +159,61 @@ actions['admin-delete'] = async (el) => {
   if (r.status === 200) { clients = clients.filter((x) => x.id !== c.id); toast(t('admin.toastDeleted'), 'success'); }
   else toast(t(r.body.error === 'admin_self' ? 'admin.adminSelf' : 'common.errorGeneric'), 'error');
   paintBody();
+};
+
+/* ---------- new client account (created by the admin, confirmed at once, temporary password) ---------- */
+const SITE = 'https://www.arcton.site';
+const demoPassword = () => { const c = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'; const r = crypto.getRandomValues(new Uint8Array(12)); return [0, 4, 8].map((i) => [...r.slice(i, i + 4)].map((b) => c[b % c.length]).join('')).join('-'); };
+const ERR = { invalid_email: 'admin.new.errEmail', email_taken: 'admin.new.errTaken' };
+
+async function newClientForm(prev = {}, err = '') {
+  return openModal({
+    title: t('admin.new.title'),
+    body: html`<div class="new-client">
+      <p class="muted">${t('admin.new.body')}</p>
+      ${err ? html`<p class="auth-error" role="alert">${t(ERR[err] || 'common.errorGeneric')}</p>` : ''}
+      <label class="field"><span>${t('admin.new.email')}</span><input id="nc-email" type="email" autocomplete="off" maxlength="200" value="${prev.email || ''}" placeholder="client@example.ro"></label>
+      <label class="field"><span>${t('admin.plan')}</span><select id="nc-plan">${['free', 'pro', 'business'].map((p) => html`<option value="${p}" ${(prev.plan || 'free') === p ? 'selected' : ''}>${t(`plans.${p}.name`)}</option>`)}</select></label>
+    </div>`,
+    actions: [
+      { label: t('common.cancel'), kind: 'btn-ghost', value: null },
+      { label: t('admin.new.create'), kind: 'btn-primary', collect: () => ({ email: $('#nc-email')?.value.trim() || '', plan: $('#nc-plan')?.value || 'free' }) },
+    ],
+  });
+}
+
+function createdView(email, password) {
+  const msg = t('admin.new.message', { email, password, url: SITE });
+  return openModal({
+    title: t('admin.new.doneTitle'),
+    body: html`<div class="new-done">
+      <p>${t('admin.new.doneBody', { email })}</p>
+      <dl class="cred"><div><dt>${t('admin.new.email')}</dt><dd>${email}</dd></div>
+        <div><dt>${t('admin.new.password')}</dt><dd><code>${password}</code></dd></div></dl>
+      <p class="muted small">${t('admin.new.once')}</p>
+      <label class="field"><span>${t('admin.new.messageLabel')}</span><textarea id="nc-msg" rows="6" readonly>${msg}</textarea></label>
+    </div>`,
+    actions: [{ label: t('admin.new.copy'), kind: 'btn-secondary', collect: () => 'copy' }, { label: t('common.close'), kind: 'btn-primary', value: null }],
+  }).then(async (v) => { if (v === 'copy') { await copyText(msg); toast(t('admin.new.copied'), 'success'); } });
+}
+
+actions['admin-new'] = async () => {
+  let form = {}; let err = '';
+  for (;;) {
+    const v = await newClientForm(form, err); if (!v) return;
+    form = v;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.email)) { err = 'invalid_email'; continue; }
+    if (demo()) {
+      if (clients?.some((c) => c.email === v.email.toLowerCase())) { err = 'email_taken'; continue; }
+      const c = { id: `demo-${Date.now()}`, kind: null, email: v.email.toLowerCase(), role: 'client', disabled: false, plan: v.plan, created_at: new Date().toISOString(), business: null };
+      clients = [c, ...(clients || [])]; paintBody();
+      return createdView(c.email, demoPassword());
+    }
+    const r = await api('/api/admin', { method: 'POST', body: { op: 'create', email: v.email, plan: v.plan } });
+    if (r.status === 200) {
+      clients = [{ ...r.body.client, role: 'client', disabled: false, created_at: new Date().toISOString(), business: null }, ...(clients || [])]; paintBody();
+      return createdView(r.body.client.email, r.body.password);
+    }
+    err = r.body?.error || 'error';
+  }
 };

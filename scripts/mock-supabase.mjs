@@ -58,6 +58,14 @@ function authRoute(method, p, q, body, h) {
     return [200, { id: u.id, email: u.email }];
   }
   if (p === '/auth/v1/logout') { const t = String(h.authorization || '').replace(/^Bearer /, ''); tokens.delete(t); return [204, null]; }
+  if (p === '/auth/v1/admin/users' && method === 'POST') { // admin creates a user (already confirmed)
+    if (key !== SECRET) return err(403, 'not_admin', 'User not allowed');
+    if (byEmail(body.email)) return err(422, 'email_exists', 'A user with this email address has already been registered');
+    if (String(body.password).length < 8) return err(422, 'weak_password', 'Password should be at least 8 characters.');
+    const u = { id: randomUUID(), email: body.email, password: body.password, confirmed: !!body.email_confirm, banned: false };
+    users.set(u.id, u); profiles.set(u.id, { id: u.id, email: u.email, role: 'client', disabled: false, created_at: new Date().toISOString() });
+    return [200, { id: u.id, email: u.email }];
+  }
   const m = p.match(/^\/auth\/v1\/admin\/users\/([\w-]+)$/);
   if (m) {
     if (key !== SECRET) return err(403, 'not_admin', 'User not allowed');
