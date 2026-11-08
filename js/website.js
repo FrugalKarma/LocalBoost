@@ -120,7 +120,8 @@ export const publicSiteUrl = (slug) => `${apiUrl('') || location.origin}/s/${slu
 /** Download: one self-contained HTML file (Business). After publishing, its form still delivers requests to the app. */
 export function exportHtml() {
   const site = getState().site;
-  const opts = site.slug && site.publishedAt ? { api: `${apiUrl('') || location.origin}/api/site`, slug: site.slug, url: publicSiteUrl(site.slug) } : {};
+  const base = apiUrl('') || location.origin;
+  const opts = { fontBase: base, ...(site.slug && site.publishedAt ? { api: `${apiUrl('') || location.origin}/api/site`, slug: site.slug, url: publicSiteUrl(site.slug) } : {}) };
   return new Blob([buildDocument(resolveDoc(), opts)], { type: 'text/html;charset=utf-8' });
 }
 export { PRESETS };

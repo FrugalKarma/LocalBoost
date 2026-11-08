@@ -617,7 +617,7 @@ export default {
       not_launched: 'Accounts open on launch day. Until then you need an early-access password.',
       accounts_soon: 'Customer accounts are not open yet. You can keep using Arcton Ai without an account.',
     },
-    agree: 'I accept the Terms of Service and the AI notice and have read the Privacy Notice of {company}:',
+    agree: 'I am at least 18 years old, I accept the Terms of Service and the AI notice and have read the Privacy Notice of {company}:',
     signinLegal: 'By signing in you keep accepting our terms. How we use data:',
     soonNote: 'Customer accounts open soon. You can use Arcton Ai without signing in.',
     backToApp: 'Back to the app',

@@ -617,7 +617,7 @@ export default {
       not_launched: 'Conturile se deschid în ziua lansării. Până atunci ai nevoie de o parolă de acces în avans.',
       accounts_soon: 'Conturile pentru clienți nu sunt încă deschise. Poți folosi în continuare Arcton Ai fără cont.',
     },
-    agree: 'Accept Termenii și condițiile și Notificarea privind AI și am citit Notificarea de confidențialitate a {company}:',
+    agree: 'Am cel puțin 18 ani, accept Termenii și condițiile și Notificarea privind AI și am citit Notificarea de confidențialitate a {company}:',
     signinLegal: 'Autentificându-te, continui să accepți termenii noștri. Cum folosim datele:',
     soonNote: 'Conturile pentru clienți se deschid în curând. Poți folosi Arcton Ai fără autentificare.',
     backToApp: 'Înapoi la aplicație',

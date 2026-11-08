@@ -617,7 +617,7 @@ export default {
       not_launched: 'Les comptes ouvrent le jour du lancement. D’ici là, il faut un mot de passe d’accès anticipé.',
       accounts_soon: 'Les comptes clients ne sont pas encore ouverts. Vous pouvez continuer à utiliser Arcton Ai sans compte.',
     },
-    agree: 'J’accepte les Conditions d’utilisation et l’Information sur l’IA et j’ai lu la Politique de confidentialité de {company} :',
+    agree: 'J’ai au moins 18 ans, j’accepte les Conditions d’utilisation et l’Information sur l’IA et j’ai lu la Politique de confidentialité de {company} :',
     signinLegal: 'En vous connectant, vous continuez d’accepter nos conditions. Comment nous utilisons les données :',
     soonNote: 'Les comptes clients ouvrent bientôt. Vous pouvez utiliser Arcton Ai sans vous connecter.',
     backToApp: 'Retour à l’app',

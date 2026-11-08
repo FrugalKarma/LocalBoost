@@ -433,11 +433,11 @@ export function buildDocument(doc, opts = {}) {
   const labels = JSON.stringify({ open: x.openNow || 'Open now', closes: x.closesAt || 'until {t}', closed: x.closed || 'Closed', opens: x.opensAt || 'opens {t}', days: (() => { const n = dayNames(doc.lang); return n.map((d) => d.slice(0, 3)); })() });
   const data = [opts.api && !opts.watermark ? `data-api="${E(opts.api)}"` : '', opts.slug ? `data-slug="${E(opts.slug)}"` : '', opts.preview ? 'data-preview="1"' : '', opts.watermark ? 'data-locked="1"' : '',
     b.whatsapp ? `data-wa="${E(b.whatsapp)}"` : '', b.email ? `data-mail="${E(b.email)}"` : '', b.hours ? `data-hours="${E(JSON.stringify(b.hours))}"` : '', `data-l="${E(labels)}"`].filter(Boolean).join(' ');
-  const font = `https://fonts.googleapis.com/css2?${FONT_PAIRS[doc.design.fonts].q}&display=swap`;
+  const font = `${opts.fontBase || ''}/fonts/g/site-${doc.design.fonts}.css`; // served by Arcton, never by Google: no visitor IP leaves for a font
   return `<!doctype html><html lang="${doc.lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${E(title)}</title>
 ${desc ? `<meta name="description" content="${E(desc)}">` : ''}<meta name="theme-color" content="${doc.design.palette.brand}">${opts.url ? `<link rel="canonical" href="${E(opts.url)}">` : ''}
 <meta property="og:type" content="website"><meta property="og:title" content="${E(title)}">${desc ? `<meta property="og:description" content="${E(desc)}">` : ''}${ogImg && !ogImg.startsWith('data:') ? `<meta property="og:image" content="${E(ogImg)}"><meta name="twitter:card" content="summary_large_image">` : ''}${opts.url ? `<meta property="og:url" content="${E(opts.url)}">` : ''}
-${opts.preview || opts.watermark ? '<meta name="robots" content="noindex">' : ''}<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="${font}"><style>${css(doc)}</style><script type="application/ld+json">${jsonLd(doc, opts.url)}</script></head>
+${opts.preview || opts.watermark ? '<meta name="robots" content="noindex">' : ''}<link rel="stylesheet" href="${font}"><style>${css(doc)}</style><script type="application/ld+json">${jsonLd(doc, opts.url)}</script></head>
 <body ${data} class="${opts.watermark ? 'has-wm' : ''}">${buildBody(doc, opts)}<script>${SITE_JS}</script></body></html>`;
 }
 

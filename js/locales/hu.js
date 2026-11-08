@@ -617,7 +617,7 @@ export default {
       not_launched: 'A fiókok az indulás napján nyílnak meg. Addig korai hozzáférési jelszó kell.',
       accounts_soon: 'Az ügyfélfiókok még nem indultak el. Fiók nélkül továbbra is használhatod az Arcton Ai-t.',
     },
-    agree: 'Elfogadom a Felhasználási feltételeket és az AI-tájékoztatót, és elolvastam a(z) {company} Adatvédelmi tájékoztatóját:',
+    agree: 'Elmúltam 18 éves, elfogadom a Felhasználási feltételeket és az AI-tájékoztatót, és elolvastam a(z) {company} Adatvédelmi tájékoztatóját:',
     signinLegal: 'A bejelentkezéssel továbbra is elfogadod a feltételeinket. Hogyan használjuk az adatokat:',
     soonNote: 'Az ügyfélfiókok hamarosan indulnak. Az Arcton Ai bejelentkezés nélkül is használható.',
     backToApp: 'Vissza az alkalmazáshoz',

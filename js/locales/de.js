@@ -617,7 +617,7 @@ export default {
       not_launched: 'Konten öffnen am Starttag. Bis dahin brauchen Sie ein Vorabzugangs-Passwort.',
       accounts_soon: 'Kundenkonten sind noch nicht geöffnet. Sie können Arcton Ai weiterhin ohne Konto nutzen.',
     },
-    agree: 'Ich akzeptiere die Nutzungsbedingungen und den KI-Hinweis und habe die Datenschutzerklärung der {company} gelesen:',
+    agree: 'Ich bin mindestens 18 Jahre alt, akzeptiere die Nutzungsbedingungen und den KI-Hinweis und habe die Datenschutzerklärung der {company} gelesen:',
     signinLegal: 'Mit der Anmeldung akzeptieren Sie weiterhin unsere Bedingungen. Wie wir Daten nutzen:',
     soonNote: 'Kundenkonten starten bald. Sie können Arcton Ai ohne Anmeldung nutzen.',
     backToApp: 'Zurück zur App',

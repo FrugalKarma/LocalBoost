@@ -20,7 +20,8 @@ const ROOT = process.argv.includes('--dist') ? path.join(here, 'dist') : here;
 const PORT = Number(process.env.PORT) || 5173;
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8', '.md': 'text/markdown; charset=utf-8' };
 // Only what the app needs is served (the same files the build copies to dist/): never .git, .env, server code or docs.
-const PUBLIC = /^\/(index\.html|manifest\.json|sw\.js|(css|js|icons|fonts)\/[\w./-]+)$/;
+const notFound = async (res) => { try { send(res, 404, await readFile(path.join(ROOT, '404.html')), MIME['.html'], PAGE_HEADERS); } catch { send(res, 404, 'Not found', 'text/plain'); } };
+const PUBLIC = /^\/(index\.html|404\.html|manifest\.json|sw\.js|(css|js|icons|fonts)\/[\w./-]+)$/;
 
 const send = (res, code, body, type = 'application/json; charset=utf-8', extra = {}) => {
   type = type || 'application/json; charset=utf-8';
@@ -101,15 +102,15 @@ http.createServer(async (req, res) => {
     }
     if (/^\/s\/[^/]+\/?$/.test(p)) { url.searchParams.set('op', 'page'); url.searchParams.set('slug', p.split('/')[2]); return handleSiteReq(req, res, url, {}); }
     if (p === '/') p = '/index.html';
-    if (!PUBLIC.test(p) || p.includes('..') || p.includes('/.')) return send(res, 404, 'Not found', 'text/plain');
+    if (!PUBLIC.test(p) || p.includes('..') || p.includes('/.')) return notFound(res);
     const file = path.join(ROOT, p);
     if (!file.startsWith(ROOT + path.sep)) return send(res, 404, 'Not found', 'text/plain');
     const data = await readFile(file);
     const type = MIME[path.extname(file)] || 'application/octet-stream';
     const noCache = p === '/sw.js' || p.endsWith('.html');
-    send(res, 200, data, type, { ...PAGE_HEADERS, 'cache-control': noCache ? 'no-cache' : 'no-cache' });
+    send(res, 200, data, type, { ...PAGE_HEADERS, 'cache-control': noCache ? 'no-cache' : 'no-cache', ...(p.startsWith('/fonts/') ? { 'access-control-allow-origin': '*' } : {}) }); // fonts: hosted sites run in a sandboxed (opaque) origin
   } catch {
-    send(res, 404, 'Not found', 'text/plain');
+    notFound(res);
   }
 }).listen(PORT, () => {
   console.log(`Arcton Ai running at http://localhost:${PORT}  (AI: ${health().ai ? 'live model' : 'local fallback - set ANTHROPIC_API_KEY to enable'})`);
