@@ -22,7 +22,7 @@ function flatten(obj, prefix = '', out = {}) {
 }
 
 export const dictionaries = { en: flatten(en), ro: flatten(ro), fr: flatten(fr), de: flatten(de), hu: flatten(hu) };
-const STORAGE_KEY = 'localboost.lang';
+const STORAGE_KEY = 'arcton.lang'; // new key: the old one held auto-detected languages, so everyone restarts in Romanian once
 const listeners = new Set();
 let current = 'ro';
 
