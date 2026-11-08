@@ -33,7 +33,8 @@ export async function launchGate() {
   const launch = Date.parse(cfg.launch);
   if (Number.isFinite(launch) && Date.now() >= launch) return;
   const pass = read(PASS);
-  if (pass?.pass || getSession()?.owner) {
+  const preview = new URLSearchParams(location.search).has('countdown'); // early access holders can still look at the countdown: /?countdown
+  if (!preview && (pass?.pass || getSession()?.owner)) {
     const r = await post({ op: 'preview-check', pass: pass?.pass });
     if (r.ok || (r.error === 'network' && pass?.exp * 1000 > Date.now())) return;
     if (!r.error) write(PASS, null); // expired or changed password
