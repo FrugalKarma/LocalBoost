@@ -11,6 +11,9 @@ import { mountain } from '../mountain.js';
 import { serverCaps, findPlaces } from '../sources.js';
 import { dayPart, streak } from '../fun.js';
 import { liveMetrics, competitorList, loadSiteData, dailySeries, getSiteData } from '../insights.js';
+import { authOn, isAdmin } from '../auth.js';
+
+const staff = () => !authOn() || isAdmin(); // the example business is for the admin (and local testing), not for clients
 
 /* ---------- first run: find the business on Google, confirm two things, start ---------- */
 const quick = { picked: null, category: null, goal: 'bookings', instagram: '' };
@@ -53,7 +56,7 @@ function quickStart() {
     <div class="qs-head"><p class="eyebrow">${t(p ? 'qs.step2' : 'qs.step1')}</p>
       <h1>${t(p ? 'qs.confirmTitle' : 'qs.title')}</h1><p class="qs-lede">${t(p ? 'qs.confirmSub' : 'qs.sub')}</p></div>
     <div class="qs-card">${p ? qsConfirm(p) : qsSearch()}</div>
-    ${p ? '' : html`<p class="qs-alt"><button type="button" class="link-btn" data-act="qs-manual">${t('qs.manual')}</button></p>`}
+    ${p ? '' : html`<p class="qs-alt"><button type="button" class="link-btn" data-act="qs-manual">${t('qs.manual')}</button>${staff() ? html`<span aria-hidden="true">·</span><button type="button" class="link-btn" data-act="example-load">${t('qs.example')}</button>` : ''}</p>`}
     <ul class="qs-promise">${['p1', 'p2', 'p3'].map((k) => html`<li>${icon('check', 16)}<span><b>${t(`qs.${k}t`)}</b> ${t(`qs.${k}`)}</span></li>`)}</ul>
   </section>`;
 }
@@ -93,6 +96,7 @@ function bizForm() {
   return html`<section class="hero-card solo"><div class="hero-copy">
       <p class="field-note on-dark">${t('overview.eyebrow')}</p>
       <h1 class="hero-title">${t('biz.title')}</h1><p class="hero-lede">${t('biz.sub')}</p></div></section>
+    ${staff() ? html`<div class="try-example">${icon('sparkle', 22)}<div><b>${t('example.tryTitle')}</b><span>${t('example.tryBody')}</span></div><button type="button" class="btn btn-primary" data-act="example-load">${t('example.load')}</button></div>` : ''}
     <div class="bento"><form class="card span-7 biz-form" data-biz-form novalidate>
       ${googleLookup()}
       ${field('name', t('biz.name'), t('biz.namePh'), { none: 'noName', max: 80 })}
