@@ -28,6 +28,8 @@ export function journeyState() {
 
 export function nextAction() {
   const s = getState();
+  // not on Google (or Google is not connected): the reviews they paste are what the analysis reads
+  if (!s.diagnosis && !s.business?.place?.id && !(s.signals?.notes || []).length) return { key: 'next.paste', route: 'signals' };
   if (!s.diagnosis) return { key: 'next.analysis', route: 'diagnosis', act: 'run-analysis-go' };
   if (s.mission?.status !== 'active') return { key: 'next.mission', route: 'mission' };
   if (!s.site.generated) return { key: 'next.website', route: 'website' };

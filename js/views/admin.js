@@ -1,5 +1,5 @@
 // Admin area: every client account, with open (view and edit), disable / enable and delete.
-import { html, icon, $, toast, confirmDialog, openModal, copyText } from '../core.js';
+import { html, icon, $, toast, confirmDialog, openModal, copyText, downloadBlob } from '../core.js';
 import { t, getLang } from '../i18n.js';
 import { actions, inputs, go } from '../registry.js';
 import { api, isAdmin, authOn } from '../auth.js';
@@ -17,6 +17,8 @@ const fmt = (iso) => {
   if (!iso) return t('admin.never');
   try { return new Intl.DateTimeFormat(getLang(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso)); } catch { return iso; }
 };
+const dmy = (ymd) => String(ymd || '').split('-').reverse().join('.');
+const until = (ymd) => Math.ceil((Date.parse(`${ymd}T00:00:00Z`) - Date.now()) / 864e5); // days left (negative: past)
 const STAGE_ORDER = ['new', 'start', 'observe', 'diagnose', 'act', 'measure'];
 
 // Without Supabase (customer accounts off) the admin area runs as a demo with fictional clients,
@@ -61,8 +63,8 @@ function row(c) {
         <small>${c.email}${b?.city ? ` · ${b.city}` : ''}</small></div>
     </div>
     <div class="client-stage">${stagePill(b?.stage)}</div>
-    <div class="client-when"><small>${t('admin.colUpdated')}</small>${fmt(b?.updated_at)}</div>
-    <div class="client-plan">${admin ? '' : html`<label><span class="sr-only">${t('admin.plan')}: ${c.email}</span><select data-in="admin-plan" data-id="${c.id}" ${busy ? 'disabled' : ''}>${['free', 'pro', 'business'].map((p) => html`<option value="${p}" ${c.plan === p ? 'selected' : ''}>${t(`plans.${p}.name`)}</option>`)}</select></label>`}${c.planRequest ? html`<span class="pay-flag" title="${c.planRequestAt ? new Date(c.planRequestAt).toLocaleString(getLang()) : ''}">${t('pay.adminFlag', { plan: t(`plans.${c.planRequest}.name`) })}</span>` : ''}</div>
+    <div class="client-when"><small>${t('admin.colUpdated')}</small>${fmt(b?.updated_at)}${c.planUntil && !admin ? html`<small class="${until(c.planUntil) < 0 ? 'until-late' : until(c.planUntil) <= 7 ? 'until-soon' : ''}">${t(until(c.planUntil) < 0 ? 'admin.pay.expired' : 'admin.pay.until', { date: dmy(c.planUntil) })}</small>` : ''}</div>
+    <div class="client-plan">${admin ? '' : html`<label><span class="sr-only">${t('admin.plan')}: ${c.email}</span><select data-in="admin-plan" data-id="${c.id}" ${busy ? 'disabled' : ''}>${['free', 'pro', 'business'].map((p) => html`<option value="${p}" ${c.plan === p ? 'selected' : ''}>${t(`plans.${p}.name`)}</option>`)}</select></label>`}${c.planRequest ? html`<span class="pay-flag" title="${c.planRequestAt ? new Date(c.planRequestAt).toLocaleString(getLang()) : ''}">${t('pay.adminFlag', { plan: t(`plans.${c.planRequest}.name`) })}</span>` : ''}${admin ? '' : html`<button type="button" class="link-btn pay-btn" data-act="admin-paid" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('check', 14)} ${t('admin.pay.button')}</button>`}</div>
     <div class="client-status">${admin ? html`<span class="badge badge-admin">${t('admin.roleAdmin')}</span>`
       : html`<span class="badge ${c.disabled ? 'badge-off' : 'badge-on'}">${t(c.disabled ? 'admin.statusDisabled' : 'admin.statusActive')}</span>`}</div>
     <div class="client-acts">
@@ -107,9 +109,10 @@ export const admin = {
         <button class="icon-btn" data-act="admin-reload" aria-label="${t('actions.retry')}" title="${t('actions.retry')}">${icon('refresh', 18)}</button>
         <button class="btn btn-primary" data-act="admin-new">${icon('plus', 18)} ${t('admin.new.button')}</button>
       </div>
-      <div id="admin-body" aria-live="polite">${body()}</div>`;
+      <div id="admin-body" aria-live="polite">${body()}</div>
+      <div id="admin-extra">${extra()}</div>`;
   },
-  mount() { if (isAdmin() && !loading) load(); },
+  mount() { if (isAdmin() && !loading) { load(); loadExtra(); } },
 };
 
 inputs['admin-q'] = (el) => { q = el.value.trim().slice(0, 80); const b = $('#admin-body'); if (b) b.innerHTML = body().s; };
@@ -217,3 +220,77 @@ actions['admin-new'] = async () => {
     err = r.body?.error || 'error';
   }
 };
+
+/* ---------- bank transfers: "Plată primită" ---------- */
+const PRICE = { pro: 19, business: 49 };
+let payments = null; let waitlist = null; let mailOn = false;
+const csv = (rows) => rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
+const ref = (id) => `ARCTON-${String(id).replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+
+async function loadExtra() {
+  if (demo()) { payments ||= []; waitlist ||= []; return paintExtra(); }
+  const [p, w] = await Promise.all([api('/api/admin?op=payments'), api('/api/admin?op=waitlist')]);
+  payments = p.status === 200 ? p.body.payments : null; waitlist = w.status === 200 ? w.body.list : null; mailOn = !!w.body?.mail;
+  paintExtra();
+}
+function paintExtra() { const el = $('#admin-extra'); if (el) el.innerHTML = extra().s; }
+function extra() {
+  const money = (n) => `${Number(n).toFixed(2).replace(/\.00$/, '')} EUR`;
+  const total = (payments || []).filter((p) => p.paid_on?.slice(0, 7) === new Date().toISOString().slice(0, 7)).reduce((a, p) => a + Number(p.amount_eur), 0);
+  return html`<section class="card admin-sec"><div class="admin-sec-head"><div><h2>${t('admin.pay.title')}</h2><p class="muted small">${t('admin.pay.sub', { total: money(total) })}</p></div>
+      ${payments?.length ? html`<button class="btn btn-secondary btn-sm" data-act="admin-pay-csv">${icon('download', 15)} CSV</button>` : ''}</div>
+    ${payments == null ? html`<p class="muted small">${t('admin.pay.none')}</p>` : !payments.length ? html`<p class="muted small">${t('admin.pay.empty')}</p>`
+      : html`<table class="admin-table"><thead><tr><th>${t('admin.pay.colDate')}</th><th>${t('admin.new.email')}</th><th>${t('admin.plan')}</th><th>${t('admin.pay.colAmount')}</th><th>${t('admin.pay.colRef')}</th><th>${t('admin.pay.colUntil')}</th></tr></thead>
+        <tbody>${payments.slice(0, 20).map((p) => html`<tr><td>${dmy(p.paid_on)}</td><td>${p.email}</td><td>${t(`plans.${p.plan}.name`)} · ${p.months} ${t('admin.pay.mo')}</td><td>${money(p.amount_eur)}</td><td>${p.reference}</td><td>${dmy(p.plan_until)}</td></tr>`)}</tbody></table>`}
+  </section>
+  <section class="card admin-sec"><div class="admin-sec-head"><div><h2>${t('admin.wait.title')}</h2><p class="muted small">${waitlist == null ? t('admin.wait.none') : t('admin.wait.sub', { n: waitlist.length })}</p></div>
+      ${waitlist?.length ? html`<div class="btn-row"><button class="btn btn-secondary btn-sm" data-act="admin-wait-csv">${icon('download', 15)} CSV</button>
+        <button class="btn btn-primary btn-sm" data-act="admin-wait-send" ${mailOn ? '' : 'disabled'}>${t('admin.wait.send')}</button></div>` : ''}</div>
+    ${waitlist?.length && !mailOn ? html`<p class="muted small">${icon('info', 14)} ${t('admin.wait.noMail')}</p>` : ''}
+  </section>`;
+}
+actions['admin-pay-csv'] = () => downloadBlob(`arcton-plati-${new Date().toISOString().slice(0, 10)}.csv`, new Blob([`\uFEFF${csv([['data', 'email', 'plan', 'luni', 'suma_eur', 'referinta', 'activ_pana', 'inregistrat'], ...payments.map((p) => [p.paid_on, p.email, p.plan, p.months, p.amount_eur, p.reference, p.plan_until, p.created_at])])}`], { type: 'text/csv' }));
+actions['admin-wait-csv'] = () => downloadBlob(`arcton-lista-asteptare-${new Date().toISOString().slice(0, 10)}.csv`, new Blob([`\uFEFF${csv([['email', 'limba', 'inscris'], ...waitlist.map((w) => [w.email, w.lang, w.created_at])])}`], { type: 'text/csv' }));
+actions['admin-wait-send'] = async () => {
+  if (!(await confirmDialog(t('admin.wait.confirmTitle', { n: waitlist.length }), t('admin.wait.confirmBody'), t('admin.wait.send')))) return;
+  const r = await api('/api/admin', { method: 'POST', body: { op: 'waitlist-send' } });
+  if (r.status === 200) toast(t('admin.wait.sent', { n: r.body.sent, of: r.body.of }), r.body.sent === r.body.of ? 'success' : 'error');
+  else toast(t(r.body.error === 'email_not_configured' ? 'admin.wait.noMail' : 'common.errorGeneric'), 'error');
+  loadExtra();
+};
+
+actions['admin-paid'] = async (el) => {
+  const c = find(el.dataset.id); if (!c) return;
+  const today = new Date().toISOString().slice(0, 10);
+  const plan0 = c.planRequest || (c.plan !== 'free' ? c.plan : 'pro');
+  const v = await openModal({
+    title: t('admin.pay.modalTitle', { email: c.email }),
+    body: html`<div class="pay-form">
+      <p class="muted">${t('admin.pay.modalBody')}</p>
+      <div class="field-pair"><label class="field"><span>${t('admin.plan')}</span><select id="pf-plan">${['pro', 'business'].map((p) => html`<option value="${p}" ${plan0 === p ? 'selected' : ''}>${t(`plans.${p}.name`)} · ${PRICE[p]} €/${t('admin.pay.mo')}</option>`)}</select></label>
+        <label class="field"><span>${t('admin.pay.months')}</span><select id="pf-months">${[1, 3, 6, 12].map((m) => html`<option value="${m}">${m}</option>`)}</select></label></div>
+      <div class="field-pair"><label class="field"><span>${t('admin.pay.colAmount')} (EUR)</span><input id="pf-amount" type="number" min="1" max="10000" step="0.01" value="${PRICE[plan0]}"></label>
+        <label class="field"><span>${t('admin.pay.colDate')}</span><input id="pf-date" type="date" max="${today}" value="${today}"></label></div>
+      <label class="field"><span>${t('admin.pay.colRef')}</span><input id="pf-ref" type="text" maxlength="60" value="${ref(c.id)}"></label>
+      <p class="muted small">${t('admin.pay.mailNote')}</p></div>`,
+    actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: null },
+      { label: t('admin.pay.confirm'), kind: 'btn-primary', collect: () => ({ plan: $('#pf-plan').value, months: Number($('#pf-months').value), amount: Number($('#pf-amount').value), paidOn: $('#pf-date').value, reference: $('#pf-ref').value.trim() }) }],
+  });
+  if (!v) return;
+  if (!(v.amount > 0)) return toast(t('admin.pay.badAmount'), 'error');
+  if (demo()) { c.plan = v.plan; c.planRequest = null; c.planUntil = today; toast(t('admin.pay.done', { plan: t(`plans.${v.plan}.name`), date: dmy(today) }), 'success'); return paintBody(); }
+  busyId = c.id; paintBody();
+  const r = await api('/api/admin', { method: 'POST', body: { op: 'paid', id: c.id, ...v } });
+  busyId = null;
+  if (r.status === 200) {
+    Object.assign(c, { plan: r.body.plan, planUntil: r.body.planUntil, planRequest: null });
+    toast(`${t('admin.pay.done', { plan: t(`plans.${r.body.plan}.name`), date: dmy(r.body.planUntil) })} ${t(r.body.emailed ? 'admin.pay.emailed' : 'admin.pay.notEmailed')}`, 'success');
+    loadExtra();
+  } else toast(t(r.body.error === 'bad_amount' ? 'admin.pay.badAmount' : 'common.errorGeneric'), 'error');
+  paintBody();
+};
+// amount follows plan x months until the admin types their own
+document.addEventListener('change', (e) => {
+  if (!e.target.matches?.('#pf-plan, #pf-months')) return;
+  const a = $('#pf-amount'); if (a) a.value = PRICE[$('#pf-plan').value] * Number($('#pf-months').value);
+});

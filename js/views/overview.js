@@ -136,14 +136,18 @@ function preCollect() {
   return html`<section class="hero-card solo"><div class="hero-copy">${heroHead()}
     <p class="hero-lede">${t('collect.intro')}</p>
     <ul class="src-list">${src.map(([on, k]) => html`<li class="${on ? '' : 'is-off'}">${icon(on ? 'check' : 'x', 15)} ${t(`collect.src.${k}${on ? '' : 'Off'}`)}</li>`)}</ul>
-    <div class="hero-cta"><button class="btn btn-primary btn-lg" data-act="collect-signals" ${scan.active ? 'disabled' : ''}>${icon('signals', 18)} ${t('start.collectSignals')}</button>
-      <button class="btn btn-secondary on-dark" data-act="go" data-route="signals">${t('collect.addOwn')}</button></div></div></section>
+    <div class="hero-cta">${b.place || (getState().signals?.notes || []).length
+      ? html`<button class="btn btn-primary btn-lg" data-act="collect-signals" ${scan.active ? 'disabled' : ''}>${icon('signals', 18)} ${t('start.collectSignals')}</button>
+        <button class="btn btn-secondary on-dark" data-act="go" data-route="signals">${t('collect.addOwn')}</button>`
+      : html`<button class="btn btn-primary btn-lg" data-act="go" data-route="signals">${icon('upload', 18)} ${t('next.paste')}</button>
+        <button class="btn btn-secondary on-dark" data-act="collect-signals" ${scan.active ? 'disabled' : ''}>${t('start.collectSignals')}</button>`}</div>
+    ${b.place ? '' : html`<p class="hero-lede small">${t('ledger.body.paste')}</p>`}</div></section>
     ${scan.active ? scanCard() : ''}`;
 }
 
 /* ---------- Home: map + next-step card ---------- */
 const stepList = (s) => [s.business.loaded, hasSignals(), !!s.diagnosis, s.mission?.status === 'active', !!s.site?.generated, !!s.checkpoint];
-const STAGE_OF_NEXT = { analysis: 'diagnose', mission: 'act', website: 'act', proof: 'diagnose' };
+const STAGE_OF_NEXT = { paste: 'observe', analysis: 'diagnose', mission: 'act', website: 'act', proof: 'diagnose' };
 const num = (v, d = '—') => (v == null ? d : fmtNumber(v));
 
 /** Pins at their real positions relative to the business (equirectangular is fine at street scale). */

@@ -1,5 +1,5 @@
 import { html, icon, toast, limit } from '../core.js';
-import { t, fmtDate } from '../i18n.js';
+import { t, ta, fmtDate } from '../i18n.js';
 import { getState } from '../store.js';
 import { getBiz } from '../business.js';
 import { actions, inputs, rerender } from '../registry.js';
@@ -30,6 +30,7 @@ function sourceCards() {
 function addForm() {
   return html`<form class="card note-form" data-note-form novalidate><h2 class="card-title">${t('signals.addTitle')}</h2>
     <p class="muted small">${t('signals.addBody')}</p>
+    <details class="paste-how"><summary>${icon('info', 15)} ${t('signals.pasteHow')}</summary><ol>${ta('signals.pasteSteps').map((x) => html`<li>${x}</li>`)}</ol></details>
     <label class="field"><span>${t('signals.addText')}</span><textarea id="note-text" data-in="note-text" rows="4" maxlength="20000" placeholder="${t('signals.addPh')}">${form.text}</textarea></label>
     <div class="field-pair"><label class="field"><span>${t('signals.addKind')}</span><select data-in="note-kind">${NOTE_KINDS.map((k) => html`<option value="${k}" ${form.kind === k ? 'selected' : ''}>${t(`signals.kind.${k}`)}</option>`)}</select></label>
       <label class="field"><span>${t('signals.addSource')}</span><input type="text" data-in="note-source" value="${form.source}" maxlength="40" placeholder="${t('signals.addSourcePh')}" list="note-sources"></label></div>

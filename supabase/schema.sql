@@ -124,3 +124,28 @@ alter table public.profiles add column if not exists places_month text;
 alter table public.profiles add column if not exists places_count int not null default 0;
 alter table public.profiles add column if not exists ai_day text;
 alter table public.profiles add column if not exists ai_day_count int not null default 0;
+
+-- Bank transfers recorded by the admin (Admin → "Plată primită"); a paid plan runs until profiles.plan_until (+7 days grace).
+alter table public.profiles add column if not exists plan_until date;
+create table if not exists public.payments (
+  id bigint generated always as identity primary key,
+  user_id uuid references auth.users (id) on delete set null,
+  email text not null,
+  plan text not null check (plan in ('pro', 'business')),
+  months int not null check (months in (1, 3, 6, 12)),
+  amount_eur numeric(10, 2) not null check (amount_eur > 0),
+  reference text not null default '',
+  paid_on date not null,
+  plan_until date not null,
+  recorded_by uuid,
+  created_at timestamptz not null default now()
+);
+alter table public.payments enable row level security; -- no policies: only the server (secret key) reads and writes
+
+-- Launch waiting list: the address is used once, for the launch email, and deleted when that email is sent.
+create table if not exists public.waitlist (
+  email text primary key check (char_length(email) <= 200),
+  lang text not null default 'ro',
+  created_at timestamptz not null default now()
+);
+alter table public.waitlist enable row level security; -- no policies: only the server reads and writes

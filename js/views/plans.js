@@ -7,7 +7,7 @@ import { BRAND } from '../brand.js';
 import { t, ta } from '../i18n.js';
 import { pageHead } from './shared.js';
 import { currentPlan, aiAllowance, PLAN_RANK } from '../plans.js';
-import { authOn, signedIn, userEmail, userId, supportEmail, requestPlan, planRequest } from '../auth.js';
+import { authOn, signedIn, userEmail, userId, supportEmail, requestPlan, planRequest, planUntil } from '../auth.js';
 
 export const PLANS = [
   { id: 'free', price: 0 },
@@ -38,7 +38,8 @@ export const plans = {
     const cell = (v) => (v === true ? html`<span class="pc-yes" aria-label="${t('pc.yes')}">${icon('check', 18)}</span>` : v === false ? html`<span class="pc-no" aria-label="${t('pc.no')}">—</span>` : html`<span>${t(v)}</span>`);
     return html`${pageHead({ title: t('plans.title'), sub: t('plans.sub') })}
     ${accounts ? html`<div class="plan-now card"><div><p class="tag">${t('plans.yourPlan')}</p><h2>${t(`plans.${cur}.name`)}</h2>
-        ${ai ? html`<p class="muted">${t('plans.aiLeft', { n: Math.max(0, ai.limit - ai.used), limit: ai.limit })}</p>` : ''}</div>
+        ${ai ? html`<p class="muted">${t('plans.aiLeft', { n: Math.max(0, ai.limit - ai.used), limit: ai.limit })}</p>` : ''}
+        ${cur !== 'free' && planUntil() ? html`<p class="plan-until">${t('plans.until', { date: planUntil().split('-').reverse().join('.') })} <button type="button" class="link-btn" data-act="plan-pay" data-plan="${cur}">${t('plans.renew')}</button></p>` : ''}</div>
       ${cur !== 'business' ? html`<div class="plan-how"><b>${t('plans.howTitle')}</b><p class="muted">${t(supportEmail() ? 'plans.howBodyMail' : 'plans.howBody', { email: supportEmail() })}</p></div>` : html`<p class="muted">${t('plans.topPlan')}</p>`}</div>`
       : html`<p class="plans-soon" role="status">${icon('info', 18)} ${t('plans.noAccounts')}</p>`}
     <div class="plans">${PLANS.map((p) => { const isCur = accounts && p.id === cur; const lower = accounts && PLAN_RANK[p.id] < PLAN_RANK[cur]; return html`<article class="plan ${p.featured ? 'is-featured' : ''} ${isCur ? 'is-current' : ''}">

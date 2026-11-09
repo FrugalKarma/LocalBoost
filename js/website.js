@@ -100,7 +100,7 @@ export function resolveDoc(s = getState()) {
     biz: {
       name: b.name || T('biz.unnamed'), kind: T(`biz.cat.${b.category}`), city: (b.city || '').split(',')[0], address: b.address || p.address || '',
       phone: b.phone || p.phone || '', whatsapp: waNumber(b.whatsapp), email: b.email, lat: p.lat, lng: p.lng, mapsUrl: p.mapsUrl,
-      reviewUrl: p.id ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(p.id)}` : '',
+      reviewUrl: p.id ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(p.id)}` : (b.reviewLink || ''),
       logo: site.logo, rating: g?.rating ?? p.rating, reviewCount: g?.reviewCount ?? p.reviewCount,
       hours: siteHours(s), hoursText: siteHours(s) ? [] : (p.hours || []), hoursNote: b.hoursNote || '', reviews,
       social: { instagram: b.instagram, tiktok: b.tiktok, facebook: b.facebook },

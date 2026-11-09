@@ -15,7 +15,12 @@ let busy = false;
 let posterTarget = null;
 let posterStyle = 'brand';
 
-const reviewUrl = () => { const id = getBiz().place?.id; return id ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(id)}` : ''; };
+const reviewUrl = () => { const b = getBiz(); const id = b.place?.id; return id ? `https://search.google.com/local/writereview?placeid=${encodeURIComponent(id)}` : b.reviewLink; };
+// links Google gives for "ask for reviews" (Business Profile), or a Maps link to the place
+const REVIEW_HOSTS = /^(g\.page|maps\.app\.goo\.gl|goo\.gl|search\.google\.com|(www\.)?google\.[a-z.]+|maps\.google\.[a-z.]+)$/i;
+export function cleanReviewLink(v) {
+  try { const u = new URL(String(v || '').trim()); return u.protocol === 'https:' && REVIEW_HOSTS.test(u.hostname) ? u.href.slice(0, 300) : ''; } catch { return ''; }
+}
 const mapsReviewsUrl = () => getBiz().place?.mapsUrl || '';
 const reviews = () => (getState().signals?.google?.reviews || []).filter((r) => r.text);
 const firstName = (a) => String(a || '').trim().split(/\s+/)[0] || '';
@@ -126,3 +131,38 @@ actions['poster-print'] = () => {
   window.addEventListener('afterprint', done);
   setTimeout(() => { window.print(); setTimeout(done, 1500); }, 60);
 };
+
+/* ---------- asking customers for reviews (every plan) ---------- */
+let askDraft = '';
+const fill = (s, link) => s.replace(/\{biz\}/g, getBiz().name || '').replace(/\{link\}/g, link);
+export function askSection() {
+  const link = reviewUrl(); const fromGoogle = !!getBiz().place?.id;
+  return html`<section class="card tool-card ask-card" id="ask">
+    <div class="tool-head"><span class="tool-ic">${icon('star', 22)}</span><div><h2>${t('ask.title')}</h2><p class="muted">${t('ask.sub')}</p></div></div>
+    ${link ? html`<div class="ask-link"><code>${link.replace(/^https:\/\//, '').slice(0, 64)}${link.length > 72 ? '…' : ''}</code>
+        <button class="btn btn-secondary btn-sm" data-act="ask-copy-link">${icon('copy', 15)} ${t('ask.copyLink')}</button>
+        <a class="btn btn-ghost btn-sm" href="${link}" target="_blank" rel="noopener">${icon('external', 15)} ${t('ask.test')}</a>
+        ${fromGoogle ? '' : html`<button class="btn btn-ghost btn-sm" data-act="ask-link-clear">${t('ask.change')}</button>`}</div>
+      <ol class="ask-msgs">${ta('ask.tpl').map((m, i) => { const txt = fill(m.text, link); return html`<li><b>${m.label}</b><p>${txt}</p>
+        <div class="btn-row"><a class="btn btn-primary btn-sm" href="https://wa.me/?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">${icon('share', 15)} WhatsApp</a>
+          <a class="btn btn-secondary btn-sm" href="sms:?&body=${encodeURIComponent(txt)}">${icon('reply', 15)} SMS</a>
+          <button class="btn btn-ghost btn-sm" data-act="ask-copy" data-i="${i}">${icon('copy', 15)} ${t('actions.copy')}</button></div></li>`; })}</ol>
+      <ul class="ask-tips">${ta('ask.tips').map((x) => html`<li>${icon('check', 14)} ${x}</li>`)}</ul>`
+    : html`<form class="ask-form" data-ask-form novalidate><label class="field"><span>${t('ask.linkLabel')}</span>
+        <input type="url" data-in="ask-link" value="${askDraft}" placeholder="https://g.page/r/…/review" maxlength="300" inputmode="url"></label>
+        <button type="submit" class="btn btn-primary">${t('ask.save')}</button></form>
+      <p class="muted small">${icon('info', 14)} ${t('ask.linkHow')}</p>`}
+  </section>`;
+}
+inputs['ask-link'] = (el) => { askDraft = el.value.slice(0, 300); };
+document.addEventListener('submit', (e) => {
+  if (!e.target.matches?.('[data-ask-form]')) return;
+  e.preventDefault();
+  const v = cleanReviewLink(e.target.querySelector('input')?.value);
+  if (!v) return toast(t('ask.bad'), 'error');
+  update((s) => ({ business: { ...s.business, reviewLink: v } })); askDraft = '';
+  toast(t('ask.saved'), 'success'); rerender();
+});
+actions['ask-link-clear'] = () => { askDraft = getBiz().reviewLink; update((s) => ({ business: { ...s.business, reviewLink: '' } })); rerender(); };
+actions['ask-copy-link'] = async () => { const ok = await copyText(reviewUrl()); toast(t(ok ? 'common.copied' : 'common.copyFailed'), ok ? 'success' : 'error'); };
+actions['ask-copy'] = async (el) => { const m = ta('ask.tpl')[Number(el.dataset.i)]; if (!m) return; const ok = await copyText(fill(m.text, reviewUrl())); toast(t(ok ? 'common.copied' : 'common.copyFailed'), ok ? 'success' : 'error'); };

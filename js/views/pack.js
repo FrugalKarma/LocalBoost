@@ -10,7 +10,7 @@ import { pageHead } from './shared.js';
 import { needSignals } from '../collect.js';
 import { getBiz, displayName } from '../business.js';
 import { can, upgradePrompt, lockBadge } from '../plans.js';
-import { repliesSection, posterSection } from './tools.js';
+import { repliesSection, posterSection, askSection } from './tools.js';
 import { stickerSvg, mockupSvg, postSvg, defaultSticker, normSticker, FONTS, FONT_IDS, PALETTES, PALETTE_IDS, ICON_IDS, ICONS, SHAPES, RINGS, FILLS, PATTERNS, MOCKUPS, EMOJIS, FORMATS, LAYOUTS, stickerColors, downloadText, downloadPng, inlinePhoto, printSheet } from '../studio.js';
 import { siteLang } from '../website.js';
 import { confetti } from '../fun.js';
@@ -240,7 +240,7 @@ export const pack = {
     const head = pageHead({ title: t('studio.title'), sub: t('studio.sub'),
       actions: html`<button class="btn btn-primary" data-act="gen-assets" ${busy ? 'disabled' : ''}>${busy ? html`<i class="spin"></i>` : icon('sparkle', 18)} ${a ? t('actions.regenerateAll') : t('actions.generateAssets')} ${can('pack') ? '' : lockBadge('pack')}</button>` });
     studio();
-    const body = { offer: offerTab, post: postTab, stickers: stickersTab, words: wordsTab, plan: planTab, reviews: () => html`<div class="tools-row">${repliesSection()}${posterSection()}</div>` }[tab]();
+    const body = { offer: offerTab, post: postTab, stickers: stickersTab, words: wordsTab, plan: planTab, reviews: () => html`${askSection()}<div class="tools-row">${repliesSection()}${posterSection()}</div>` }[tab]();
     return html`${head}
       <div class="engine-bar ${a?.mode === 'ai' ? 'is-ai' : 'is-local'}" role="status"><span class="engine-dot" aria-hidden="true"></span><span class="engine-text">${t(a?.mode === 'ai' ? 'pack.modeAi' : 'studio.modeLocal')}</span></div>
       <nav class="studio-tabs" role="tablist">${TABS.map(([k, ic]) => html`<button role="tab" aria-selected="${tab === k}" data-act="studio-tab" data-tab="${k}">${icon(ic, 17)}<span>${t(`studio.tab.${k}`)}</span></button>`)}</nav>

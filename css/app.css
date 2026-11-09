@@ -2781,3 +2781,28 @@ body.trail-open #trail-root { pointer-events: auto; }
 }
 :root[data-theme='light'] .home-hero .stat-strip b.is-up, :root[data-theme='light'] .lp-rate b.up, :root[data-theme='light'] .lp-k2 { color: var(--bronze-700); }
 #main:focus, #main:focus-visible { outline: none; } /* focus moves to the page on navigation for screen readers; no ring around the whole page */
+/* signals: how to copy reviews from Google Maps */
+.paste-how { margin: 4px 0 12px; border-left: 2px solid var(--ox-300, #C2384E); padding: 6px 0 6px 12px; font-size: .88rem; }
+.paste-how summary { cursor: pointer; display: flex; gap: 6px; align-items: center; font-weight: 600; color: var(--text); }
+.paste-how ol { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 4px; color: var(--muted); }
+/* pack → reviews: ask customers for a review */
+.ask-card { margin-bottom: 20px; }
+.ask-link { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 16px; }
+.ask-link code { flex: 1 1 260px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 10px 12px; border: 1px solid var(--line); font-size: .85rem; }
+.ask-msgs { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.ask-msgs li { display: grid; gap: 8px; align-content: start; padding: 14px; border: 1px solid var(--line); }
+.ask-msgs b { font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.ask-msgs p { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
+.ask-tips { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 6px; font-size: .88rem; color: var(--muted); }
+.ask-tips li { display: flex; gap: 8px; align-items: baseline; }
+.ask-form { display: flex; flex-wrap: wrap; align-items: end; gap: 10px; } .ask-form .field { flex: 1 1 280px; margin: 0; }
+/* admin: payments and waiting list */
+.admin-sec { margin-top: 20px; } .admin-sec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: 12px; margin-bottom: 10px; }
+.admin-sec h2 { margin: 0 0 4px; font-size: 1.1rem; }
+.admin-table { width: 100%; border-collapse: collapse; font-size: .86rem; display: block; overflow-x: auto; }
+.admin-table th, .admin-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.admin-table th { font-weight: 600; color: var(--muted); font-size: .74rem; letter-spacing: .1em; text-transform: uppercase; }
+.client-when .until-soon { color: var(--bronze, #C9A27A); } .client-when .until-late { color: var(--ox-300, #C2384E); font-weight: 600; }
+.client-when small + small { display: block; margin-top: 2px; }
+.pay-form { display: grid; gap: 10px; }
+.client-plan .pay-btn { display: inline-flex; gap: 4px; align-items: center; margin-top: 6px; font-size: .8rem; }

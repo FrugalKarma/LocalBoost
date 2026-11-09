@@ -11,6 +11,7 @@ import { confetti } from './fun.js';
 
 const PASS = 'arcton.preview';
 const CFG = 'arcton.launch';
+const LIST = 'arcton.waitlist'; // this browser already signed up for the launch email
 // shared links and the calendar invite point at the public address (local dev keeps its own origin)
 const SITE = /localhost|127\.0\.0\.1/.test(location.hostname) ? location.origin : 'https://www.arcton.site';
 const read = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
@@ -56,6 +57,7 @@ const WINDOW = 30 * 86400e3;
 const TRAIL = 'M600 900 C 760 760, 880 520, 900 380 S 1020 260, 1060 170';
 const climbed = (launch) => Math.min(1, Math.max(0, 1 - (launch - Date.now()) / WINDOW));
 
+let listErr = '';
 function page(launch, unlockOpen, err) {
   const p = parts(launch - Date.now());
   const unit = (k, v) => html`<div class="cd-unit ${k === 's' ? 'is-s' : ''}"><b data-cd="${k}">${k === 'd' ? v : pad(v)}</b><span>${t(`soon.unit.${k}`)}</span></div>`;
@@ -74,8 +76,14 @@ function page(launch, unlockOpen, err) {
       <h1>${t('soon.headA')} <em>${t('soon.headB')}</em> ${t('soon.headC')}</h1>
       <p class="cd-lede">${t('soon.lede', { app: BRAND.app })}</p>
       <div class="cd-clock" role="timer" aria-live="off" aria-label="${t('soon.left')}">${unit('d', p.d)}${unit('h', p.h)}${unit('m', p.m)}${unit('s', p.s)}</div>
+      ${read(LIST) ? html`<p class="cd-listed" role="status"><b>${t('soon.listedT')}</b> ${t('soon.listed')}</p>`
+        : html`<form class="cd-list" data-list-form novalidate>
+          <label><span>${t('soon.listLabel')}</span><input id="cd-email" type="email" autocomplete="email" inputmode="email" maxlength="200" placeholder="${t('soon.listPh')}" required></label>
+          <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="cd-hp">
+          <button type="submit" class="cd-btn is-primary">${t('soon.listBtn')}</button>
+          <p class="cd-list-note">${listErr ? html`<span class="cd-err" role="alert">${t(listErr)}</span>` : t('soon.listNote')} <button type="button" class="cd-link" data-soon="privacy">${t('legal.privacy')}</button></p></form>`}
       <div class="cd-actions">
-        <button class="cd-btn is-primary" data-soon="calendar">${t('soon.remind')}</button>
+        <button class="cd-btn" data-soon="calendar">${t('soon.remind')}</button>
         <button class="cd-btn" data-soon="share">${t('soon.share')}</button></div>
       <ol class="cd-feats">${['f1', 'f2', 'f3', 'f4'].map((k, i) => html`<li><i>${['I', 'II', 'III', 'IV'][i]}</i><div><b>${t(`soon.${k}t`)}</b><span>${t(`soon.${k}`)}</span></div></li>`)}</ol>
     </main>
@@ -133,6 +141,16 @@ function show(launch, resolve) {
     }
   };
   const onSubmit = async (e) => {
+    if (e.target.matches('[data-list-form]')) {
+      e.preventDefault();
+      const email = $('#cd-email')?.value.trim() || '';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { listErr = 'signin.err.invalid_email'; paint(); $('#cd-email').value = email; $('#cd-email').focus(); return; }
+      const btn = e.target.querySelector('button[type="submit"]'); btn.disabled = true;
+      const r = await post({ op: 'waitlist', email, lang: getLang(), website: e.target.website.value });
+      if (r.ok) { listErr = ''; write(LIST, 1); paint(); confetti(); return; }
+      listErr = r.error === 'rate_limited' ? 'signin.err.rate_limited' : r.error === 'invalid_email' ? 'signin.err.invalid_email' : r.error === 'network' ? 'signin.err.network' : 'soon.listFail';
+      paint(); $('#cd-email').value = email; return;
+    }
     if (!e.target.matches('[data-soon-form]')) return;
     e.preventDefault();
     const pw = $('#soon-pw')?.value || ''; if (!pw) return;

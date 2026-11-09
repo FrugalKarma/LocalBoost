@@ -145,7 +145,7 @@ export async function refreshMe() {
   if (!signedIn()) return null;
   const tok = await freshToken(); if (!tok) return null;
   const j = await post({ op: 'me' }, tok);
-  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit, termsVersion: j.termsVersion, termsAt: j.termsAt, planRequest: j.planRequest || null }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
+  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit, termsVersion: j.termsVersion, termsAt: j.termsAt, planRequest: j.planRequest || null, planUntil: j.planUntil || null }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
   return j;
 }
 
@@ -157,6 +157,7 @@ export async function requestPlan(plan) {
   return j;
 }
 export const planRequest = () => session?.planRequest || null;
+export const planUntil = () => session?.planUntil || null; // a paid plan's end date (YYYY-MM-DD), set when the admin records a transfer
 
 /** Records on the account that the current Terms / Privacy / AI notice were accepted. */
 export async function recordConsent(version) {

@@ -34,7 +34,7 @@ export function getBiz() {
     name: b.name || '', city: b.city || '', category: b.category || 'cafe', goal: b.goal || 'bookings',
     website: b.website || '', instagram: b.instagram || '', tiktok: b.tiktok || '', facebook: b.facebook || '',
     phone: b.phone || '', email: b.email || '', whatsapp: b.whatsapp || '', address: b.address || '',
-    place: b.place || null,
+    place: b.place || null, reviewLink: b.reviewLink || '',
     noName: !!b.noName, noWebsite: !!b.noWebsite, noInstagram: !!b.noInstagram, noTiktok: !!b.noTiktok, noFacebook: !!b.noFacebook,
   };
 }
@@ -55,7 +55,7 @@ export function saveBiz(d) {
     loaded: true, name: limit(d.name.trim(), 80), category: d.category, city: limit(d.city.trim(), 80), goal: d.goal,
     website: d.noWebsite ? '' : cleanWebsite(d.website), instagram: d.noInstagram ? '' : cleanHandle(d.instagram), tiktok: d.noTiktok ? '' : cleanHandle(d.tiktok), facebook: d.noFacebook ? '' : cleanHandle(d.facebook),
     phone: cleanPhone(d.phone), email: cleanEmail(d.email), whatsapp: cleanPhone(d.whatsapp), address: limit(String(d.address || '').trim(), 200),
-    place: d.place || null,
+    place: d.place || null, reviewLink: prev.reviewLink || '',
     noName: d.noName && !d.name.trim(), noWebsite: d.noWebsite && !cleanWebsite(d.website), noInstagram: d.noInstagram && !cleanHandle(d.instagram), noTiktok: d.noTiktok && !cleanHandle(d.tiktok), noFacebook: d.noFacebook && !cleanHandle(d.facebook),
   }, names: null, ...(placeChanged ? { competitors: { list: [], custom: getState().competitors?.custom || [], fetchedAt: null } } : {}) });
 }

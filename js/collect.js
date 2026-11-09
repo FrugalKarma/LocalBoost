@@ -8,6 +8,7 @@ import { getBiz } from './business.js';
 import { serverCaps, placeDetails, checkWebsite } from './sources.js';
 import { runThemes } from './ai.js';
 import { isExample } from './example.js';
+import { parseReviews } from './paste.js';
 
 export const scan = { active: false, step: 0, steps: [] };
 
@@ -47,7 +48,7 @@ export async function collectSignals() {
       else errors.website = r.error;
     }
     if (k === 'themes') {
-      const texts = [...(next.google?.reviews || []).map((v) => ({ source: 'Google', rating: v.rating, text: v.text })), ...next.notes.map((n) => ({ source: n.source, kind: n.kind, text: n.text }))];
+      const texts = [...(next.google?.reviews || []).map((v) => ({ source: 'Google', rating: v.rating, text: v.text })), ...next.notes.map((n) => ({ source: n.source, kind: n.kind, text: n.text, ...(n.rating ? { rating: n.rating } : {}) }))];
       if (texts.length >= 2) {
         const th = await runThemes(texts);
         next.themes = th;
@@ -66,11 +67,13 @@ export async function collectSignals() {
 export const NOTE_KINDS = ['review', 'question', 'comment', 'message'];
 /** Splits pasted text into separate items (blank line or new line), max 100 per paste. */
 export function addNotes(text, kind, source) {
-  const parts = String(text || '').split(/\n\s*\n|\r?\n/).map((x) => limit(x.trim(), 1200)).filter((x) => x.length >= 4).slice(0, 100);
+  const { maps, items } = parseReviews(text); // a Google Maps copy is cleaned to just the reviews
+  const parts = items.map((x) => ({ ...x, text: limit(x.text, 1200) })).slice(0, 100);
   if (!parts.length) return 0;
-  const k = NOTE_KINDS.includes(kind) ? kind : 'review';
+  const k = maps ? 'review' : NOTE_KINDS.includes(kind) ? kind : 'review';
+  const src = limit(source || (maps ? 'Google' : ''), 40);
   const now = Date.now();
-  update((s) => ({ signals: { ...s.signals, notes: [...parts.map((p, i) => ({ id: `n${now}${i}`, kind: k, source: limit(source || '', 40), text: p, at: now })), ...s.signals.notes].slice(0, 300) } }));
+  update((s) => ({ signals: { ...s.signals, notes: [...parts.map((p, i) => ({ id: `n${now}${i}`, kind: k, source: src, text: p.text, ...(p.rating ? { rating: p.rating } : {}), at: now })), ...s.signals.notes].slice(0, 300) } }));
   return parts.length;
 }
 export function removeNote(id) { update((s) => ({ signals: { ...s.signals, notes: s.signals.notes.filter((n) => n.id !== id) } })); }

@@ -1,7 +1,7 @@
 // Small moments of delight: confetti for milestones, a time-of-day greeting and a daily streak.
 // Everything respects "reduce motion" (system setting or Settings → Display).
 const reduced = () => document.documentElement.dataset.motion === 'reduce' || matchMedia('(prefers-reduced-motion: reduce)').matches;
-const COLORS = ['#8B5CF6', '#38BDF8', '#F472B6', '#34D399', '#FBBF24', '#A78BFA'];
+const COLORS = ['#8E1B2C', '#C2384E', '#C9A27A', '#E0C29F', '#EDE6DC', '#6B5340']; // Bordo: oxblood, bronze, bone
 
 /** Bursts confetti from an element (or the screen centre). */
 export function confetti(from) {
