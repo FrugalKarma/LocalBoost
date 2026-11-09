@@ -2808,3 +2808,6 @@ body.trail-open #trail-root { pointer-events: auto; }
 .client-plan .pay-btn { display: inline-flex; gap: 4px; align-items: center; margin-top: 6px; font-size: .8rem; }
 /* the Bordo logo is a sharp black tile: no rounding, no filters, anywhere it appears */
 .brand-logo, .hdr-brand img, .auth-brand img, .lp-brand img, .lp-foot-brand img, .foot-brand img { border-radius: 0 !important; filter: none !important; }
+/* tool cards (studio → reviews): never wider than the screen; on phones the action button goes under the title */
+.tool-card { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 640px) { .tool-head { flex-wrap: wrap; } .tool-head > .btn { flex: 1 1 100%; justify-content: center; } }
