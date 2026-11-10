@@ -188,7 +188,7 @@ input, select, textarea { border-radius: 12px; }
 .studio-stage { display: grid; gap: 14px; justify-items: center; align-content: start; min-width: 0; }
 .studio-stage > .btn-row, .studio-stage > .muted { justify-content: center; text-align: center; }
 .ctl-group { padding: 12px 0; border-bottom: 1px solid var(--line); display: grid; gap: 10px; } .ctl-group:last-of-type { border-bottom: 0; }
-.ctl-group h3 { margin: 0; font: 700 .76rem var(--f-ui); letter-spacing: .1em; text-transform: uppercase; color: var(--tag); }
+.ctl-group h3, .ctl-group h2 { margin: 0; font: 700 .76rem var(--f-ui); letter-spacing: .1em; text-transform: uppercase; color: var(--tag); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--card); color: var(--text); font: 500 .84rem var(--f-ui); cursor: pointer; }
 .chip:hover { border-color: var(--lav-200); background: var(--bg-2); }

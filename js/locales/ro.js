@@ -2168,6 +2168,7 @@ export default {
       'Cere recenzia în aceeași zi, cât timp vizita e proaspătă.',
       'Cere tuturor, nu doar celor mulțumiți: Google interzice selectarea doar a recenziilor bune.',
       'Nu oferi reduceri sau cadouri în schimbul recenziilor: încalcă regulile Google.',
+      'Scrie doar clienților care ți-au dat numărul și se așteaptă să le scrii. Cine spune „nu” nu mai primește mesaje.',
     ],
     linkLabel: 'Linkul tău de recenzie de la Google',
     save: 'Salvează',

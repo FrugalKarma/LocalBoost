@@ -54,7 +54,7 @@ body[data-route='soon'] {
 .cd-list { display: grid; grid-template-columns: minmax(0, 420px) auto; align-items: end; gap: 10px; margin: 40px 0 0; max-width: 640px; animation: cd-up 1.1s .4s cubic-bezier(.16, 1, .3, 1) both; }
 .cd-list label { display: grid; gap: 8px; font: 500 .7rem 'Plex Mono', monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--bronze-300); }
 .cd-list input[type=email] { min-height: 54px; padding: 0 16px; background: rgba(12, 10, 10, .72); border: 1px solid var(--line-2); border-radius: 2px; color: var(--head); font: 400 1.05rem 'Archivo'; }
-.cd-list input[type=email]:focus { outline: none; border-color: var(--bronze); }
+.cd-list input[type=email]:focus { border-color: var(--bronze); } .cd-list input[type=email]:focus-visible { outline: 2px solid #E2576C; outline-offset: 2px; }
 .cd-list-note { grid-column: 1 / -1; margin: 2px 0 0; font-size: .82rem; color: var(--muted); } .cd-list-note .cd-link { font-size: .78rem; }
 .cd-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 .cd-listed { margin: 40px 0 0; max-width: 560px; padding: 16px 18px; border-left: 3px solid var(--ox-300); background: rgba(12, 10, 10, .6); color: var(--text); }
@@ -98,3 +98,4 @@ body[data-route='soon']::before, body[data-route='soon']::after { display: none;
 .cd .cd-feats li:nth-child(n+3) { border-top: 1px solid var(--line); margin-top: 16px; }
 @media (max-width: 760px) { .cd .cd-trail { opacity: .3; } }
 .cd-brand img { border-radius: 0; filter: none; }
+.cd-link { min-height: 24px; display: inline-flex; align-items: center; }

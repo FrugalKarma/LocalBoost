@@ -2204,6 +2204,7 @@ export default {
       'Fragen Sie am selben Tag, solange der Besuch frisch ist.',
       'Fragen Sie alle, nicht nur zufriedene Kunden: Google verbietet das Aussortieren.',
       'Bieten Sie nie Rabatte oder Geschenke für Bewertungen an: das verstößt gegen Googles Regeln.',
+      'Schreiben Sie nur Kunden, die Ihnen ihre Nummer gegeben haben und mit einer Nachricht rechnen. Wer Nein sagt, bekommt keine Nachrichten mehr.',
     ],
     linkLabel: 'Ihr Google-Bewertungslink',
     save: 'Speichern',

@@ -2161,6 +2161,7 @@ export default {
       'Ask on the same day, while the visit is fresh.',
       'Ask everyone, not only happy customers: Google forbids picking only good reviews.',
       'Never offer discounts or gifts for reviews: it breaks Google’s rules.',
+      'Only message customers who gave you their number and expect to hear from you. Anyone who says no gets no more messages.',
     ],
     linkLabel: 'Your Google review link',
     save: 'Save',

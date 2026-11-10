@@ -159,7 +159,7 @@ h1,h2,h3{font-family:var(--fh);font-weight:var(--hw);line-height:1.1;letter-spac
 h2{font-size:clamp(1.75rem,4.2vw,2.6rem);margin-bottom:22px}h3{font-size:1.2rem}
 a{color:inherit}.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
 .skip{position:absolute;left:12px;top:-60px;background:var(--surface);color:var(--text);padding:12px 16px;border-radius:12px;z-index:50;font-weight:700}.skip:focus{top:12px}
-:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+:focus-visible,iframe:focus,input[type=date]:focus,input[type=time]:focus{outline:3px solid var(--focus);outline-offset:3px}
 .ann{background:var(--accent);color:var(--accent-ink);text-align:center;padding:10px 16px;font-weight:600;font-size:.95rem}
 .top{position:sticky;top:0;z-index:20;background:color-mix(in srgb, var(--bg) 88%, transparent);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
 .top .wrap{display:flex;align-items:center;gap:16px;min-height:68px}
@@ -243,7 +243,7 @@ textarea{min-height:100px;resize:vertical}
 .err{color:#B91C1C;font-weight:600;min-height:1.4em}
 footer{background:var(--brand);color:var(--brand-ink);padding:40px 0 28px;margin-top:0}
 footer .wrap{display:grid;grid-template-columns:2fr 1fr 1fr;gap:24px}footer h2{font-size:1.3rem;margin-bottom:10px}footer p,footer a{opacity:.88}footer a{display:block;padding:6px 0;text-decoration:none}footer a:hover{opacity:1;text-decoration:underline}
-.priv{max-width:62ch}.priv summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}.priv p{margin:8px 0 0;line-height:1.55}
+.priv{max-width:62ch;background:none;border:0;border-radius:0;padding:0;margin:0}.priv summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px;min-height:24px;color:inherit}.priv summary::after{content:none}.priv p{margin:8px 0 0;line-height:1.55}
 .fine{max-width:1120px;margin:24px auto 0;padding:16px 20px 0;border-top:1px solid color-mix(in srgb, var(--brand-ink) 20%, transparent);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:.85rem;opacity:.8}
 .callbar{display:none}
 .wm{position:fixed;inset:0;pointer-events:none;z-index:60;background:repeating-linear-gradient(-30deg,transparent 0 140px,rgba(0,0,0,.035) 140px 141px)}

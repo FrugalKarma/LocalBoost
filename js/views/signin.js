@@ -44,28 +44,28 @@ function form() {
   if (mode === 'confirm' || mode === 'resetSent') {
     const confirm = mode === 'confirm';
     return html`<div class="auth-msg"><span class="auth-msg-ic" aria-hidden="true">${icon('check', 26)}</span>
-      <h2>${t(confirm ? 'signin.confirmTitle' : 'signin.resetSentTitle')}</h2>
+      <h1>${t(confirm ? 'signin.confirmTitle' : 'signin.resetSentTitle')}</h1>
       <p>${t(confirm ? 'signin.confirmBody' : 'signin.resetSent', { email })}</p>
       <button class="btn btn-secondary" data-auth="mode" data-mode="signin">${t('signin.back')}</button></div>`;
   }
   if (mode === 'reset') {
-    return html`<form data-auth-form="reset" novalidate><h2>${t('signin.resetTitle')}</h2><p class="auth-lead">${t('signin.resetBody')}</p>
+    return html`<form data-auth-form="reset" novalidate><h1>${t('signin.resetTitle')}</h1><p class="auth-lead">${t('signin.resetBody')}</p>
       ${emailField()}${submit(t('signin.resetSend'))}
       <button type="button" class="link-btn" data-auth="mode" data-mode="signin">${t('signin.back')}</button></form>`;
   }
   if (mode === 'newpw') {
-    return html`<form data-auth-form="newpw" novalidate><h2>${t('signin.newTitle')}</h2><p class="auth-lead">${t('signin.passwordHint')}</p>
+    return html`<form data-auth-form="newpw" novalidate><h1>${t('signin.newTitle')}</h1><p class="auth-lead">${t('signin.passwordHint')}</p>
       ${pwField('auth-password', t('signin.passwordNew'), 'new-password')}${submit(t('signin.newSave'))}</form>`;
   }
   const up = mode === 'signup';
-  if (!authOn()) return html`<form data-auth-form="signin" novalidate><h2>${t('signin.signInTitle')}</h2>
+  if (!authOn()) return html`<form data-auth-form="signin" novalidate><h1>${t('signin.signInTitle')}</h1>
       ${emailField()}${pwField('auth-password', t('signin.password'), 'current-password')}${submit(t('signin.signIn'))}
       <p class="small auth-terms">${t('signin.soonNote')}</p></form>`;
   return html`<div class="auth-tabs" role="tablist">
       <button role="tab" aria-selected="${!up}" data-auth="mode" data-mode="signin">${t('signin.signInTab')}</button>
       <button role="tab" aria-selected="${up}" data-auth="mode" data-mode="signup">${t('signin.signUpTab')}</button></div>
     <form data-auth-form="${mode}" novalidate>
-      <h2>${t(up ? 'signin.signUpTitle' : 'signin.signInTitle')}</h2>
+      <h1>${t(up ? 'signin.signUpTitle' : 'signin.signInTitle')}</h1>
       ${emailField()}
       ${pwField('auth-password', t('signin.password'), up ? 'new-password' : 'current-password')}
       ${up ? html`<p class="small auth-hint">${t('signin.passwordHint')}</p>` : html`<button type="button" class="link-btn auth-forgot" data-auth="mode" data-mode="reset">${t('signin.forgot')}</button>`}

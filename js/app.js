@@ -86,7 +86,7 @@ function shell() {
   <div class="content">
     <header class="hdr">
       <div class="hdr-in">
-        <a class="hdr-brand" href="#/overview"><img src="/icons/logo.svg" alt="" width="34" height="34"><span><strong>${BRAND.app}</strong><small class="top-biz" id="top-biz"></small></span></a>
+        <a class="hdr-brand" href="#/overview" aria-label="${BRAND.app}"><img src="/icons/logo.svg" alt="" width="34" height="34"><span><strong>${BRAND.app}</strong><small class="top-biz" id="top-biz"></small></span></a>
         <nav class="ridge" aria-label="${t('brand.journey')}">${ridge(route, journeyState())}</nav>
         <div class="trail-slot" id="trail-slot">${trailButton(route)}</div>
         <div class="hdr-tools">
@@ -195,8 +195,15 @@ actions['trail-open'] = () => {
   root.innerHTML = trailMap(route, journeyState()).s; document.body.classList.add('trail-open');
   root.querySelector('.tm-pt.is-cur, .tm-pt')?.focus();
 };
-actions['trail-close'] = () => { const root = document.getElementById('trail-root'); if (root) root.innerHTML = ''; document.body.classList.remove('trail-open'); };
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('trail-open')) actions['trail-close'](); });
+actions['trail-close'] = () => { const root = document.getElementById('trail-root'); const was = document.body.classList.contains('trail-open'); if (root) root.innerHTML = ''; document.body.classList.remove('trail-open'); if (was) document.querySelector('.trail-btn')?.focus(); };
+document.addEventListener('keydown', (e) => {
+  if (!document.body.classList.contains('trail-open')) return;
+  if (e.key === 'Escape') return actions['trail-close']();
+  if (e.key !== 'Tab') return; // keep keyboard focus inside the open route map (it is a modal dialog)
+  const f = [...document.querySelectorAll('#trail-root a[href], #trail-root button')]; if (!f.length) return;
+  const [first, last] = [f[0], f[f.length - 1]];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
 actions['account-menu'] = (el) => {
   const m = $('#account-menu'); m.hidden = !m.hidden; el.setAttribute('aria-expanded', String(!m.hidden));
   if (!m.hidden) $('a', m).focus();

@@ -33,7 +33,7 @@ function render() {
   const year = new Date().getFullYear();
   return html`<div class="lp">
   <header class="lp-nav"><div class="lp-nav-in">
-    <a class="lp-brand" href="/" data-land="top"><img src="/icons/logo.svg" alt="" width="34" height="34"><strong>${BRAND.app}</strong></a>
+    <a class="lp-brand" href="/" data-land="top" aria-label="${BRAND.app}"><img src="/icons/logo.svg" alt="" width="34" height="34"><strong>${BRAND.app}</strong></a>
     <nav class="lp-links" aria-label="${t('land.navAria')}">${['how', 'plans', 'faq'].map((k) => html`<button type="button" class="lp-link" data-land="to" data-to="${k}">${t(`land.nav.${k}`)}</button>`)}</nav>
     <div class="lp-tools">${langSelect()}<button type="button" class="btn btn-ghost btn-sm lp-signin" data-land="signin">${t('land.signin')}</button>
       <button type="button" class="btn btn-primary btn-sm" data-land="signup">${t('land.ctaShort')}</button></div>

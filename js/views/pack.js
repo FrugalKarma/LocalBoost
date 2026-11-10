@@ -52,7 +52,7 @@ const field = (label, k, v, { area = false, max = 160, rows = 3, attr = 'st', hi
   ${area ? html`<textarea data-in="${attr}" data-k="${k}" maxlength="${max}" rows="${rows}">${v || ''}</textarea>` : html`<input type="text" data-in="${attr}" data-k="${k}" maxlength="${max}" value="${v || ''}">`}${hint ? html`<small class="muted">${hint}</small>` : ''}</label>`;
 const chips = (attr, k, opts, cur, label = (o) => t(`studio.${k}.${o}`)) => html`<div class="chips" role="group">${opts.map((o) => html`<button type="button" class="chip ${cur === o ? 'on' : ''}" aria-pressed="${cur === o}" data-act="${attr}" data-k="${k}" data-v="${o}">${label(o)}</button>`)}</div>`;
 const swatches = (attr, cur) => html`<div class="swatches" role="group" aria-label="${t('studio.palette')}">${PALETTE_IDS.map((p) => html`<button type="button" class="sw ${cur === p ? 'on' : ''}" aria-pressed="${cur === p}" data-act="${attr}" data-k="palette" data-v="${p}" title="${t(`studio.pal.${p}`)}"><i style="background:${PALETTES[p][0]}"></i><i style="background:${PALETTES[p][1]}"></i><i style="background:${PALETTES[p][3]}"></i><span>${t(`studio.pal.${p}`)}</span></button>`)}</div>`;
-const group = (title, body, extra = '') => html`<section class="ctl-group"><h3>${title}${extra}</h3>${body}</section>`;
+const group = (title, body, extra = '') => html`<section class="ctl-group"><h2 class="ctl-h">${title}${extra}</h2>${body}</section>`;
 
 /* ---------- tabs ---------- */
 function offerTab() {

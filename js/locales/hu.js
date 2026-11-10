@@ -2179,6 +2179,7 @@ export default {
       'Még aznap kérd, amíg friss az élmény.',
       'Mindenkit kérj, ne csak az elégedetteket: a Google tiltja a válogatást.',
       'Soha ne adj kedvezményt vagy ajándékot értékelésért: sérti a Google szabályait.',
+      'Csak olyan vendégnek írj, aki megadta a számát és számít az üzenetedre. Aki nemet mond, annak többet ne írj.',
     ],
     linkLabel: 'A Google-értékelési linked',
     save: 'Mentés',

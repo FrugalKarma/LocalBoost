@@ -2182,6 +2182,7 @@ export default {
       'Demandez le jour même, tant que la visite est fraîche.',
       'Demandez à tout le monde, pas seulement aux clients contents : Google interdit de trier les avis.',
       'N’offrez jamais de remise ou de cadeau contre un avis : c’est contraire aux règles de Google.',
+      'N’écrivez qu’aux clients qui vous ont donné leur numéro et s’attendent à un message. Qui dit non ne reçoit plus rien.',
     ],
     linkLabel: 'Votre lien d’avis Google',
     save: 'Enregistrer',
