@@ -21,26 +21,26 @@ globalThis.fetch = async (url, init = {}) => {
   if (!match) return j(200, []);
   Object.assign(row, JSON.parse(init.body)); return j(200, [row]);
 };
-const { aiAccess, LIMITS, FREE_AI_PER_MONTH } = await import('../lib/auth-core.mjs');
+const { aiAccess, LIMITS } = await import('../lib/auth-core.mjs');
 const { handleData } = await import('../lib/places-core.mjs');
 const H = { authorization: 'Bearer user-token' };
 let n = 0; const look = () => handleData('places', { method: 'GET', query: { op: 'search', q: 'cafe iasi' }, body: {}, headers: H, ip: `10.0.${Math.floor(n / 30)}.${n++ % 30}` });
 
 reset();
-for (let i = 0; i < LIMITS.places.free; i++) assert.equal((await look()).status, 200, `lookup ${i + 1}`);
-assert.deepEqual(await look().then((r) => [r.status, r.body.error]), [429, 'quota_reached'], 'free plan: monthly Google limit');
-reset({ places_month: '2000-01', places_count: 999 }); assert.equal((await look()).status, 200, 'a new month starts at zero');
-reset(); googleDown = true; assert.equal((await look()).status, 502); googleDown = false; assert.equal(row.places_count, 0, 'failed Google call is not counted');
+assert.deepEqual(await look().then((r) => [r.status, r.body.error]), [402, 'plan_required'], 'no plan: no Google lookups');
+assert.equal((await aiAccess(H, 'analyst')).error, 'plan_required', 'no plan: no AI');
+reset({ plan: 'pro' });
+for (let i = 0; i < LIMITS.places.pro; i++) assert.equal((await look()).status, 200, `lookup ${i + 1}`);
+assert.deepEqual(await look().then((r) => [r.status, r.body.error]), [429, 'quota_reached'], 'pro: monthly Google limit');
+reset({ plan: 'pro', places_month: '2000-01', places_count: 999 }); assert.equal((await look()).status, 200, 'a new month starts at zero');
+reset({ plan: 'pro' }); googleDown = true; assert.equal((await look()).status, 502); googleDown = false; assert.equal(row.places_count, 0, 'failed Google call is not counted');
 reset({ role: 'admin', places_month: new Date().toISOString().slice(0, 7), places_count: 9999 }); assert.equal((await look()).status, 200, 'admin is not limited');
 
 reset({ plan: 'pro' });
 for (let i = 0; i < LIMITS.ai.pro; i++) assert.ok((await aiAccess(H, 'creator')).ok, `ai ${i + 1}`);
 assert.equal((await aiAccess(H, 'creator')).error, 'daily_limit', 'pro: daily AI limit');
-reset();
-for (let i = 0; i < FREE_AI_PER_MONTH; i++) assert.ok((await aiAccess(H, 'analyst')).ok);
-const before = row.ai_day_count; assert.equal((await aiAccess(H, 'analyst')).error, 'quota_reached', 'free: monthly analyses');
-assert.equal(row.ai_day_count, before, 'a refused analysis gives the daily unit back');
+reset({ plan: 'pro' }); const before = row.ai_day_count;
 const g = await aiAccess(H, 'namer'); await g.release(); assert.equal(row.ai_day_count, before, 'release gives the unit back');
 
-reset(); oldSchema = true; assert.equal((await look()).status, 200, 'database without the new columns still works');
+reset({ plan: 'pro' }); oldSchema = true; assert.equal((await look()).status, 200, 'database without the new columns still works');
 console.log('limits ok');

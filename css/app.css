@@ -2832,3 +2832,7 @@ body.trail-open #trail-root { pointer-events: auto; }
 .skip { background: #120E0E !important; color: #EDE6DC !important; border-radius: 0; }
 /* every keyboard stop shows a ring, inputs included (a border colour change alone is too faint) */
 :where(input, select, textarea):focus-visible { outline: 2px solid var(--ox-text) !important; outline-offset: 2px; }
+.pay-flag.is-trial { background: var(--bronze, #C9A27A); color: #120E0E; } .trial-note { display: block; margin: 4px 0; font-size: .8rem; color: var(--muted); max-width: 32ch; overflow-wrap: anywhere; }
+/* extras card (own domain, premium site): priced per client */
+.is-extras { box-shadow: inset 0 0 0 1px var(--line); background: transparent; border: 1px dashed var(--line); }
+.is-extras .plan-price b, .is-extras .lp-price b { font-size: 1.6rem; }

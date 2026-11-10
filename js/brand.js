@@ -19,6 +19,6 @@ export const BRAND = {
 };
 
 /** Version of the Terms, Privacy and AI notices. Raise it when they change: everyone is asked to accept again. */
-export const LEGAL_VERSION = '2026-11-08';
+export const LEGAL_VERSION = '2026-11-10';
 export const LEGAL_UPDATED = '2026-11-08';
 export const contactEmail = () => BRAND.privacyEmail || BRAND.email;

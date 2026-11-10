@@ -21,7 +21,7 @@ import { BRAND } from './brand.js';
 import { needsConsent, showConsent } from './legal.js';
 import { applyDisplay } from './display.js';
 import { isExample, loadExample, clearExample } from './example.js';
-import { currentPlan } from './plans.js';
+import { currentPlan, PAID_ACTS, noPlan, noPlanPrompt } from './plans.js';
 import { launchGate } from './launch.js';
 import { journeyState } from './views/shared.js';
 import { displayName, getBiz } from './business.js';
@@ -173,6 +173,7 @@ document.addEventListener('click', (e) => {
   if (menu && !menu.hidden && !e.target.closest('.menu-wrap')) menu.hidden = true;
   if (e.target.closest('#account-menu a, #account-menu button')) menu && (menu.hidden = true);
   if (!el) return;
+  if (PAID_ACTS.has(el.dataset.act) && noPlan()) { e.preventDefault(); noPlanPrompt(); return; }
   const fn = actions[el.dataset.act];
   if (!fn) { console.warn('[Arcton] no handler for', el.dataset.act); return; }
   try { const r = fn(el, e); if (r?.catch) r.catch((err) => { console.error(err); toast(t('common.errorGeneric'), 'error'); }); }

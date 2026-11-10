@@ -149,3 +149,8 @@ create table if not exists public.waitlist (
   created_at timestamptz not null default now()
 );
 alter table public.waitlist enable row level security; -- no policies: only the server reads and writes
+
+-- No free plan (Nov 2026): accounts without a plan ask the owner for a free trial ('trial'); the note says what they need.
+alter table public.profiles drop constraint if exists profiles_plan_request_check;
+alter table public.profiles add constraint profiles_plan_request_check check (plan_request in ('pro', 'business', 'trial'));
+alter table public.profiles add column if not exists plan_request_note text check (char_length(plan_request_note) <= 500);

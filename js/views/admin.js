@@ -64,7 +64,8 @@ function row(c) {
     </div>
     <div class="client-stage">${stagePill(b?.stage)}</div>
     <div class="client-when"><small>${t('admin.colUpdated')}</small>${fmt(b?.updated_at)}${c.planUntil && !admin ? html`<small class="${until(c.planUntil) < 0 ? 'until-late' : until(c.planUntil) <= 7 ? 'until-soon' : ''}">${t(until(c.planUntil) < 0 ? 'admin.pay.expired' : 'admin.pay.until', { date: dmy(c.planUntil) })}</small>` : ''}</div>
-    <div class="client-plan">${admin ? '' : html`<label><span class="sr-only">${t('admin.plan')}: ${c.email}</span><select data-in="admin-plan" data-id="${c.id}" ${busy ? 'disabled' : ''}>${['free', 'pro', 'business'].map((p) => html`<option value="${p}" ${c.plan === p ? 'selected' : ''}>${t(`plans.${p}.name`)}</option>`)}</select></label>`}${c.planRequest ? html`<span class="pay-flag" title="${c.planRequestAt ? new Date(c.planRequestAt).toLocaleString(getLang()) : ''}">${t('pay.adminFlag', { plan: t(`plans.${c.planRequest}.name`) })}</span>` : ''}${admin ? '' : html`<button type="button" class="link-btn pay-btn" data-act="admin-paid" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('check', 14)} ${t('admin.pay.button')}</button>`}</div>
+    <div class="client-plan">${admin ? '' : html`<label><span class="sr-only">${t('admin.plan')}: ${c.email}</span><select data-in="admin-plan" data-id="${c.id}" ${busy ? 'disabled' : ''}>${['free', 'pro', 'business'].map((p) => html`<option value="${p}" ${c.plan === p ? 'selected' : ''}>${t(`plans.${p}.name`)}</option>`)}</select></label>`}${c.planRequest === 'trial' ? html`<span class="pay-flag is-trial" title="${c.planRequestNote}">${t('admin.trial.flag')}</span>${c.planRequestNote ? html`<small class="trial-note">„${c.planRequestNote}”</small>` : ''}<button type="button" class="link-btn pay-btn" data-act="admin-trial" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('star', 14)} ${t('admin.trial.button')}</button>`
+      : c.planRequest ? html`<span class="pay-flag" title="${c.planRequestAt ? new Date(c.planRequestAt).toLocaleString(getLang()) : ''}">${t('pay.adminFlag', { plan: t(`plans.${c.planRequest}.name`) })}</span>` : ''}${admin ? '' : html`<button type="button" class="link-btn pay-btn" data-act="admin-paid" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('check', 14)} ${t('admin.pay.button')}</button>`}</div>
     <div class="client-status">${admin ? html`<span class="badge badge-admin">${t('admin.roleAdmin')}</span>`
       : html`<span class="badge ${c.disabled ? 'badge-off' : 'badge-on'}">${t(c.disabled ? 'admin.statusDisabled' : 'admin.statusActive')}</span>`}</div>
     <div class="client-acts">
@@ -222,7 +223,7 @@ actions['admin-new'] = async () => {
 };
 
 /* ---------- bank transfers: "Plată primită" ---------- */
-const PRICE = { pro: 19, business: 49 };
+const PRICE = { pro: 39.99, business: 79.99 }; // same as lib/auth-core.mjs PRICE
 let payments = null; let waitlist = null; let mailOn = false;
 const csv = (rows) => rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
 const ref = (id) => `ARCTON-${String(id).replace(/-/g, '').slice(0, 8).toUpperCase()}`;
@@ -262,7 +263,7 @@ actions['admin-wait-send'] = async () => {
 actions['admin-paid'] = async (el) => {
   const c = find(el.dataset.id); if (!c) return;
   const today = new Date().toISOString().slice(0, 10);
-  const plan0 = c.planRequest || (c.plan !== 'free' ? c.plan : 'pro');
+  const plan0 = ['pro', 'business'].includes(c.planRequest) ? c.planRequest : (c.plan !== 'free' ? c.plan : 'pro');
   const v = await openModal({
     title: t('admin.pay.modalTitle', { email: c.email }),
     body: html`<div class="pay-form">
@@ -289,8 +290,26 @@ actions['admin-paid'] = async (el) => {
   } else toast(t(r.body.error === 'bad_amount' ? 'admin.pay.badAmount' : 'common.errorGeneric'), 'error');
   paintBody();
 };
+actions['admin-trial'] = async (el) => {
+  const c = find(el.dataset.id); if (!c) return;
+  const v = await openModal({
+    title: t('admin.trial.title', { email: c.email }),
+    body: html`<div class="pay-form">${c.planRequestNote ? html`<p>„${c.planRequestNote}”</p>` : ''}<p class="muted">${t('admin.trial.body')}</p>
+      <div class="field-pair"><label class="field"><span>${t('admin.plan')}</span><select id="tf-plan">${['pro', 'business'].map((p) => html`<option value="${p}">${t(`plans.${p}.name`)}</option>`)}</select></label>
+        <label class="field"><span>${t('admin.trial.days')}</span><select id="tf-days">${[7, 14, 30].map((d) => html`<option value="${d}" ${d === 14 ? 'selected' : ''}>${d}</option>`)}</select></label></div></div>`,
+    actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: null }, { label: t('admin.trial.confirm'), kind: 'btn-primary', collect: () => ({ plan: $('#tf-plan').value, days: Number($('#tf-days').value) }) }],
+  });
+  if (!v) return;
+  if (demo()) { c.plan = v.plan; c.planRequest = null; return paintBody(); }
+  busyId = c.id; paintBody();
+  const r = await api('/api/admin', { method: 'POST', body: { op: 'trial', id: c.id, ...v } });
+  busyId = null;
+  if (r.status === 200) { Object.assign(c, { plan: r.body.plan, planUntil: r.body.planUntil, planRequest: null, planRequestNote: '' }); toast(`${t('admin.pay.done', { plan: t(`plans.${r.body.plan}.name`), date: dmy(r.body.planUntil) })} ${t(r.body.emailed ? 'admin.pay.emailed' : 'admin.pay.notEmailed')}`, 'success'); }
+  else toast(t('common.errorGeneric'), 'error');
+  paintBody();
+};
 // amount follows plan x months until the admin types their own
 document.addEventListener('change', (e) => {
   if (!e.target.matches?.('#pf-plan, #pf-months')) return;
-  const a = $('#pf-amount'); if (a) a.value = PRICE[$('#pf-plan').value] * Number($('#pf-months').value);
+  const a = $('#pf-amount'); if (a) a.value = Math.round(PRICE[$('#pf-plan').value] * Number($('#pf-months').value) * 100) / 100;
 });

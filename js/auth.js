@@ -156,6 +156,13 @@ export async function requestPlan(plan) {
   if (j.planRequest && session) { session = { ...session, planRequest: j.planRequest }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
   return j;
 }
+/** Asks the owner for a free trial; `note` says what the business needs. */
+export async function requestTrial(note) {
+  const tok = await freshToken(); if (!tok) return { error: 'auth_required' };
+  const j = await post({ op: 'trial-request', note }, tok);
+  if (j.planRequest && session) { session = { ...session, planRequest: j.planRequest }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
+  return j;
+}
 export const planRequest = () => session?.planRequest || null;
 export const planUntil = () => session?.planUntil || null; // a paid plan's end date (YYYY-MM-DD), set when the admin records a transfer
 
