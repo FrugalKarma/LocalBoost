@@ -150,9 +150,9 @@ export async function refreshMe() {
 }
 
 /** Tells Arcton Ai the client is paying for `plan` by bank transfer. The plan only changes when the admin sees the money. */
-export async function requestPlan(plan) {
+export async function requestPlan(plan, note = '') {
   const tok = await freshToken(); if (!tok) return { error: 'auth_required' };
-  const j = await post({ op: 'plan-request', plan }, tok);
+  const j = await post({ op: 'plan-request', plan, note }, tok);
   if (j.planRequest && session) { session = { ...session, planRequest: j.planRequest }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
   return j;
 }

@@ -6,7 +6,8 @@ import { authOn, signedIn, getSession, isAdmin, requestTrial, planRequest } from
 export const PLAN_RANK = { free: 0, pro: 1, business: 2 };
 /** Feature → lowest plan that has it. */
 export const FEATURES = {
-  publish: 'pro', download: 'business', inbox: 'business', stats: 'business', noBranding: 'business',
+  // Growth ('pro') has every tool; Custom Premium ('business') adds a premium site, own domain and hands-on support, done by the team.
+  publish: 'pro', download: 'pro', inbox: 'pro', stats: 'pro', noBranding: 'pro',
   chat: 'pro', pack: 'pro', replies: 'pro', poster: 'pro', unlimitedAi: 'pro',
 };
 /** Current plan. Without accounts (self-hosted) everything is on. */

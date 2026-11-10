@@ -5,7 +5,7 @@ import { html, icon } from '../core.js';
 import { t, ta, LANGS, getLang, setLang } from '../i18n.js';
 import { BRAND } from '../brand.js';
 import { openLegal } from '../legalText.js';
-import { PLANS, money, extrasCard } from './plans.js';
+import { PLANS, priceText, planVideo } from './plans.js';
 import { mountain } from '../mountain.js';
 
 let handlers = { signup() {}, signin() {} };
@@ -70,12 +70,12 @@ function render() {
 
   <section class="lp-sec" id="plans" aria-labelledby="plans-h">
     <div class="lp-sec-head"><p class="eyebrow">${t('land.plans.eyebrow')}</p><h2 id="plans-h">${t('land.plans.title')}</h2><p class="lp-sub">${t('land.plans.sub')}</p></div>
-    <div class="lp-plans">${PLANS.map((p) => html`<article class="lp-plan lp-reveal ${p.featured ? 'is-featured' : ''}">
+    <div class="lp-plans">${PLANS.map((p) => html`<article class="lp-plan lp-reveal ${p.featured ? 'is-featured' : 'is-premium'}">
       ${p.featured ? html`<span class="lp-flag">${t('plans.popular')}</span>` : ''}
       <h3>${t(`plans.${p.id}.name`)}</h3><p class="lp-for">${t(`plans.${p.id}.for`)}</p>
-      <p class="lp-price"><b>€${money(p.price)}</b><span>${t('plans.perMonth')}</span></p>
+      ${planVideo(p)}<p class="lp-price"><b>${priceText(p)}</b>${p.price ? html`<span>${t('plans.perMonth')}</span>` : ''}</p>
       <ul>${ta(`plans.${p.id}.features`).map((f) => html`<li>${icon('check', 16)}<span>${f}</span></li>`)}</ul>
-      <button type="button" class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" data-land="signup">${t('land.plans.start')}</button></article>`)}${extrasCard('lp-plan lp-reveal', html`<button type="button" class="btn btn-secondary" data-land="signup">${t('land.plans.trial')}</button>`)}</div>
+      <button type="button" class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" data-land="signup">${t(p.price ? 'land.plans.start' : 'plans.business.cta')}</button></article>`)}</div>
     <p class="lp-pay">${icon('info', 16)} ${t('land.plans.pay')}</p>
   </section>
 

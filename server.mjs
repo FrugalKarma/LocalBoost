@@ -19,10 +19,10 @@ const PAGE_HEADERS = Object.fromEntries(Object.entries(APP_HEADERS).map(([k, v])
 const here = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = process.argv.includes('--dist') ? path.join(here, 'dist') : here;
 const PORT = Number(process.env.PORT) || 5173;
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8', '.md': 'text/markdown; charset=utf-8' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.mp4': 'video/mp4', '.woff2': 'font/woff2', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.txt': 'text/plain; charset=utf-8', '.md': 'text/markdown; charset=utf-8' };
 // Only what the app needs is served (the same files the build copies to dist/): never .git, .env, server code or docs.
 const notFound = async (res) => { try { send(res, 404, await readFile(path.join(ROOT, '404.html')), MIME['.html'], PAGE_HEADERS); } catch { send(res, 404, 'Not found', 'text/plain'); } };
-const PUBLIC = /^\/(index\.html|404\.html|manifest\.json|sw\.js|(css|js|icons|fonts)\/[\w./-]+)$/;
+const PUBLIC = /^\/(index\.html|404\.html|manifest\.json|sw\.js|(css|js|icons|fonts|media)\/[\w./-]+)$/;
 
 const send = (res, code, body, type = 'application/json; charset=utf-8', extra = {}) => {
   type = type || 'application/json; charset=utf-8';

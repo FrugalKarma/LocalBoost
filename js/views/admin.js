@@ -65,7 +65,7 @@ function row(c) {
     <div class="client-stage">${stagePill(b?.stage)}</div>
     <div class="client-when"><small>${t('admin.colUpdated')}</small>${fmt(b?.updated_at)}${c.planUntil && !admin ? html`<small class="${until(c.planUntil) < 0 ? 'until-late' : until(c.planUntil) <= 7 ? 'until-soon' : ''}">${t(until(c.planUntil) < 0 ? 'admin.pay.expired' : 'admin.pay.until', { date: dmy(c.planUntil) })}</small>` : ''}</div>
     <div class="client-plan">${admin ? '' : html`<label><span class="sr-only">${t('admin.plan')}: ${c.email}</span><select data-in="admin-plan" data-id="${c.id}" ${busy ? 'disabled' : ''}>${['free', 'pro', 'business'].map((p) => html`<option value="${p}" ${c.plan === p ? 'selected' : ''}>${t(`plans.${p}.name`)}</option>`)}</select></label>`}${c.planRequest === 'trial' ? html`<span class="pay-flag is-trial" title="${c.planRequestNote}">${t('admin.trial.flag')}</span>${c.planRequestNote ? html`<small class="trial-note">„${c.planRequestNote}”</small>` : ''}<button type="button" class="link-btn pay-btn" data-act="admin-trial" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('star', 14)} ${t('admin.trial.button')}</button>`
-      : c.planRequest ? html`<span class="pay-flag" title="${c.planRequestAt ? new Date(c.planRequestAt).toLocaleString(getLang()) : ''}">${t('pay.adminFlag', { plan: t(`plans.${c.planRequest}.name`) })}</span>` : ''}${admin ? '' : html`<button type="button" class="link-btn pay-btn" data-act="admin-paid" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('check', 14)} ${t('admin.pay.button')}</button>`}</div>
+      : c.planRequest ? html`<span class="pay-flag" title="${c.planRequestAt ? new Date(c.planRequestAt).toLocaleString(getLang()) : ''}">${c.planRequest === 'business' ? t('admin.customFlag') : t('pay.adminFlag', { plan: t(`plans.${c.planRequest}.name`) })}</span>${c.planRequestNote ? html`<small class="trial-note">„${c.planRequestNote}”</small>` : ''}` : ''}${admin ? '' : html`<button type="button" class="link-btn pay-btn" data-act="admin-paid" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('check', 14)} ${t('admin.pay.button')}</button>`}</div>
     <div class="client-status">${admin ? html`<span class="badge badge-admin">${t('admin.roleAdmin')}</span>`
       : html`<span class="badge ${c.disabled ? 'badge-off' : 'badge-on'}">${t(c.disabled ? 'admin.statusDisabled' : 'admin.statusActive')}</span>`}</div>
     <div class="client-acts">
@@ -223,7 +223,7 @@ actions['admin-new'] = async () => {
 };
 
 /* ---------- bank transfers: "Plată primită" ---------- */
-const PRICE = { pro: 39.99, business: 79.99 }; // same as lib/auth-core.mjs PRICE
+const PRICE = { pro: 49.99, business: null }; // same as lib/auth-core.mjs PRICE (Custom Premium is priced per client)
 let payments = null; let waitlist = null; let mailOn = false;
 const csv = (rows) => rows.map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\r\n');
 const ref = (id) => `ARCTON-${String(id).replace(/-/g, '').slice(0, 8).toUpperCase()}`;
@@ -268,9 +268,9 @@ actions['admin-paid'] = async (el) => {
     title: t('admin.pay.modalTitle', { email: c.email }),
     body: html`<div class="pay-form">
       <p class="muted">${t('admin.pay.modalBody')}</p>
-      <div class="field-pair"><label class="field"><span>${t('admin.plan')}</span><select id="pf-plan">${['pro', 'business'].map((p) => html`<option value="${p}" ${plan0 === p ? 'selected' : ''}>${t(`plans.${p}.name`)} · ${PRICE[p]} €/${t('admin.pay.mo')}</option>`)}</select></label>
+      <div class="field-pair"><label class="field"><span>${t('admin.plan')}</span><select id="pf-plan">${['pro', 'business'].map((p) => html`<option value="${p}" ${plan0 === p ? 'selected' : ''}>${t(`plans.${p}.name`)}${PRICE[p] ? ` · ${PRICE[p]} €/${t('admin.pay.mo')}` : ''}</option>`)}</select></label>
         <label class="field"><span>${t('admin.pay.months')}</span><select id="pf-months">${[1, 3, 6, 12].map((m) => html`<option value="${m}">${m}</option>`)}</select></label></div>
-      <div class="field-pair"><label class="field"><span>${t('admin.pay.colAmount')} (EUR)</span><input id="pf-amount" type="number" min="1" max="10000" step="0.01" value="${PRICE[plan0]}"></label>
+      <div class="field-pair"><label class="field"><span>${t('admin.pay.colAmount')} (EUR)</span><input id="pf-amount" type="number" min="1" max="10000" step="0.01" value="${PRICE[plan0] ?? ''}"></label>
         <label class="field"><span>${t('admin.pay.colDate')}</span><input id="pf-date" type="date" max="${today}" value="${today}"></label></div>
       <label class="field"><span>${t('admin.pay.colRef')}</span><input id="pf-ref" type="text" maxlength="60" value="${ref(c.id)}"></label>
       <p class="muted small">${t('admin.pay.mailNote')}</p></div>`,
@@ -311,5 +311,5 @@ actions['admin-trial'] = async (el) => {
 // amount follows plan x months until the admin types their own
 document.addEventListener('change', (e) => {
   if (!e.target.matches?.('#pf-plan, #pf-months')) return;
-  const a = $('#pf-amount'); if (a) a.value = Math.round(PRICE[$('#pf-plan').value] * Number($('#pf-months').value) * 100) / 100;
+  const a = $('#pf-amount'); const pr = PRICE[$('#pf-plan')?.value]; if (a && pr) a.value = Math.round(PRICE[$('#pf-plan').value] * Number($('#pf-months').value) * 100) / 100;
 });
