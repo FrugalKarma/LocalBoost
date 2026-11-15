@@ -2195,7 +2195,18 @@ export default {
     notReady: 'A banki adatok beállítása folyamatban. Írj a(z) {email} címre, és elküldjük őket.',
     adminFlag: '{plan} csomagért fizet',
   },
-  home: { week: '{n}. hét', seeAnalysis: 'Elemzés megtekintése →' },
+  home: {
+    week: '{n}. hét',
+    seeAnalysis: 'Elemzés megnyitása',
+    details: 'Részletek',
+    what: 'Mi ez',
+    reviewsN: '{n} értékelés',
+    collected: 'Adatok beolvasva',
+    costK: 'Ez viszi el a legtöbb vendéget',
+    inReviews: '{n} értékelésben szerepel',
+    allThemes: 'Összes téma',
+    noCost: 'Még nem tudjuk',
+  },
   trail: { eyebrow: 'Az útvonalad', title: 'Merre tovább?', foot: 'Minden oldal egy pont a hegyen. Itt tartasz: {n} / {total}.' },
   ask: {
     title: 'Kérj értékelést',
@@ -2238,5 +2249,13 @@ export default {
     asked: 'Már kértél ingyenes próbát. Hamarosan írunk.',
     sent: 'Megkaptuk a kérésed. E-mailben válaszolunk.',
     rate: 'Már küldtél néhány kérést. Próbáld később.',
+  },
+  tab: {
+    home: 'Kezdőlap',
+    analyse: 'Elemzés',
+    site: 'Weboldal',
+    studio: 'Stúdió',
+    account: 'Fiók',
+    mission: 'A hét lépése',
   },
 };

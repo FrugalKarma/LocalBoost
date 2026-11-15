@@ -6,7 +6,7 @@ import { streetMap, barSeries } from '../charts.js';
 import { scan, hasSignals } from '../collect.js';
 import { actions, inputs, rerender } from '../registry.js';
 import { CATEGORIES, GOALS, emptyDraft, getBiz, displayName, validate, saveBiz, cleanHandle } from '../business.js';
-import { journey, nextAction, scanCard, climbSteps } from './shared.js';
+import { nextAction, scanCard, climbSteps } from './shared.js';
 import { mountain } from '../mountain.js';
 import { serverCaps, findPlaces } from '../sources.js';
 import { dayPart, streak } from '../fun.js';
@@ -147,7 +147,6 @@ function preCollect() {
 
 /* ---------- Home: map + next-step card ---------- */
 const stepList = (s) => [s.business.loaded, hasSignals(), !!s.diagnosis, s.mission?.status === 'active', !!s.site?.generated, !!s.checkpoint];
-const STAGE_OF_NEXT = { paste: 'observe', analysis: 'diagnose', mission: 'act', website: 'act', proof: 'diagnose' };
 const num = (v, d = '—') => (v == null ? d : fmtNumber(v));
 
 /** Pins at their real positions relative to the business (equirectangular is fine at street scale). */
@@ -169,30 +168,7 @@ function mapCard(m) {
     ${p.others.map((c) => html`<span class="pin pin-other" style="left:${c.x.toFixed(1)}%;top:${c.y.toFixed(1)}%">${c.name}<span>${c.rating ?? '–'}</span></span>`)}
     <span class="pin-ring" style="left:47%;top:43%" aria-hidden="true"></span>
     <span class="pin pin-you" style="left:47%;top:43%"><b>${displayName()}<em>${m.rating ?? '–'}</em></b></span>
-    <div class="map-stats">
-      <div class="map-stat has-src" tabindex="0" data-src="rating"><strong class="brand">${m.rating != null ? fmtNumber(m.rating, { minimumFractionDigits: 1 }) : '—'}</strong><span>${t('overview.rating')}</span></div>
-      <div class="map-stat has-src" tabindex="0" data-src="reviews"><strong>${num(m.reviewCount)}</strong><span>${t('overview.reviews')}</span></div>
-      <div class="map-stat has-src" tabindex="0" data-src="views"><strong>${num(m.views)}</strong><span>${t('overview.views7')}</span></div>
-      <div class="map-stat has-src" tabindex="0" data-src="requests"><strong class="${m.requests ? 'up' : ''}">${num(m.requests)}</strong><span>${t('overview.requests7')}</span></div>
-    </div></section>`;
-}
-
-function deckCard(na, steps) {
-  const key = na.key.split('.')[1];
-  const stage = STAGE_OF_NEXT[key] || 'diagnose';
-  const done = steps.filter(Boolean).length;
-  const th = getState().signals?.themes?.items || [];
-  return html`<div class="deck"><article class="deck-card" style="--sc:var(--st-${stage})">
-    <div class="deck-top"><i aria-hidden="true"></i>${t(`journey.${stage}`)} · ${t('ledger.nextStep')}<small>${t('ledger.stepOf', { n: Math.min(done + 1, steps.length), total: steps.length })}</small></div>
-    <div class="progress-dots" aria-hidden="true">${steps.map((d) => html`<i class="${d ? 'on' : ''}"></i>`)}</div>
-    <h2>${t(na.key)}</h2>
-    <p>${t(`ledger.body.${key}`)}</p>
-    ${key === 'analysis' && th.length ? html`<div class="deck-chips">${th.slice(0, 4).map((x) => html`<span class="${x.tone === 'pos' ? 'pos' : 'gap'}">${x.label} · ${x.mentions}</span>`)}</div>` : ''}
-    <div class="deck-actions">${key === 'analysis'
-      ? html`<button class="btn btn-primary btn-lg" data-act="run-analysis-go">${icon('sparkle', 18)} ${t('actions.runAnalysis')}</button>
-        <button class="btn btn-secondary" data-act="go" data-route="signals">${t('ledger.lookFirst')}</button>`
-      : html`<button class="btn btn-primary btn-lg" data-act="go" data-route="${na.route}">${t('common.open')} ${icon('next', 18)}</button>`}</div>
-  </article></div>`;
+    </section>`;
 }
 
 function themesCard() {
@@ -212,8 +188,8 @@ function siteCard() {
   const sd = getSiteData(); const site = getState().site;
   const live = sd?.available && sd.site?.published;
   const series = live ? dailySeries(30) : null;
-  return html`<article class="card span-7"><p class="tag">${t('overview.journey')}</p>${journey()}
-    <div class="site-mini"><div><h3>${t('overview.siteTitle')}</h3>
+  return html`<article class="card span-7">
+    <div class="site-mini"><div><h2 class="card-title">${t('overview.siteTitle')}</h2>
       <p class="muted small">${live ? t('overview.siteLive') : site.generated ? t('overview.siteDraft') : t('overview.siteNone')}</p></div>
       ${live ? barSeries(series.map((d) => d.views), t('website.views30')) : html`<button class="btn btn-secondary btn-sm" data-act="go" data-route="website">${t('common.open')} ${icon('next', 16)}</button>`}</div></article>`;
 }
@@ -231,40 +207,50 @@ export const overview = {
     const first = String(s.profile?.name || '').split(' ')[0];
     const steps = stepList(s); const done = steps.filter(Boolean).length;
     const climb = climbSteps();
-    const week = (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7)); return Math.ceil(((d - Date.UTC(d.getUTCFullYear(), 0, 1)) / 86400000 + 1) / 7); })();
+    const th = s.signals?.themes?.items || []; const gap = th.filter((x) => x.tone !== 'pos').sort((x, y) => y.mentions - x.mentions)[0];
+    const planDone = Object.values(s.studio?.plan?.done || {}).filter(Boolean).length;
+    const key = na.key.split('.')[1];
+    const more = (inner) => html`<button type="button" class="fold-btn" data-act="fold" aria-expanded="false">${t('home.details')} ${icon('down', 16)}</button><div class="fold-more"><div class="fold-in">${inner}</div></div>`;
     return html`
-    <header class="home-head home-hero">
-      <div class="home-copy"><p class="eyebrow">${t('home.week', { n: week })} · ${displayName()}</p>
-        <h1 class="reveal-h">${opp ? opp.title : displayName()}</h1>
-        <p class="home-step">${t(`fun.greet.${dayPart()}`)}${first ? `, ${first}` : ''}. ${t('ledger.stepOf', { n: Math.min(done + 1, steps.length), total: steps.length })}: ${t(na.key)}.</p>
-        <div class="hero-cta">${na.key === 'next.analysis' ? html`<button class="btn btn-primary btn-lg" data-act="run-analysis-go">${t(na.key)}</button>` : html`<button class="btn btn-primary btn-lg" data-act="go" data-route="${na.route}">${t(na.key)}</button>`}
-          ${opp ? html`<a class="link-arrow" href="#/diagnosis">${t('home.seeAnalysis')}</a>` : ''}</div>
-        <dl class="stat-strip">
-          <div><dt>${t('fun.rating')}</dt><dd><b class="${m.rating >= 4.5 ? 'is-up' : ''}">${m.rating != null ? m.rating : '–'}</b></dd></div>
-          <div><dt>${t('fun.plan')}</dt><dd><b>${Object.values(s.studio?.plan?.done || {}).filter(Boolean).length}</b><small>/7</small></dd></div>
-          <div><dt>${t('fun.streak')}</dt><dd><b class="${streak() >= 2 ? 'is-up' : ''}">${streak()}</b></dd></div>
-          <div><dt>${t('fun.stickers')}</dt><dd><b>${s.studio?.stickers?.length || 0}</b></dd></div>
-        </dl></div>
-      ${mountain(climb.steps, climb.current)}
-    </header>
-    <div class="home-grid">
-      ${mapCard(m)}
-      <div class="home-side">${deckCard(na, steps)}
-        <section class="biz-card"><p class="tag">${t('ledger.bizTitle')}</p><h2 class="card-title">${displayName()}</h2>
-          <p class="muted small">${icon('pin', 15)} ${getBiz().address || getBiz().city} · ${t(`biz.cat.${getBiz().category}`)}</p>${summary()}
-          <p class="muted small">${t('overview.collectedAt', { date: new Date(s.signals.collectedAt).toLocaleDateString() })} <button class="link-btn" data-act="collect-signals">${t('collect.refresh')}</button></p></section>
-      </div>
-    </div>
-    <div class="bento">
-      ${themesCard()}
-      <article class="card card-accent span-7 self-start">
-        <p class="tag">${t('overview.opportunity')}</p>
-        ${opp
-          ? html`<h2 class="card-title">${opp.title}</h2><p>${opp.impact}</p><p class="mono small">${t('common.confidence')} ${opp.confidence}%</p>
-            <div class="btn-row"><button class="btn btn-secondary" data-act="go" data-route="diagnosis">${t('common.open')} ${icon('next', 16)}</button></div>`
-          : html`<h2 class="card-title">${t('overview.noOpportunity')}</h2><p class="muted">${t('overview.noOpportunityBody')}</p>`}
+    <section class="cr-hero" data-parallax>
+      <div class="cr-hero-copy"><p class="cr-hello">${t(`fun.greet.${dayPart()}`)}${first ? `, ${first}` : ''}</p>
+        <h1 class="reveal-h">${displayName()}</h1>
+        <p class="cr-step">${t('ledger.stepOf', { n: Math.min(done + 1, steps.length), total: steps.length })}<span class="cr-dots" aria-hidden="true">${steps.map((d) => html`<i class="${d ? 'on' : ''}"></i>`)}</span></p>
+        <div class="cr-pills">${streak() >= 2 ? html`<span><b>${streak()}</b> ${t('fun.streak')}</span>` : ''}<span><b>${planDone}/7</b> ${t('fun.plan')}</span></div></div>
+      <div class="cr-hero-art">${mountain(climb.steps, climb.current)}</div>
+    </section>
+    <div class="cr-grid">
+      <article class="cr-card cr-move fold">
+        <p class="cr-k">${t(opp ? 'overview.opportunity' : 'ledger.nextStep')}</p>
+        <h2>${opp ? opp.title : t(na.key)}</h2>
+        <div class="deck-actions">${na.key === 'next.analysis'
+          ? html`<button class="btn btn-primary btn-lg" data-act="run-analysis-go">${icon('sparkle', 18)} ${t('actions.runAnalysis')}</button>`
+          : html`<button class="btn btn-primary btn-lg" data-act="go" data-route="${na.route}">${t(na.key)} ${icon('next', 18)}</button>`}
+          ${opp ? html`<button class="btn btn-secondary" data-act="go" data-route="diagnosis">${t('home.seeAnalysis')}</button>` : ''}</div>
+        ${more(html`<p>${opp ? opp.impact : t(`ledger.body.${key}`)}</p>${opp ? html`<p class="small">${t('common.confidence')} ${opp.confidence}%</p>` : ''}`)}
       </article>
+      <article class="cr-card fold">
+        <p class="cr-k">${t('overview.rating')}</p>
+        <p class="cr-big"><span class="big-num">${m.rating != null ? fmtNumber(m.rating, { minimumFractionDigits: 1 }) : '—'}</span><small>${m.reviewCount != null ? t('home.reviewsN', { n: fmtNumber(m.reviewCount) }) : ''}</small></p>
+        ${m.rating != null ? html`<div class="cr-meter" aria-hidden="true"><i style="width:${Math.round((m.rating / 5) * 100)}%"></i></div>` : ''}
+        ${more(html`<dl class="cr-kv"><dt>${t('overview.views7')}</dt><dd>${num(m.views)}</dd><dt>${t('overview.requests7')}</dt><dd>${num(m.requests)}</dd>
+          <dt>${t('home.collected')}</dt><dd>${new Date(s.signals.collectedAt).toLocaleDateString()}</dd></dl>
+          <p><button class="link-btn" data-act="collect-signals">${t('collect.refresh')}</button></p>`)}
+      </article>
+      <article class="cr-card fold">
+        <p class="cr-k">${t('home.costK')}</p>
+        ${gap ? html`<h2 class="cr-bad">${gap.label}</h2><p class="muted small">${t('home.inReviews', { n: gap.mentions })}</p>
+          ${more(html`${(gap.quotes || []).slice(0, 3).map((q) => html`<p class="cr-quote">“${q}”</p>`)}<p><a class="link-arrow" href="#/signals">${t('home.allThemes')}</a></p>`)}`
+        : html`<h2>${t('home.noCost')}</h2><p class="muted small">${t(s.themes?.mode === 'none' ? 'overview.themesNoAi' : 'overview.themesEmpty')}</p>`}
+      </article>
+    </div>
+    <div class="cr-grid2">
+      ${mapCard(m)}
+      ${themesCard()}
       ${siteCard()}
+      <section class="card span-5 biz-card fold"><p class="tag">${t('ledger.bizTitle')}</p><h2 class="card-title">${displayName()}</h2>
+        <p class="muted small">${icon('pin', 15)} ${getBiz().address || getBiz().city} · ${t(`biz.cat.${getBiz().category}`)}</p>
+        ${more(summary())}</section>
     </div>`;
   },
   mount() {

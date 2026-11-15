@@ -2198,7 +2198,18 @@ export default {
     notReady: 'Les coordonnées bancaires sont en cours de configuration. Écrivez à {email} et nous vous les enverrons.',
     adminFlag: 'Paie pour {plan}',
   },
-  home: { week: 'Semaine {n}', seeAnalysis: 'Voir l’analyse →' },
+  home: {
+    week: 'Semaine {n}',
+    seeAnalysis: 'Voir l’analyse',
+    details: 'Détails',
+    what: 'C’est quoi',
+    reviewsN: '{n} avis',
+    collected: 'Données lues le',
+    costK: 'Vous coûte le plus de clients',
+    inReviews: 'Revient dans {n} avis',
+    allThemes: 'Voir tous les thèmes',
+    noCost: 'Nous ne savons pas encore',
+  },
   trail: { eyebrow: 'Votre itinéraire', title: 'Où aller ?', foot: 'Chaque page est un point sur la montagne. Vous êtes à {n} sur {total}.' },
   ask: {
     title: 'Demander des avis',
@@ -2241,5 +2252,13 @@ export default {
     asked: 'Vous avez déjà demandé un essai gratuit. Nous vous écrivons bientôt.',
     sent: 'Demande reçue. Nous vous répondons par e-mail.',
     rate: 'Vous avez déjà envoyé plusieurs demandes. Réessayez plus tard.',
+  },
+  tab: {
+    home: 'Accueil',
+    analyse: 'Analyse',
+    site: 'Site',
+    studio: 'Studio',
+    account: 'Compte',
+    mission: 'L’action de la semaine',
   },
 };

@@ -2184,7 +2184,18 @@ export default {
     notReady: 'Datele bancare sunt în curs de configurare. Scrie-ne la {email} și ți le trimitem.',
     adminFlag: 'Plătește pentru {plan}',
   },
-  home: { week: 'Săptămâna {n}', seeAnalysis: 'Vezi analiza →' },
+  home: {
+    week: 'Săptămâna {n}',
+    seeAnalysis: 'Vezi analiza',
+    details: 'Detalii',
+    what: 'Ce e asta',
+    reviewsN: '{n} recenzii',
+    collected: 'Date citite pe',
+    costK: 'Te costă cei mai mulți clienți',
+    inReviews: 'Apare în {n} recenzii',
+    allThemes: 'Vezi toate temele',
+    noCost: 'Încă nu știm',
+  },
   trail: { eyebrow: 'Traseul tău', title: 'Unde mergi?', foot: 'Fiecare pagină e un punct pe munte. Ești la {n} din {total}.' },
   ask: {
     title: 'Cere recenzii',
@@ -2227,5 +2238,13 @@ export default {
     asked: 'Ai cerut deja un test gratuit. Îți scriem în curând.',
     sent: 'Cererea a ajuns la noi. Îți scriem pe email.',
     rate: 'Ai trimis deja câteva cereri. Încearcă mai târziu.',
+  },
+  tab: {
+    home: 'Acasă',
+    analyse: 'Analiză',
+    site: 'Site',
+    studio: 'Studio',
+    account: 'Cont',
+    mission: 'Mutarea săptămânii',
   },
 };

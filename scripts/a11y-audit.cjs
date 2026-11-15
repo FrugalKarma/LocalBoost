@@ -8,7 +8,6 @@ const PAGES = [
   ['landing', 'http://localhost:5183/', {}],
   ['signin', 'http://localhost:5183/', { act: async (p) => { await p.click('[data-land="signin"]'); await p.waitForTimeout(800); } }],
   ...['overview', 'signals', 'diagnosis', 'competitors', 'proof', 'mission', 'website', 'pack', 'plans', 'settings', 'info'].map((r) => [r, `http://localhost:5184/#/${r}`, { example: true }]),
-  ['trail-map', 'http://localhost:5184/#/overview', { example: true, phoneOnly: true, act: async (p) => { await p.click('[data-act="trail-open"]'); await p.waitForTimeout(600); } }],
 ];
 
 const inPage = () => {

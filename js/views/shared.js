@@ -10,7 +10,8 @@ const eyebrow = () => { const st = STEP_OF[document.body.dataset.route]; return 
 
 export function pageHead({ note, title, sub, actions }) {
   return html`<header class="page-head">
-    <div><p class="eyebrow">${eyebrow()}</p><h1>${title}</h1>${sub ? html`<p class="lede">${sub}</p>` : ''}</div>
+    <div class="${sub ? 'fold' : ''}"><p class="eyebrow">${eyebrow()}</p><h1>${title}</h1>
+      ${sub ? html`<button type="button" class="fold-btn" data-act="fold" aria-expanded="false">${icon('info', 16)} ${t('home.what')}</button><div class="fold-more"><div class="fold-in"><p class="lede head-fold">${sub}</p></div></div>` : ''}</div>
     ${actions ? html`<div class="page-actions">${actions}</div>` : ''}</header>`;
 }
 

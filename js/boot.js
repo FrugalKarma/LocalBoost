@@ -1,6 +1,6 @@
 // Runs before first paint (a plain script in <head>): applies the saved theme and display settings, so there is no flash.
 try {
-  var m = localStorage.getItem('localboost.theme');
+  var m = localStorage.getItem('arcton.theme');
   var d = JSON.parse(localStorage.getItem('arcton.display') || '{}');
   ['text', 'motion', 'contrast'].forEach(function (k) { if (d[k]) document.documentElement.dataset[k] = d[k]; });
   if (m) document.documentElement.dataset.theme = m;

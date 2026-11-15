@@ -2177,7 +2177,18 @@ export default {
     notReady: 'Bank details are being set up. Write to {email} and we will send them to you.',
     adminFlag: 'Paying for {plan}',
   },
-  home: { week: 'Week {n}', seeAnalysis: 'See the analysis →' },
+  home: {
+    week: 'Week {n}',
+    seeAnalysis: 'See the analysis',
+    details: 'Details',
+    what: 'What is this',
+    reviewsN: '{n} reviews',
+    collected: 'Data read on',
+    costK: 'Costs you the most customers',
+    inReviews: 'Comes up in {n} reviews',
+    allThemes: 'See all themes',
+    noCost: 'We do not know yet',
+  },
   trail: { eyebrow: 'Your route', title: 'Where to?', foot: 'Every page is a point on the mountain. You are at {n} of {total}.' },
   ask: {
     title: 'Ask for reviews',
@@ -2220,5 +2231,13 @@ export default {
     asked: 'You already asked for a free trial. We will write to you soon.',
     sent: 'We got your request. We will write to you by email.',
     rate: 'You already sent a few requests. Try again later.',
+  },
+  tab: {
+    home: 'Home',
+    analyse: 'Analysis',
+    site: 'Website',
+    studio: 'Studio',
+    account: 'Account',
+    mission: 'This week’s move',
   },
 };

@@ -23,13 +23,12 @@ import { applyDisplay } from './display.js';
 import { isExample, loadExample, clearExample } from './example.js';
 import { currentPlan, PAID_ACTS, noPlan, noPlanPrompt } from './plans.js';
 import { launchGate } from './launch.js';
-import { journeyState } from './views/shared.js';
 import { displayName, getBiz } from './business.js';
 import './chat.js'; // "Ask Arcton" panel (registers its own actions)
 import { admin } from './views/admin.js';
 import { showSignin, repaintSignin, authErrorText } from './views/signin.js';
 import { showLanding, repaintLanding } from './views/landing.js';
-import { ridge, animateRidge, trailButton, trailMap } from './ridge.js';
+import { rail, tabbar, subtabs, groupIndex } from './nav.js';
 import { scene } from './scene.js';
 import { loadAuthConfig, authOn, signedIn, isAdmin, userEmail, userId, onAuthChange, readAuthHash, adoptLinkSession, signOut, refreshMe } from './auth.js';
 import { loadOwn, flush, viewingClient, closeClient, onCloud, localOwner } from './cloud.js';
@@ -41,14 +40,13 @@ let screen = 'boot'; // boot | signin | loading | app
 
 const parseRoute = () => { const r = (location.hash.replace(/^#\/?/, '') || 'overview').split('?')[0]; return views[r] && (r !== 'admin' || isAdmin()) ? r : 'overview'; };
 
-/* ---------- navigation: the ridge (js/ridge.js); Settings and Account are in the account menu ---------- */
+/* ---------- navigation: js/nav.js (rail on laptops, bar at the bottom on phones) ---------- */
 const FOOT_LINKS = [['info', 'help'], ['plans', 'star'], ['settings', 'settings'], ['account', 'account']];
 function footLinks() {
   return html`${FOOT_LINKS.map(([r]) => html`<li><a href="#/${r}">${t(`nav.${r}`)}</a></li>`)}
     ${isAdmin() ? html`<li><a href="#/admin">${t('nav.admin')}</a></li>` : ''}<li><a href="#/info?legal">${t('info.tab.legal')}</a></li>`;
 }
 
-const subnav = () => html``; // sub-pages live on the ridge (laptop) and on the route map (phone)
 
 const levelOf = (r) => (['diagnosis', 'competitors', 'proof'].includes(r) ? 1 : ['mission', 'website', 'pack'].includes(r) ? 2 : 0);
 function paintScene() {
@@ -61,11 +59,14 @@ function paintScene() {
   layer.append(el);
 }
 function updateChrome() {
-  const rg = $('.ridge'); if (rg) { rg.innerHTML = ridge(route, journeyState()).s; animateRidge(rg, route); }
-  const ts = $('#trail-slot'); if (ts) ts.innerHTML = trailButton(route).s;
+  // the rail and the tab bar keep their elements, so the marker slides to the new place instead of jumping
+  const gi = groupIndex(route);
+  const rl = $('#rail'); if (rl) { $('.rail-list', rl)?.style.setProperty('--i', gi); $$('.rail-a', rl).forEach((a, i) => a.classList.toggle('is-cur', i === gi));
+    $$('.rail-sub a', rl).forEach((a) => { const on = a.getAttribute('href') === `#/${route}`; a.classList.toggle('is-cur', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); }); }
+  const tb = $('#tabbar'); if (tb) { tb.style.setProperty('--i', gi); $$('.tab-a', tb).forEach((a, i) => { a.classList.toggle('is-cur', i === gi); if (i === gi) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); }); }
   paintScene();
   const links = $('.foot-links'); if (links) links.innerHTML = footLinks().s;
-  const sub = $('#subnav-slot'); if (sub) sub.innerHTML = subnav().s;
+  const sub = $('#subnav-slot'); if (sub) sub.innerHTML = subtabs(route).s;
   const biz = $('#top-biz'); const b = getState().business;
   if (biz) biz.textContent = b.loaded ? `${displayName()} · ${getBiz().city || ''}` : '';
   const vc = viewingClient(); const bar = $('#viewing-slot');
@@ -83,12 +84,11 @@ function shell() {
   return html`
   <a class="skip" href="#main">${t('common.skip')}</a>
   <div class="scene-layer" id="scene-layer" aria-hidden="true"></div>
+  <nav class="rail" id="rail" aria-label="${t('brand.journey')}">${rail(route)}</nav>
   <div class="content">
     <header class="hdr">
       <div class="hdr-in">
         <a class="hdr-brand" href="#/overview" aria-label="${BRAND.app}"><img src="/icons/logo.svg" alt="" width="34" height="34"><span><strong>${BRAND.app}</strong><small class="top-biz" id="top-biz"></small></span></a>
-        <nav class="ridge" aria-label="${t('brand.journey')}">${ridge(route, journeyState())}</nav>
-        <div class="trail-slot" id="trail-slot">${trailButton(route)}</div>
         <div class="hdr-tools">
           <span class="badge badge-offline" id="offline-badge" hidden>${t('common.offline')}</span>
           <button class="btn-ask" data-act="chat-open" aria-label="${t('chat.title')}"><span class="hide-sm">${t('chat.open')}</span><span class="ai-orb" aria-hidden="true"></span></button>
@@ -103,7 +103,7 @@ function shell() {
               ${signedIn() ? html`<button role="menuitem" data-act="sign-out">${icon('external', 16)} ${t('account.signOut')}</button>` : html`<button role="menuitem" data-act="open-signin">${icon('account', 16)} ${t('signin.signIn')}</button>`}</div></div>
         </div>
       </div>
-      <div id="subnav-slot"></div>
+      <div id="subnav-slot">${subtabs(route)}</div>
     </header>
     <div id="viewing-slot"></div>
     <div id="example-slot"></div>
@@ -116,9 +116,20 @@ function shell() {
       </div>
       <p class="foot-legal">© ${new Date().getFullYear()} ${BRAND.company}</p>
     </footer>
-  </div>`;
+  </div>
+  <nav class="tabbar" id="tabbar" aria-label="${t('brand.journey')}" style="--i:${groupIndex(route)}">${tabbar(route)}</nav>`;
 }
 
+/** Less to read: helper paragraphs longer than two lines are cut; they open on hover (laptop), tap or Enter. Screen readers still get the whole text. */
+function clampText(main) {
+  if (route === 'info') return; // the Info pages are for reading
+  for (const p of main.querySelectorAll('p.muted, p.lede, p.hero-lede, p.small')) {
+    if (p.textContent.trim().length < 120 || p.closest('.fold-in, form, [role="alert"], .notice, details') || p.querySelector('button, a, input')) continue;
+    p.classList.add('clamp'); p.tabIndex = 0; p.setAttribute('role', 'button'); p.setAttribute('aria-expanded', 'false');
+  }
+}
+document.addEventListener('click', (e) => { const p = e.target.closest?.('.clamp'); if (p) { const o = p.classList.toggle('is-open'); p.setAttribute('aria-expanded', String(o)); } });
+document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList?.contains('clamp')) { e.preventDefault(); e.target.click(); } });
 let lastShown = ''; // numbers count up when a screen opens, not on every small update
 /** When a screen opens: a label naming its step of the journey above the title, and one short entrance. */
 function enterPage(main) {
@@ -129,7 +140,7 @@ function renderView(keepScroll = false) {
   const y = window.scrollY;
   const v = views[route];
   document.body.dataset.route = route;
-  try { main.innerHTML = v.render().s; v.mount?.(); if (route !== lastShown) { lastShown = route; enterPage(main); animateNumbers(main); } }
+  try { main.innerHTML = v.render().s; v.mount?.(); clampText(main); if (route !== lastShown) { lastShown = route; enterPage(main); animateNumbers(main); } }
   catch (e) { console.error('[Arcton] render failed', e); main.innerHTML = html`<div class="card empty-hero"><h2>${t('common.errorGeneric')}</h2><button class="btn btn-primary" data-act="go" data-route="overview">${t('nav.overview')}</button></div>`.s; }
   updateChrome();
   document.title = `${t(`nav.${route}`)} · ${BRAND.app}`;
@@ -152,9 +163,13 @@ setRerender((o) => { if (screen !== 'app') return; if (o?.full) renderAll(); els
 
 function onRoute() {
   if (screen !== 'app') return;
-  route = parseRoute();
+  const from = groupIndex(route); route = parseRoute();
   $('#account-menu') && ($('#account-menu').hidden = true);
-  renderView();
+  const still = document.documentElement.dataset.motion === 'reduce' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (document.startViewTransition && !still && document.visibilityState === 'visible') {
+    document.documentElement.dataset.dir = groupIndex(route) < from ? 'back' : 'fwd';
+    document.startViewTransition(() => renderView());
+  } else renderView();
   if (!pendingAnchor) { window.scrollTo(0, 0); $('#main')?.focus({ preventScroll: true }); }
   if (route !== 'info' && needsConsent()) showConsent();
 }
@@ -190,21 +205,18 @@ actions.go = (el) => {
   if (location.hash === target) onRoute(); else location.hash = target;
 };
 window.addEventListener('scroll', () => document.body.classList.toggle('is-scrolled', window.scrollY > 40), { passive: true });
-actions['trail-open'] = () => {
-  let root = document.getElementById('trail-root');
-  if (!root) { root = document.createElement('div'); root.id = 'trail-root'; document.body.append(root); }
-  root.innerHTML = trailMap(route, journeyState()).s; document.body.classList.add('trail-open');
-  root.querySelector('.tm-pt.is-cur, .tm-pt')?.focus();
-};
-actions['trail-close'] = () => { const root = document.getElementById('trail-root'); const was = document.body.classList.contains('trail-open'); if (root) root.innerHTML = ''; document.body.classList.remove('trail-open'); if (was) document.querySelector('.trail-btn')?.focus(); };
-document.addEventListener('keydown', (e) => {
-  if (!document.body.classList.contains('trail-open')) return;
-  if (e.key === 'Escape') return actions['trail-close']();
-  if (e.key !== 'Tab') return; // keep keyboard focus inside the open route map (it is a modal dialog)
-  const f = [...document.querySelectorAll('#trail-root a[href], #trail-root button')]; if (!f.length) return;
-  const [first, last] = [f[0], f[f.length - 1]];
-  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); } else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-});
+/* details that open: on a laptop the card opens while the pointer is over it (CSS); a tap or Enter keeps it open */
+actions.fold = (el) => { const f = el.closest('.fold'); if (!f) return; const open = !f.classList.contains('is-open'); f.classList.toggle('is-open', open); el.setAttribute('aria-expanded', String(open)); };
+/* a soft light follows the pointer across cards (laptops only) */
+if (window.matchMedia('(hover: hover)').matches) document.addEventListener('pointermove', (e) => {
+  const c = e.target.closest?.('.card, .cr-card, .plan, .deck-card, .biz-card, .map-card'); if (!c) return;
+  const r = c.getBoundingClientRect(); c.style.setProperty('--mx', `${e.clientX - r.left}px`); c.style.setProperty('--my', `${e.clientY - r.top}px`);
+}, { passive: true });
+/* the mountain on Home leans a little toward the pointer */
+if (window.matchMedia('(hover: hover)').matches) document.addEventListener('pointermove', (e) => {
+  const art = document.querySelector('.cr-hero-art, .lp-visual'); if (!art || document.documentElement.dataset.motion === 'reduce') return;
+  art.style.setProperty('--px', ((e.clientX / window.innerWidth - .5) * -14).toFixed(1)); art.style.setProperty('--py', ((e.clientY / window.innerHeight - .5) * -8).toFixed(1));
+}, { passive: true });
 actions['account-menu'] = (el) => {
   const m = $('#account-menu'); m.hidden = !m.hidden; el.setAttribute('aria-expanded', String(!m.hidden));
   if (!m.hidden) $('a', m).focus();

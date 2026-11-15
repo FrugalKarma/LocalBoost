@@ -2215,7 +2215,18 @@ export default {
     notReady: 'Die Bankdaten werden gerade eingerichtet. Schreiben Sie an {email}, wir senden sie Ihnen.',
     adminFlag: 'Zahlt für {plan}',
   },
-  home: { week: 'Woche {n}', seeAnalysis: 'Analyse ansehen →' },
+  home: {
+    week: 'Woche {n}',
+    seeAnalysis: 'Analyse ansehen',
+    details: 'Details',
+    what: 'Was ist das',
+    reviewsN: '{n} Bewertungen',
+    collected: 'Daten gelesen am',
+    costK: 'Kostet Sie die meisten Kunden',
+    inReviews: 'Kommt in {n} Bewertungen vor',
+    allThemes: 'Alle Themen ansehen',
+    noCost: 'Das wissen wir noch nicht',
+  },
   trail: { eyebrow: 'Ihre Route', title: 'Wohin?', foot: 'Jede Seite ist ein Punkt am Berg. Sie sind bei {n} von {total}.' },
   ask: {
     title: 'Um Bewertungen bitten',
@@ -2258,5 +2269,13 @@ export default {
     asked: 'Sie haben bereits einen kostenlosen Test angefragt. Wir melden uns bald.',
     sent: 'Anfrage erhalten. Wir schreiben Ihnen per E-Mail.',
     rate: 'Sie haben schon mehrere Anfragen gesendet. Versuchen Sie es später.',
+  },
+  tab: {
+    home: 'Start',
+    analyse: 'Analyse',
+    site: 'Website',
+    studio: 'Studio',
+    account: 'Konto',
+    mission: 'Der Zug der Woche',
   },
 };

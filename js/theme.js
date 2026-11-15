@@ -1,4 +1,4 @@
-const KEY = 'localboost.theme';
+const KEY = 'arcton.theme'; // a theme the person picked; without one the app opens dark
 
 export function currentTheme() {
   return document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
@@ -7,7 +7,7 @@ export function currentTheme() {
 export function applyTheme(mode) {
   document.documentElement.dataset.theme = mode;
   try { localStorage.setItem(KEY, mode); } catch { /* ignore */ }
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#0A1422');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', mode === 'dark' ? '#0C0A0A' : '#EDE6DC');
 }
 
 /**
@@ -27,7 +27,7 @@ export function useAppStyles() {
 export function initTheme() {
   let saved = null;
   try { saved = localStorage.getItem(KEY); } catch { /* ignore */ }
-  applyTheme(saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  document.documentElement.dataset.theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); // not stored: only a choice is remembered
 }
 
 export function toggleTheme() { applyTheme(currentTheme() === 'dark' ? 'light' : 'dark'); }

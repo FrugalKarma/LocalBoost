@@ -2415,8 +2415,8 @@ h3 { font-family: var(--f-ui); font-stretch: 100%; font-weight: 600; text-transf
 .content :is(.card, .btn, .chip, .badge, .modal, .menu, .notice, .map-card, .deck-card, .biz-card, .hero-card, .try-example, .qs-card, .qs-field, .qs-chip, .qs-picked, .qs-results button, .qs-pin, .subnav-item, .stage-tab, .stage-n, .lang, .icon-btn, .tile, .kit-tile, .plan, .lp-plan, .lp-feat, .lp-truth, .pay-dl, .biz-chip, .table-wrap, .toast, .field input, .field select, .field textarea, input[type='text'], input[type='search'], input[type='email'], input[type='tel'], select, textarea, .viewing-bar, .example-bar, .foot-promo, .opp2, .prob, .scan, .climb, .seg, .tabs, .tab, .pipe, .site-mini, .stk, .sticker-card, .lookup-picked, .auth-tabs, .auth-tabs button, .input-wrap),
 .lp :is(.btn, .lp-plan, .lp-feat, .lp-truth, .lp-float, .lp-nav-in, .lp-link, .lp-ic, .lp-flag, .lang, .lp-conf),
 #modal-root :is(.modal, .btn, input, select, textarea), .auth :is(.btn, input, .auth-tabs, .auth-tabs button, .lang, .auth-notice), .toast {
-  border-radius: 2px !important; }
-.content :is(.card, .map-card, .deck-card, .biz-card, .hero-card, .qs-card, .plan, .opp2, .climb), .lp :is(.lp-plan, .lp-feat, .lp-float) { box-shadow: none !important; border: 1px solid var(--line) !important; background: var(--card); }
+  border-radius: var(--r-ui, 2px) !important; }
+.content :is(.card, .map-card, .deck-card, .biz-card, .hero-card, .qs-card, .plan, .opp2, .climb), .lp :is(.lp-plan, .lp-feat, .lp-float) { box-shadow: var(--sh-card, none) !important; border: 1px solid var(--line) !important; background: var(--card); }
 
 /* ---------- buttons ---------- */
 .btn { font: 600 .74rem/1 var(--f-ui); font-stretch: 112%; letter-spacing: .2em; text-transform: uppercase; min-height: 48px; padding: 0 24px; box-shadow: none !important; position: relative; overflow: hidden; isolation: isolate; transition: background .35s var(--ease-heavy), color .35s, border-color .35s; }
@@ -2628,7 +2628,7 @@ h1, h2, .page-head h1, .home-head h1, .hero-title, .card-title, .qs-head h1, .lp
 .lp-f3 { left: 0; top: 2%; bottom: auto; }
 .lp-caption { right: 0; left: auto; bottom: 12px; }
 :root[data-theme] .journey .stage-tab[aria-current='page'], .journey .stage-tab[aria-current='page'] { background: none !important; color: var(--head) !important; box-shadow: none !important; }
-.content :is(.seg, .seg button, .studio-tabs, .studio-tabs button, .info-tabs a, .chip, .fchip, .plan-flag, .lp-flag, .post-frame, .faq details, .road li, .week li, .st-template, .kit-tile, .tab-btn, .badge, .pill) { border-radius: 2px !important; }
+.content :is(.seg, .seg button, .studio-tabs, .studio-tabs button, .info-tabs a, .chip, .fchip, .plan-flag, .lp-flag, .post-frame, .faq details, .road li, .week li, .st-template, .kit-tile, .tab-btn, .badge, .pill) { border-radius: var(--r-chip, 2px) !important; }
 .content :is(.seg button[aria-pressed='true'], .studio-tabs button[aria-selected='true'], .chip.on, .info-tabs a[aria-current='page']) { background: var(--ox) !important; color: #F6EEE6 !important; box-shadow: none !important; }
 .studio-tabs, .seg { box-shadow: inset 0 0 0 1px var(--line) !important; background: var(--card) !important; }
 .plan-flag { background: var(--ox); color: #F6EEE6; text-transform: uppercase; font: 600 .62rem var(--f-ui); letter-spacing: .18em; }
