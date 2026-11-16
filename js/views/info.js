@@ -8,6 +8,7 @@ import { LEGAL_DOCS, legalBody } from '../legalText.js';
 import { consentRecord, showConsent } from '../legal.js';
 import { actions, inputs } from '../registry.js';
 import { supportEmail } from '../auth.js';
+import { contactForm } from '../contact.js';
 
 const TABS = ['about', 'roadmap', 'faq', 'contact', 'legal'];
 const TAB_ICON = { about: 'help', roadmap: 'mission', faq: 'info', contact: 'share', legal: 'check' };
@@ -50,8 +51,8 @@ function contact() {
   const m = mail();
   const rows = [['company', BRAND.company], ['cui', BRAND.cui], ['regNo', BRAND.regNo], ['address', BRAND.address], ['country', BRAND.country], ['email', m], ['privacy', BRAND.privacyEmail], ['dpo', BRAND.dpo]].filter(([, v]) => v);
   return html`<div class="info-grid">
-    <article class="card info-card"><span class="info-ic">${icon('share', 18)}</span><h3>${t('info.contactTitle')}</h3><p>${t(m ? 'info.contactBody' : 'info.contactNone')}</p>
-      ${m ? html`<div class="btn-row"><a class="btn btn-primary btn-sm" href="mailto:${m}">${icon('share', 15)} ${m}</a><button class="btn btn-ghost btn-sm" data-act="copy-mail" data-mail="${m}">${icon('copy', 15)} ${t('actions.copy')}</button></div>` : ''}</article>
+    <article class="card info-card info-contact"><span class="info-ic">${icon('share', 18)}</span><h3>${t('info.contactTitle')}</h3><p>${t('ct.sub')}</p>
+      ${contactForm('info')}</article>
     <article class="card info-card"><span class="info-ic">${icon('check', 18)}</span><h3>${t('info.companyTitle')}</h3><dl class="company">${rows.map(([k, v]) => html`<dt>${t(`info.co.${k}`)}</dt><dd>${v}</dd>`)}</dl></article>
     <article class="card info-card"><span class="info-ic">${icon('eye', 18)}</span><h3>${t('info.privacyTitle')}</h3><p>${t('info.privacyBody')}</p>
       <div class="btn-row"><a class="btn btn-secondary btn-sm" href="#/info?privacy">${t('legal.privacy')}</a><a class="btn btn-ghost btn-sm" href="#/settings?data">${t('settings.yourData')}</a></div></article>
@@ -84,7 +85,6 @@ inputs['faq-q'] = (el) => {
   const items = Array.from({ length: FAQ_N }, (_, i) => [t(`info.faq.q${i + 1}`), t(`info.faq.a${i + 1}`)]).filter(([a, b]) => !q || `${a} ${b}`.toLowerCase().includes(q));
   list.innerHTML = (items.length ? html`${items.map(([a, b]) => html`<details ${q ? 'open' : ''}><summary>${a}</summary><p>${b}</p></details>`)}` : html`<p class="muted">${t('info.faqNone')}</p>`).s;
 };
-actions['copy-mail'] = async (el) => { const ok = await copyText(el.dataset.mail); toast(ok ? t('common.copied') : t('common.copyFailed'), ok ? 'success' : 'error'); };
 actions['consent-open'] = () => { location.hash = '#/overview'; setTimeout(showConsent, 50); };
 actions['legal-print'] = () => window.print();
 export { LEGAL_VERSION };

@@ -154,3 +154,27 @@ alter table public.waitlist enable row level security; -- no policies: only the 
 alter table public.profiles drop constraint if exists profiles_plan_request_check;
 alter table public.profiles add constraint profiles_plan_request_check check (plan_request in ('pro', 'business', 'trial'));
 alter table public.profiles add column if not exists plan_request_note text check (char_length(plan_request_note) <= 500);
+
+-- "Talk to us" on arcton.site (Nov 2026): messages from people interested in Arcton; no public phone number.
+-- Kept until answered, at most 12 months (the weekly cron deletes older ones).
+create table if not exists public.leads (
+  id uuid primary key default gen_random_uuid(),
+  name text not null check (char_length(name) between 1 and 80),
+  reply text not null check (char_length(reply) between 5 and 120),
+  message text not null check (char_length(message) between 1 and 2000),
+  source text not null default 'landing' check (source in ('launch', 'landing', 'info')),
+  lang text not null default 'ro',
+  status text not null default 'new' check (status in ('new', 'done')),
+  created_at timestamptz not null default now()
+);
+alter table public.leads enable row level security; -- no policies: only the server reads and writes
+
+-- Phones that get the owner's notifications (Web Push). Only the push address and its encryption keys; no personal data.
+create table if not exists public.push_subs (
+  endpoint text primary key check (char_length(endpoint) <= 1000),
+  p256dh text not null,
+  auth text not null,
+  user_ref text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.push_subs enable row level security; -- no policies: only the server reads and writes

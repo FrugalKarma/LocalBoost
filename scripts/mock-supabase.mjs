@@ -77,7 +77,7 @@ function authRoute(method, p, q, body, h) {
 }
 
 // PostgREST subset: eq / gte / is filters, select (incl. embedded businesses(...)), order, limit, insert/upsert, patch, delete, rpc.
-const tables = { profiles: [new Map(), 'id'], businesses: [new Map(), 'owner'], sites: [new Map(), 'owner'], site_requests: [new Map(), 'id'], site_stats: [new Map(), 'key'], payments: [new Map(), 'id'], waitlist: [new Map(), 'email'] };
+const tables = { profiles: [new Map(), 'id'], businesses: [new Map(), 'owner'], sites: [new Map(), 'owner'], site_requests: [new Map(), 'id'], site_stats: [new Map(), 'key'], payments: [new Map(), 'id'], waitlist: [new Map(), 'email'], leads: [new Map(), 'id'], push_subs: [new Map(), 'endpoint'] };
 tables.profiles[0] = profiles; tables.businesses[0] = businesses;
 let seq = 1;
 function restRoute(method, table, q, body, h) {
@@ -94,6 +94,7 @@ function restRoute(method, table, q, body, h) {
     if (v.startsWith('eq.')) return String(r[k]) === v.slice(3);
     if (v.startsWith('neq.')) return r[k] != null && String(r[k]) !== v.slice(4);
     if (v.startsWith('gte.')) return String(r[k]) >= v.slice(4);
+    if (v.startsWith('lt.')) return String(r[k]) < v.slice(3);
     if (v.startsWith('gt.')) return Number(r[k]) > Number(v.slice(3));
     if (v.startsWith('is.')) return String(r[k] ?? null) === v.slice(3);
     if (v.startsWith('in.(')) return v.slice(4, -1).split(',').map((x) => x.replace(/^"|"$/g, '')).includes(String(r[k]));
@@ -117,6 +118,7 @@ function restRoute(method, table, q, body, h) {
     const row = { ...(Array.isArray(body) ? body[0] : body) };
     if (table === 'payments') { row.id = seq++; row.created_at = new Date().toISOString(); }
     if (table === 'waitlist') row.created_at = new Date().toISOString();
+    if (table === 'leads') { row.id = randomUUID(); row.created_at = new Date().toISOString(); row.status = 'new'; }
     if (table === 'site_requests') { row.id = seq++; row.created_at = new Date().toISOString(); row.status = 'new'; }
     if (table === 'sites') { const other = [...store.values()].find((r) => r.slug === row.slug && r.owner !== row.owner); if (other) return [409, { code: '23505', message: 'duplicate slug' }]; }
     if (store.has(row[pk])) {

@@ -8,6 +8,7 @@ import { apiUrl } from './api.js';
 import { BRAND } from './brand.js';
 import { getSession } from './auth.js';
 import { confetti } from './fun.js';
+import { contactForm } from './contact.js';
 
 const PASS = 'arcton.preview';
 const CFG = 'arcton.launch';
@@ -86,6 +87,7 @@ function page(launch, unlockOpen, err) {
         <button class="cd-btn" data-soon="calendar">${t('soon.remind')}</button>
         <button class="cd-btn" data-soon="share">${t('soon.share')}</button></div>
       <ol class="cd-feats">${['f1', 'f2', 'f3', 'f4'].map((k, i) => html`<li><i>${['I', 'II', 'III', 'IV'][i]}</i><div><b>${t(`soon.${k}t`)}</b><span>${t(`soon.${k}`)}</span></div></li>`)}</ol>
+      <section class="cd-contact" aria-labelledby="cd-contact-h"><h2 id="cd-contact-h">${t('ct.title')}</h2><p>${t('ct.sub')}</p>${contactForm('launch')}</section>
     </main>
     <footer class="cd-foot">
       ${unlockOpen ? html`<form class="cd-unlock" data-soon-form novalidate><label><span>${t('soon.pw')}</span>

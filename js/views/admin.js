@@ -6,6 +6,7 @@ import { api, isAdmin, authOn } from '../auth.js';
 import { loadExample, EXAMPLES } from '../example.js';
 import { openClient } from '../cloud.js';
 import { pageHead } from './shared.js';
+import { pushState, subscribe, unsubscribe } from '../push.js';
 
 let clients = null; // null = not loaded yet
 let loadErr = null;
@@ -103,6 +104,7 @@ export const admin = {
     if (!isAdmin()) return html`<div class="card empty-hero"><p>${t('admin.notAdmin')}</p></div>`;
     return html`${pageHead({ note: 'A', title: t('admin.title'), sub: t('admin.sub') })}
       ${demo() ? html`<div class="example-bar demo-admin" role="status">${icon('sparkle', 18)}<p><b>${t('admin.demoTitle')}</b> ${t('admin.demoBody')}</p></div>` : ''}
+      <div id="admin-leads">${leadsSec()}</div>
       <div class="admin-bar">
         <div class="admin-kpis" id="admin-kpis">${kpis()}</div>
         <label class="field admin-search"><span class="sr-only">${t('admin.search')}</span>${icon('signals', 18)}
@@ -113,7 +115,7 @@ export const admin = {
       <div id="admin-body" aria-live="polite">${body()}</div>
       <div id="admin-extra">${extra()}</div>`;
   },
-  mount() { if (isAdmin() && !loading) { load(); loadExtra(); } },
+  mount() { if (isAdmin() && !loading) { load(); loadExtra(); loadLeads(); } },
 };
 
 inputs['admin-q'] = (el) => { q = el.value.trim().slice(0, 80); const b = $('#admin-body'); if (b) b.innerHTML = body().s; };
@@ -313,3 +315,63 @@ document.addEventListener('change', (e) => {
   if (!e.target.matches?.('#pf-plan, #pf-months')) return;
   const a = $('#pf-amount'); const pr = PRICE[$('#pf-plan')?.value]; if (a && pr) a.value = Math.round(PRICE[$('#pf-plan').value] * Number($('#pf-months').value) * 100) / 100;
 });
+
+/* ---------- messages from "Talk to us" + notifications on this phone ---------- */
+let leads = null; let pushKey = ''; let pState = 'off'; let leadsErr = false;
+async function loadLeads() {
+  pState = await pushState().catch(() => 'unsupported');
+  if (demo()) { leads ||= []; return paintLeads(); }
+  const r = await api('/api/admin?op=leads');
+  leadsErr = r.status !== 200; leads = r.status === 200 ? r.body.leads : null; pushKey = r.body?.push || '';
+  paintLeads();
+  if (/[?&]leads\b/.test(location.hash)) $('#admin-leads')?.scrollIntoView({ block: 'start' });
+}
+function paintLeads() { const el = $('#admin-leads'); if (el) el.innerHTML = leadsSec().s; }
+const replyLink = (r) => (/@/.test(r) ? `mailto:${r}` : `tel:${r.replace(/[^\d+]/g, '')}`);
+function pushBox() {
+  if (!pushKey && !demo()) return html`<p class="muted small">${icon('info', 14)} ${t('admin.leads.noKeys')}</p>`;
+  if (pState === 'on') return html`<div class="btn-row"><span class="pill pill-on">${icon('check', 14)} ${t('admin.leads.pushOn')}</span>
+    <button class="btn btn-secondary btn-sm" data-act="admin-push-test">${t('admin.leads.test')}</button><button class="btn btn-ghost btn-sm" data-act="admin-push-off">${t('admin.leads.off')}</button></div>`;
+  if (pState === 'ios-home') return html`<p class="muted small">${icon('info', 14)} ${t('admin.leads.ios')}</p>`;
+  if (pState === 'blocked') return html`<p class="muted small">${icon('info', 14)} ${t('admin.leads.blocked')}</p>`;
+  if (pState === 'unsupported') return html`<p class="muted small">${icon('info', 14)} ${t('admin.leads.unsupported')}</p>`;
+  return html`<button class="btn btn-primary btn-sm" data-act="admin-push-on">${icon('sparkle', 15)} ${t('admin.leads.on')}</button>`;
+}
+function leadsSec() {
+  const fresh = (leads || []).filter((l) => l.status === 'new').length;
+  return html`<section class="card admin-sec admin-leads"><div class="admin-sec-head"><div><h2>${t('admin.leads.title')}</h2>
+      <p class="muted small">${leads == null ? t(leadsErr ? 'admin.leads.none' : 'admin.leads.loading') : t('admin.leads.sub', { n: leads.length, fresh })}</p></div>${pushBox()}</div>
+    ${leads?.length ? html`<ul class="lead-list">${leads.map((l) => html`<li class="lead ${l.status === 'new' ? 'is-new' : ''}">
+      <div class="lead-top"><strong>${l.name}</strong><a href="${replyLink(l.reply)}">${l.reply}</a><span class="muted small">${new Date(l.created_at).toLocaleString(getLang(), { dateStyle: 'medium', timeStyle: 'short' })} · ${t(`admin.leads.from.${l.source}`)}</span></div>
+      <p class="lead-msg">${l.message}</p>
+      <div class="btn-row"><button class="btn btn-secondary btn-sm" data-act="admin-lead-done" data-id="${l.id}" data-done="${l.status === 'new'}">${icon('check', 14)} ${t(l.status === 'new' ? 'admin.leads.done' : 'admin.leads.undo')}</button>
+        <button class="btn btn-ghost btn-sm" data-act="admin-lead-del" data-id="${l.id}">${t('admin.delete')}</button></div></li>`)}</ul>`
+    : leads ? html`<p class="muted small">${t('admin.leads.empty')}</p>` : ''}</section>`;
+}
+actions['admin-push-on'] = async () => {
+  const r = await subscribe(pushKey);
+  if (r.error) { pState = await pushState(); paintLeads(); return toast(t(r.error === 'blocked' ? 'admin.leads.blocked' : 'common.errorGeneric'), 'error'); }
+  const s = await api('/api/admin', { method: 'POST', body: { op: 'push-sub', sub: r.sub } });
+  if (s.status !== 200) { await unsubscribe(); return toast(t('common.errorGeneric'), 'error'); }
+  pState = 'on'; paintLeads(); toast(t('admin.leads.onDone'), 'success');
+};
+actions['admin-push-off'] = async () => {
+  const endpoint = await unsubscribe(); if (endpoint) await api('/api/admin', { method: 'POST', body: { op: 'push-unsub', endpoint } });
+  pState = await pushState(); paintLeads();
+};
+actions['admin-push-test'] = async () => {
+  const r = await api('/api/admin', { method: 'POST', body: { op: 'push-test' } });
+  const ok = r.status === 200 && r.body.sent > 0;
+  toast(t(ok ? 'admin.leads.testSent' : 'admin.leads.testFail'), ok ? 'success' : 'error');
+};
+actions['admin-lead-done'] = async (el) => {
+  const done = el.dataset.done === 'true'; const l = leads?.find((x) => x.id === el.dataset.id); if (!l) return;
+  const r = demo() ? { status: 200 } : await api('/api/admin', { method: 'POST', body: { op: 'lead-done', id: l.id, done } });
+  if (r.status === 200) { l.status = done ? 'done' : 'new'; paintLeads(); } else toast(t('common.errorGeneric'), 'error');
+};
+actions['admin-lead-del'] = async (el) => {
+  const l = leads?.find((x) => x.id === el.dataset.id); if (!l) return;
+  if (!(await confirmDialog(t('admin.leads.delTitle', { name: l.name }), t('admin.leads.delBody'), t('admin.delete')))) return;
+  const r = demo() ? { status: 200 } : await api('/api/admin', { method: 'POST', body: { op: 'lead-delete', id: l.id } });
+  if (r.status === 200) { leads = leads.filter((x) => x !== l); paintLeads(); } else toast(t('common.errorGeneric'), 'error');
+};

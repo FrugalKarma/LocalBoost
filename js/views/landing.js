@@ -7,6 +7,7 @@ import { BRAND } from '../brand.js';
 import { openLegal } from '../legalText.js';
 import { PLANS, priceText, planVideo } from './plans.js';
 import { mountain } from '../mountain.js';
+import { contactForm } from '../contact.js';
 
 let handlers = { signup() {}, signin() {} };
 let shown = false;
@@ -34,7 +35,7 @@ function render() {
   return html`<div class="lp">
   <header class="lp-nav"><div class="lp-nav-in">
     <a class="lp-brand" href="/" data-land="top" aria-label="${BRAND.app}"><img src="/icons/logo.svg" alt="" width="34" height="34"><strong>${BRAND.app}</strong></a>
-    <nav class="lp-links" aria-label="${t('land.navAria')}">${['how', 'plans', 'faq'].map((k) => html`<button type="button" class="lp-link" data-land="to" data-to="${k}">${t(`land.nav.${k}`)}</button>`)}</nav>
+    <nav class="lp-links" aria-label="${t('land.navAria')}">${['how', 'plans', 'faq', 'contact'].map((k) => html`<button type="button" class="lp-link" data-land="to" data-to="${k}">${t(`land.nav.${k}`)}</button>`)}</nav>
     <div class="lp-tools">${langSelect()}<button type="button" class="btn btn-ghost btn-sm lp-signin" data-land="signin">${t('land.signin')}</button>
       <button type="button" class="btn btn-primary btn-sm" data-land="signup">${t('land.ctaShort')}</button></div>
   </div></header>
@@ -82,6 +83,11 @@ function render() {
   <section class="lp-sec lp-faq" id="faq" aria-labelledby="faq-h">
     <div class="lp-sec-head"><p class="eyebrow">${t('land.faq.eyebrow')}</p><h2 id="faq-h">${t('land.faq.title')}</h2></div>
     <div class="lp-qs">${FAQ.map((k) => html`<details><summary>${t(`land.faq.${k}`)}<span class="lp-plus" aria-hidden="true"></span></summary><p>${t(`land.faq.${k}A`)}</p></details>`)}</div>
+  </section>
+
+  <section class="lp-sec lp-contact" id="contact" aria-labelledby="contact-h">
+    <div class="lp-sec-head"><p class="eyebrow">${t('ct.eyebrow')}</p><h2 id="contact-h">${t('ct.title')}</h2><p class="lp-sub">${t('ct.sub')}</p></div>
+    ${contactForm('landing')}
   </section>
 
   <section class="lp-final lp-reveal">

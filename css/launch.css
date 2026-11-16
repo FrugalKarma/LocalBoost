@@ -99,3 +99,8 @@ body[data-route='soon']::before, body[data-route='soon']::after { display: none;
 @media (max-width: 760px) { .cd .cd-trail { opacity: .3; } }
 .cd-brand img { border-radius: 0; filter: none; }
 .cd-link { min-height: 24px; display: inline-flex; align-items: center; }
+
+/* "Talk to us" on the launch page; the form itself is styled in css/contact.css */
+.cd-contact { position: relative; z-index: 3; margin: clamp(40px, 7vh, 72px) 0 0; max-width: 640px; }
+.cd-contact h2 { margin: 0; font: 800 clamp(1.8rem, 4vw, 2.6rem)/.95 'Archivo'; font-stretch: 62%; text-transform: uppercase; color: var(--head); }
+.cd-contact > p { margin: 10px 0 18px; color: var(--muted); }
