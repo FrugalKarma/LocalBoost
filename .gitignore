@@ -6,3 +6,5 @@ android/app/build/
 android/.gradle/
 *.apk
 .shots/
+.env
+.env.*
