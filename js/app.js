@@ -165,7 +165,8 @@ function onRoute() {
   if (screen !== 'app') return;
   const from = groupIndex(route); route = parseRoute();
   $('#account-menu') && ($('#account-menu').hidden = true);
-  const still = document.documentElement.dataset.motion === 'reduce' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // phones skip the page snapshot transition: it captures the whole screen twice and stutters on mid-range devices
+  const still = document.documentElement.dataset.motion === 'reduce' || window.matchMedia('(prefers-reduced-motion: reduce), (hover: none)').matches;
   if (document.startViewTransition && !still && document.visibilityState === 'visible') {
     document.documentElement.dataset.dir = groupIndex(route) < from ? 'back' : 'fwd';
     document.startViewTransition(() => renderView());

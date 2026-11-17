@@ -260,3 +260,19 @@
 .lead-msg { margin: 8px 0 10px; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text); }
 .pill-on { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: rgba(92, 184, 120, .14); color: #9FE0B2; font-size: .8rem; font-weight: 600; }
 :root[data-theme='light'] .pill-on { color: #1F6B3A; }
+
+/* ---------- phones: same look, far less work for the GPU ----------
+   Blur behind every card re-renders whenever the animated mountain behind it moves, which is what made scrolling stutter.
+   On touch screens the cards get an almost-solid fill instead of blur, and the background stands still. */
+@media (hover: none), (pointer: coarse) {
+  .content :is(.card, .map-card, .deck-card, .biz-card, .hero-card, .qs-card, .plan, .opp2, .climb, .cr-card) { background: color-mix(in srgb, var(--card) 94%, transparent) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; transition: none; }
+  .content :is(.card-accent, .cr-move) { background: linear-gradient(135deg, #8E1B2C 0%, #4A0C17 100%) !important; }
+  .content :is(.card, .cr-card, .plan, .deck-card, .biz-card)::before { display: none; }
+  .tabbar { background: var(--card-2) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  :is(.subtabs-in, .cr-pills span, .cr-hero-art .mtn-ann .mtn-t, #modal-root .modal, .modal-backdrop, .trail, .hdr, .lp-nav-in, .journey, .lp-float, .qs-card, .map-stat, .hero-score) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+  .subtabs-in { background: var(--card-2); } #modal-root .modal { background: var(--card); }
+  :is(.sc-topos, .sc-disc, .sc-far, .sc-fog, .sc-sheen, .cr-hero::before, .lp-hero::after) { animation: none !important; }
+  body::before { animation: none; will-change: auto; }
+  :is(.cr-hero-art, .lp-visual) { will-change: auto; transition: none; transform: none; }
+  :is(.cr-hero-art, .lp) .mtn-seg.is-done { filter: none; }
+}
