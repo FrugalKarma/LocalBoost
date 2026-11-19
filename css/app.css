@@ -2622,7 +2622,7 @@ a.mtn-ann:hover .mtn-t { color: var(--bronze-300); }
 :root[data-motion='reduce'] :is(.mtn-edge, .mtn-seg.is-done) { stroke-dashoffset: 0; }
 /* Romanian capitals carry marks above and below (Ă Â Î Ș Ț): uppercase titles need a little more leading */
 h1, h2, .page-head h1, .home-head h1, .hero-title, .card-title, .qs-head h1, .lp h1, .lp h2, .auth-tag, .auth-card h2 { line-height: 1.06; }
-.lp-hero { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); }
+@media (min-width: 1001px) { .lp-hero { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); } }
 .lp-hero h1 { font-size: clamp(3rem, 6.2vw, 6.2rem); }
 .lp-visual .mtn { width: 118%; margin: 0 -14% -1px -4%; }
 .lp-f3 { left: 0; top: 2%; bottom: auto; }

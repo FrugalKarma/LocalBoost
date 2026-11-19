@@ -276,3 +276,12 @@
   :is(.cr-hero-art, .lp-visual) { will-change: auto; transition: none; transform: none; }
   :is(.cr-hero-art, .lp) .mtn-seg.is-done { filter: none; }
 }
+
+/* phones: the language picker sits in its own row above the sign-in tabs, never on top of them */
+@media (max-width: 800px) {
+  .auth-top { position: static; display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 14px; }
+  .auth-top:not(:has(.auth-back)) { justify-content: flex-end; }
+  .auth-top .lang { border-color: var(--glass-line, var(--line)); color: var(--text); }
+}
+/* the landing bar keeps a solid fill on touch screens, where its blur is switched off */
+@media (hover: none), (pointer: coarse) { .lp-nav-in { background: color-mix(in srgb, var(--bg) 96%, transparent) !important; } }
