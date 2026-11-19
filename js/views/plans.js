@@ -19,7 +19,7 @@ export const PLANS = [
 // Custom Premium catalog. Prices in euro; edit them here, the words live in the locales (catalog.*).
 const TIERS = [{ id: 'start', from: 100, to: 250 }, { id: 'plus', from: 250, to: 450 }, { id: 'pro', from: 450 }];
 const EXTRAS = [
-  ['domain', 0], ['email', 3, 'month'], ['page', 25], ['lang', 40], ['logo', 60], ['photo', 80, 'from'], ['qr', 8, 'piece'], ['edit', 10],
+  ['domain', 0], ['email', 3, 'month'], ['page', 25], ['lang', 5], ['logo', 50], ['photo', 50, 'from'], ['qr', 8, 'piece'], ['edit', 10],
 ];
 /** 49.99 → "49,99" in Romanian, "49.99" in English. */
 export const money = (n) => n.toLocaleString(getLang(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
