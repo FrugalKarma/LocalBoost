@@ -6,6 +6,8 @@ import { actions } from '../registry.js';
 import { BRAND } from '../brand.js';
 import { t, ta, getLang } from '../i18n.js';
 import { pageHead } from './shared.js';
+import { catalog, MONTHLY, SETUP_FROM } from '../catalog.js';
+export { catalog };
 import { currentPlan, PLAN_RANK, noPlanPrompt } from '../plans.js';
 import { authOn, signedIn, userEmail, userId, supportEmail, requestPlan, planRequest, planUntil } from '../auth.js';
 
@@ -14,12 +16,7 @@ import { authOn, signedIn, userEmail, userId, supportEmail, requestPlan, planReq
 export const PLANS = [
   { id: 'pro', price: 49.99, featured: true, video: 'growth' },
   // Custom Premium: the website is paid once (by tier, written offer), then a fixed monthly fee
-  { id: 'business', price: null, monthly: 74.99, setupFrom: 100, video: 'premium' },
-];
-// Custom Premium catalog. Prices in euro; edit them here, the words live in the locales (catalog.*).
-const TIERS = [{ id: 'start', from: 100, to: 250 }, { id: 'plus', from: 250, to: 450 }, { id: 'pro', from: 450 }];
-const EXTRAS = [
-  ['domain', 0], ['email', 3, 'month'], ['page', 25], ['lang', 5], ['logo', 50], ['photo', 50, 'from'], ['edit', 10],
+  { id: 'business', price: null, monthly: MONTHLY, setupFrom: SETUP_FROM, video: 'premium' },
 ];
 /** 49.99 → "49,99" in Romanian, "49.99" in English. */
 export const money = (n) => n.toLocaleString(getLang(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -27,23 +24,6 @@ export const priceText = (p) => (p.price || p.monthly ? `€${money(p.price || p
 /** Price line of a plan card: the monthly price, plus the one-time website for Custom Premium. */
 export const priceLine = (p, cls) => html`<p class="${cls}"><b>${priceText(p)}</b>${p.price || p.monthly ? html`<span>${t('plans.perMonth')}</span>` : ''}</p>${p.setupFrom ? html`<p class="plan-setup">${t('plans.business.setup', { p: p.setupFrom })}</p>` : ''}`;
 
-/** What Custom Premium includes and costs: website tiers (paid once), the monthly fee, extras. */
-export function catalog() {
-  const m = PLANS.find((p) => p.monthly).monthly;
-  const tierPrice = (x) => (x.to ? t('catalog.range', { from: x.from, to: x.to }) : t('catalog.from', { p: x.from }));
-  const extraPrice = ([, n, unit]) => (n ? t(`catalog.${unit || 'once'}`, { p: n }) : t('catalog.included'));
-  return html`<details class="catalog card" id="catalog"><summary><span>${t('catalog.summary')}</span>${icon('down', 18)}</summary>
-    <p class="catalog-intro">${t('catalog.intro', { monthly: money(m) })}</p>
-    <h3>${t('catalog.setupTitle')}</h3>
-    <div class="catalog-tiers">${TIERS.map((x) => html`<article class="catalog-tier"><h4>${t(`catalog.tiers.${x.id}.name`)}</h4><p class="catalog-price">${tierPrice(x)}</p><p class="muted small">${t(`catalog.tiers.${x.id}.for`)}</p>
-      <ul>${ta(`catalog.tiers.${x.id}.features`).map((f) => html`<li>${icon('check', 16)}<span>${f}</span></li>`)}</ul></article>`)}</div>
-    <h3>${t('catalog.monthlyTitle', { monthly: money(m) })}</h3>
-    <ul class="catalog-list">${ta('catalog.monthly').map((f) => html`<li>${icon('check', 16)}<span>${f}</span></li>`)}</ul>
-    <h3>${t('catalog.extrasTitle')}</h3>
-    <table class="catalog-extras"><tbody>${EXTRAS.map((e) => html`<tr><th scope="row">${t(`catalog.extras.${e[0]}`)}</th><td>${extraPrice(e)}</td></tr>`)}</tbody></table>
-    <ul class="catalog-notes muted small">${ta('catalog.notes').map((f) => html`<li>${f}</li>`)}</ul>
-  </details>`;
-}
 // rows of the comparison table: [key, Growth, Custom Premium] (true / false / text key)
 const ROWS = [
   ['analysis', 'pc.v.noMonthly', 'pc.v.noMonthly'],

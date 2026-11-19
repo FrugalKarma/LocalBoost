@@ -9,7 +9,7 @@ const SHELL = ['/', '/index.html', '/manifest.json', '/css/styles.css', '/css/le
   '/js/plans.js', '/js/qr.js', '/js/images.js', '/js/brand.js', '/js/example.js', '/js/studio.js', '/js/fun.js', '/js/launch.js', '/js/motion.js', '/js/legal.js', '/js/legalText.js', '/js/display.js', '/js/pwa.js', '/js/registry.js', '/js/siteTemplate.js', '/js/sources.js', '/js/store.js', '/js/theme.js', '/js/website.js',
   '/js/locales/en.js', '/js/locales/ro.js', '/js/locales/fr.js', '/js/locales/de.js', '/js/locales/hu.js',
   '/js/views/account.js', '/js/views/admin.js', '/js/views/plans.js', '/js/views/signin.js', '/js/views/landing.js', '/js/mountain.js', '/js/nav.js', '/js/scene.js', '/js/paste.js', '/js/views/competitors.js', '/js/views/diagnosis.js', '/js/views/mission.js', '/js/views/overview.js', '/js/views/pack.js',
-  '/js/views/proof.js', '/js/views/settings.js', '/js/views/shared.js', '/js/views/signals.js', '/js/views/tools.js', '/js/views/info.js', '/js/views/website.js', '/js/contact.js', '/js/push.js'];
+  '/js/views/proof.js', '/js/views/settings.js', '/js/views/shared.js', '/js/views/signals.js', '/js/views/tools.js', '/js/views/info.js', '/js/views/website.js', '/js/contact.js', '/js/catalog.js', '/js/push.js'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));

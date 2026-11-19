@@ -8,6 +8,7 @@ import { openLegal } from '../legalText.js';
 import { PLANS, priceLine, planVideo, catalog } from './plans.js';
 import { mountain } from '../mountain.js';
 import { contactForm } from '../contact.js';
+import { openPresentation } from '../catalog.js';
 
 let handlers = { signup() {}, signin() {} };
 let shown = false;
@@ -125,6 +126,7 @@ function paint() {
 export function showLanding(opts = {}) {
   handlers = { ...handlers, ...opts };
   shown = true; paint(); window.scrollTo(0, 0);
+  if (location.hash === '#prezentare') openPresentation(); // arcton.site/#prezentare opens the extras straight away
 }
 export function hideLanding() { shown = false; io?.disconnect(); }
 export function repaintLanding() { if (shown) { const y = window.scrollY; paint(); window.scrollTo(0, y); } }
