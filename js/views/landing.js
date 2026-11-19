@@ -5,7 +5,7 @@ import { html, icon } from '../core.js';
 import { t, ta, LANGS, getLang, setLang } from '../i18n.js';
 import { BRAND } from '../brand.js';
 import { openLegal } from '../legalText.js';
-import { PLANS, priceText, planVideo } from './plans.js';
+import { PLANS, priceLine, planVideo, catalog } from './plans.js';
 import { mountain } from '../mountain.js';
 import { contactForm } from '../contact.js';
 
@@ -74,9 +74,10 @@ function render() {
     <div class="lp-plans">${PLANS.map((p) => html`<article class="lp-plan lp-reveal ${p.featured ? 'is-featured' : 'is-premium'}">
       ${p.featured ? html`<span class="lp-flag">${t('plans.popular')}</span>` : ''}
       <h3>${t(`plans.${p.id}.name`)}</h3><p class="lp-for">${t(`plans.${p.id}.for`)}</p>
-      ${planVideo(p)}<p class="lp-price"><b>${priceText(p)}</b>${p.price ? html`<span>${t('plans.perMonth')}</span>` : ''}</p>
+      ${planVideo(p)}${priceLine(p, 'lp-price')}
       <ul>${ta(`plans.${p.id}.features`).map((f) => html`<li>${icon('check', 16)}<span>${f}</span></li>`)}</ul>
       <button type="button" class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" data-land="signup">${t(p.price ? 'land.plans.start' : 'plans.business.cta')}</button></article>`)}</div>
+    ${catalog()}
     <p class="lp-pay">${icon('info', 16)} ${t('land.plans.pay')}</p>
   </section>
 

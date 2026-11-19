@@ -285,3 +285,26 @@
 }
 /* the landing bar keeps a solid fill on touch screens, where its blur is switched off */
 @media (hover: none), (pointer: coarse) { .lp-nav-in { background: color-mix(in srgb, var(--bg) 96%, transparent) !important; } }
+
+/* ---------- Custom Premium catalog (plans page and front page) ---------- */
+.catalog { margin: 22px 0; padding: 0; overflow: hidden; }
+.catalog > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 22px; font-weight: 700; color: var(--head); font-size: 1.05rem; }
+.catalog > summary::-webkit-details-marker { display: none; }
+.catalog > summary svg { flex: none; transition: transform .25s; } .catalog[open] > summary svg { transform: rotate(180deg); }
+.catalog > summary:focus-visible { outline: 3px solid #E2576C; outline-offset: -3px; }
+.catalog > :not(summary) { margin-left: 22px; margin-right: 22px; }
+.catalog h3 { margin-top: 22px; margin-bottom: 10px; font-size: 1.1rem; }
+.catalog-intro { margin-top: 0; color: var(--text); }
+.catalog-tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.catalog-tier { border: 1px solid var(--glass-line, var(--line)); border-radius: 16px; padding: 16px; background: rgba(237, 230, 220, .03); }
+.catalog-tier h4 { margin: 0; font-size: 1rem; color: var(--head); }
+.catalog-price { margin: 4px 0 2px; font-family: var(--f-display); font-stretch: 62%; font-weight: 800; font-size: 1.9rem; color: var(--head); line-height: 1.1; }
+.catalog-tier ul, .catalog-list { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 7px; }
+.catalog-tier li, .catalog-list li { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem; } .catalog li svg { flex: none; margin-top: 3px; color: #E2576C; }
+.catalog-extras { width: calc(100% - 44px); border-collapse: collapse; font-size: .94rem; }
+.catalog-extras th, .catalog-extras td { padding: 10px 0; border-bottom: 1px solid var(--glass-line, var(--line)); text-align: left; font-weight: 500; }
+.catalog-extras td { text-align: right; white-space: nowrap; padding-left: 16px; font-weight: 700; color: var(--head); }
+.catalog-notes { margin: 14px 22px 22px !important; padding-left: 18px; display: grid; gap: 4px; }
+.plan-setup { margin: -2px 0 8px; font-size: .9rem; color: var(--muted); }
+:root[data-theme='light'] .catalog-tier { background: rgba(0, 0, 0, .02); }
+.lp .catalog { max-width: 1240px; margin-left: auto; margin-right: auto; text-align: left; }
