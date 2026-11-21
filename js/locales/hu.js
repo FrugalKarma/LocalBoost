@@ -769,6 +769,18 @@ export default {
       delBody: 'Az üzenet és az elérhetőség véglegesen törlődik.',
       from: { launch: 'indulási oldal', landing: 'kezdőlap', info: 'Info' },
     },
+    note: {
+      title: 'Megjegyzés a heti e-mailhez',
+      add: 'Megjegyzés',
+      edit: 'Megjegyzés ✓',
+      sub: 'Mit tett a csapat ezen a héten ({email}). Egyszer jelenik meg, a hétfői e-mailben „Mit tett érted az Arcton csapata” alatt, utána törlődik.',
+      label: 'Mit csináltunk',
+      ph: 'Pl.: Frissítettük a nyitvatartást a Google-ön, feltöltöttük az új fotókat a weboldalra és válaszoltunk 4 értékelésre.',
+      save: 'Megjegyzés mentése',
+      saved: 'A megjegyzés a hétfői e-mailben megy ki.',
+      cleared: 'Megjegyzés törölve.',
+      schema: 'Futtasd az új SQL-sorokat a supabase/schema.sql fájlból (digest_note oszlop).',
+    },
   },
   help: {
     title: 'Súgó',

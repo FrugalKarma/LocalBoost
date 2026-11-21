@@ -109,6 +109,9 @@ alter table public.profiles add column if not exists plan_request text check (pl
 alter table public.profiles add column if not exists plan_request_at timestamptz;
 -- Weekly email digest: true once the client unsubscribes.
 alter table public.profiles add column if not exists digest_off boolean not null default false;
+-- weekly email: last week's Google rating (for "what got better") and a note from the Arcton team, sent once then cleared
+alter table public.profiles add column if not exists digest_last jsonb;
+alter table public.profiles add column if not exists digest_note text check (char_length(digest_note) <= 1000);
 
 -- Photos for the websites (logo, cover, gallery). Public to read, only the server can write.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

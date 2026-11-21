@@ -769,6 +769,18 @@ export default {
       delBody: 'Le message et les coordonnées sont supprimés définitivement.',
       from: { launch: 'page de lancement', landing: 'page d’accueil', info: 'Infos' },
     },
+    note: {
+      title: 'Note pour l’e-mail hebdomadaire',
+      add: 'Note',
+      edit: 'Note ✓',
+      sub: 'Ce que l’équipe a fait pour {email} cette semaine. Elle apparaît une fois, dans l’e-mail du lundi sous « Ce que l’équipe Arcton a fait pour vous », puis elle est effacée.',
+      label: 'Ce que nous avons fait',
+      ph: 'Ex. : horaires Google mis à jour, nouvelles photos ajoutées au site et réponse à 4 avis.',
+      save: 'Enregistrer la note',
+      saved: 'La note partira dans l’e-mail du lundi.',
+      cleared: 'Note supprimée.',
+      schema: 'Exécutez les nouvelles lignes SQL de supabase/schema.sql (colonne digest_note).',
+    },
   },
   help: {
     title: 'Aide',

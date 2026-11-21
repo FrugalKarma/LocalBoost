@@ -769,6 +769,18 @@ export default {
       delBody: 'The message and the contact details are deleted for good.',
       from: { launch: 'launch page', landing: 'front page', info: 'Info' },
     },
+    note: {
+      title: 'Note for the weekly email',
+      add: 'Note',
+      edit: 'Note ✓',
+      sub: 'What the team did for {email} this week. It appears once, in Monday’s email under “What the Arcton team did for you”, then it is cleared.',
+      label: 'What we did',
+      ph: 'E.g.: Updated the Google opening hours, added the new photos to the website and replied to 4 reviews.',
+      save: 'Save note',
+      saved: 'The note goes out in Monday’s email.',
+      cleared: 'Note removed.',
+      schema: 'Run the new SQL lines in supabase/schema.sql (digest_note column).',
+    },
   },
   help: {
     title: 'Help',

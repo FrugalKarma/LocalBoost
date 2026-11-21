@@ -769,6 +769,18 @@ export default {
       delBody: 'Nachricht und Kontaktdaten werden endgültig gelöscht.',
       from: { launch: 'Startseite vor dem Launch', landing: 'Startseite', info: 'Info' },
     },
+    note: {
+      title: 'Notiz für die Wochen-E-Mail',
+      add: 'Notiz',
+      edit: 'Notiz ✓',
+      sub: 'Was das Team diese Woche für {email} getan hat. Erscheint einmal in der Montags-E-Mail unter „Was das Arcton-Team für dich getan hat“ und wird danach gelöscht.',
+      label: 'Was wir getan haben',
+      ph: 'Z. B.: Öffnungszeiten auf Google aktualisiert, neue Fotos auf die Website gestellt und auf 4 Bewertungen geantwortet.',
+      save: 'Notiz speichern',
+      saved: 'Die Notiz geht mit der Montags-E-Mail raus.',
+      cleared: 'Notiz gelöscht.',
+      schema: 'Führe die neuen SQL-Zeilen in supabase/schema.sql aus (Spalte digest_note).',
+    },
   },
   help: {
     title: 'Hilfe',

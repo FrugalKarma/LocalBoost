@@ -71,7 +71,8 @@ function row(c) {
       : html`<span class="badge ${c.disabled ? 'badge-off' : 'badge-on'}">${t(c.disabled ? 'admin.statusDisabled' : 'admin.statusActive')}</span>`}</div>
     <div class="client-acts">
       <button class="btn btn-primary btn-sm" data-act="admin-open" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('eye', 16)} ${t('admin.open')}</button>
-      ${admin ? '' : html`<button class="btn btn-secondary btn-sm" data-act="admin-toggle" data-id="${c.id}" ${busy ? 'disabled' : ''}>${t(c.disabled ? 'admin.enable' : 'admin.disable')}</button>
+      ${admin ? '' : html`<button class="btn btn-secondary btn-sm" data-act="admin-note" data-id="${c.id}" ${busy ? 'disabled' : ''} title="${t('admin.note.title')}">${icon('mail', 16)} ${t(c.digestNote ? 'admin.note.edit' : 'admin.note.add')}</button>
+      <button class="btn btn-secondary btn-sm" data-act="admin-toggle" data-id="${c.id}" ${busy ? 'disabled' : ''}>${t(c.disabled ? 'admin.enable' : 'admin.disable')}</button>
       <button class="btn btn-ghost btn-sm danger" data-act="admin-delete" data-id="${c.id}" ${busy ? 'disabled' : ''} aria-label="${t('admin.delete')}: ${c.email}">${icon('trash', 16)}</button>`}
     </div></li>`;
 }
@@ -143,6 +144,17 @@ actions['admin-open'] = async (el) => {
 };
 
 const find = (id) => clients?.find((c) => c.id === id);
+actions['admin-note'] = async (el) => {
+  const c = find(el.dataset.id); if (!c) return;
+  const v = await openModal({ title: t('admin.note.title'), body: html`<p class="muted small">${t('admin.note.sub', { email: c.email })}</p>
+    <label class="field"><span>${t('admin.note.label')}</span><textarea id="dn-text" rows="6" maxlength="1000" placeholder="${t('admin.note.ph')}">${c.digestNote || ''}</textarea></label>`,
+    actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: null }, { label: t('admin.note.save'), kind: 'btn-primary', collect: () => ({ note: $('#dn-text').value }) }] });
+  if (!v) return;
+  if (demo()) { c.digestNote = v.note.trim(); return paintBody(); }
+  const r = await api('/api/admin', { method: 'POST', body: { op: 'digest-note', id: c.id, note: v.note } });
+  if (r.status === 200) { c.digestNote = r.body.note; paintBody(); toast(t(c.digestNote ? 'admin.note.saved' : 'admin.note.cleared'), 'success'); }
+  else toast(t(r.body?.error === 'schema_old' ? 'admin.note.schema' : 'common.errorGeneric'), 'error');
+};
 actions['admin-toggle'] = async (el) => {
   const c = find(el.dataset.id); if (!c) return;
   const off = !c.disabled;

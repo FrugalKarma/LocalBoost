@@ -769,6 +769,18 @@ export default {
       delBody: 'Mesajul și datele de contact sunt șterse definitiv.',
       from: { launch: 'pagina de lansare', landing: 'prima pagină', info: 'Info' },
     },
+    note: {
+      title: 'Notă pentru emailul săptămânal',
+      add: 'Notă',
+      edit: 'Notă ✓',
+      sub: 'Ce a făcut echipa pentru {email} săptămâna asta. Apare o singură dată, în emailul de luni, sub „Ce a făcut echipa Arcton pentru tine”, apoi se șterge.',
+      label: 'Ce am făcut',
+      ph: 'Ex.: Am actualizat programul pe Google, am pus pozele noi pe site și am răspuns la 4 recenzii.',
+      save: 'Salvează nota',
+      saved: 'Nota pleacă în emailul de luni.',
+      cleared: 'Nota a fost ștearsă.',
+      schema: 'Rulează noile linii SQL din supabase/schema.sql (coloana digest_note).',
+    },
   },
   help: {
     title: 'Ajutor',
