@@ -8,7 +8,7 @@ import { isAdmin } from './auth.js';
 export const GROUPS = [
   { id: 'home', icon: 'overview', routes: ['overview'] },
   { id: 'analyse', icon: 'diagnosis', routes: ['diagnosis', 'signals', 'competitors', 'proof'], order: ['signals', 'diagnosis', 'competitors', 'proof'] },
-  { id: 'site', icon: 'website', routes: ['website'] },
+  { id: 'site', icon: 'website', routes: ['website', 'bookings'] },
   { id: 'studio', icon: 'pack', routes: ['pack', 'mission'], order: ['mission', 'pack'] },
   { id: 'account', icon: 'account', routes: ['account', 'plans', 'settings', 'info', 'admin'] },
 ];

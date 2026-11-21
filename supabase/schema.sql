@@ -60,9 +60,12 @@ create table if not exists public.site_requests (
   time        text,
   party       int,
   message     text,
-  status      text not null default 'new' check (status in ('new', 'done'))
+  status      text not null default 'new' check (status in ('new', 'confirmed', 'declined', 'done'))
 );
 create index if not exists site_requests_owner on public.site_requests (owner, created_at desc);
+-- bookings can be confirmed or declined (older databases allowed only new/done)
+alter table public.site_requests drop constraint if exists site_requests_status_check;
+alter table public.site_requests add constraint site_requests_status_check check (status in ('new', 'confirmed', 'declined', 'done'));
 
 create table if not exists public.site_stats (
   owner     uuid not null references public.profiles (id) on delete cascade,

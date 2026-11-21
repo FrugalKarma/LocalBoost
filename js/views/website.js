@@ -12,7 +12,7 @@ import { pageHead } from './shared.js';
 import { needSignals } from '../collect.js';
 import { getBiz, cleanPhone, cleanEmail } from '../business.js';
 import { authOn, signedIn } from '../auth.js';
-import { serverCaps, publishSite, unpublishSite, setRequestStatus, deleteRequest } from '../sources.js';
+import { serverCaps, publishSite, unpublishSite } from '../sources.js';
 import { loadSiteData, getSiteData, dailySeries } from '../insights.js';
 import { viewingClient } from '../cloud.js';
 import { barSeries } from '../charts.js';
@@ -295,15 +295,9 @@ function publishPanel() {
     <h3 class="pub-h">${t('website.statsTitle')}</h3>
     <div class="pub-stats"><div><b>${fmtNumber(sum('views', 7))}</b><span>${t('website.views7')}</span></div><div><b>${fmtNumber(sum('clicks', 7))}</b><span>${t('website.clicks7')}</span></div><div><b>${fmtNumber(sum('requests', 30))}</b><span>${t('website.requests30')}</span></div></div>
     ${barSeries(stats.map((d) => d.views), t('website.views30'))}
-    <h3 class="pub-h">${t('website.requestsTitle')} ${fresh ? html`<span class="badge badge-live">${t('website.newN', { n: fresh })}</span>` : ''}
-      <button class="icon-btn" data-act="reload-site-data" aria-label="${t('actions.retry')}">${icon('refresh', 16)}</button></h3>
-    ${reqs.length ? html`<ul class="req-list">${reqs.map((r) => html`<li class="req ${r.status === 'done' ? 'is-done' : ''}">
-      <div class="req-main"><strong>${r.name}</strong><a href="${/@/.test(r.contact) ? `mailto:${r.contact}` : `tel:${r.contact.replace(/[^\d+]/g, '')}`}">${r.contact}</a>
-        <small>${[r.date, r.time, r.party ? t('website.people', { n: r.party }) : ''].filter(Boolean).join(' · ')}${r.message ? html`<br>“${r.message}”` : ''}</small>
-        <small class="muted">${fmtDate(r.created_at)}</small></div>
-      <div class="req-acts"><button class="btn btn-secondary btn-sm" data-act="req-status" data-id="${r.id}" data-status="${r.status === 'done' ? 'new' : 'done'}">${r.status === 'done' ? t('website.reopen') : html`${icon('check', 15)} ${t('website.handled')}`}</button>
-        <button class="icon-btn" data-act="req-delete" data-id="${r.id}" aria-label="${t('admin.delete')}">${icon('trash', 15)}</button></div></li>`)}</ul>`
-      : html`<p class="muted small">${t('website.noRequests')}</p>`}` : ''}
+    <h3 class="pub-h">${t('website.requestsTitle')} ${fresh ? html`<span class="badge badge-live">${t('website.newN', { n: fresh })}</span>` : ''}</h3>
+    <p class="muted small">${reqs.length ? t('bookings.summary', { n: reqs.length }) : t('website.noRequests')}</p>
+    <button class="btn btn-secondary btn-sm" data-act="go" data-route="bookings">${icon('calendar', 16)} ${t('bookings.manage')}</button>` : ''}
     <hr class="pub-sep"><p class="muted small">${t('website.downloadBody')}</p>
     <button class="btn btn-ghost btn-sm" data-act="export-html">${icon('download', 16)} ${t('website.download')}</button>`;
 }
@@ -564,12 +558,5 @@ actions['unpublish-site'] = async () => {
   update((s) => ({ site: { ...s.site, publishedAt: null } })); await loadSiteData(true); toast(t('website.toastUnpublished'), 'info'); paintPanel();
 };
 actions['copy-site-link'] = async () => { const ok = await copyText(publicSiteUrl(site().slug)); toast(ok ? t('common.copied') : t('common.copyFailed'), ok ? 'success' : 'error'); };
-actions['reload-site-data'] = async () => { await loadSiteData(true); paintPanel(); };
-actions['req-status'] = async (el) => { const r = await setRequestStatus(Number(el.dataset.id), el.dataset.status); if (!r.ok) return toast(t('common.errorGeneric'), 'error'); await loadSiteData(true); paintPanel(); };
-actions['req-delete'] = async (el) => {
-  if (!(await confirmDialog(t('website.reqDeleteTitle'), t('website.reqDeleteBody'), t('admin.delete')))) return;
-  const r = await deleteRequest(Number(el.dataset.id)); if (!r.ok) return toast(t('common.errorGeneric'), 'error');
-  await loadSiteData(true); paintPanel();
-};
 
 export const getSiteFrames = () => [$('#site-frame')].filter(Boolean);

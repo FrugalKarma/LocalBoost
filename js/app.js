@@ -12,6 +12,7 @@ import { mission } from './views/mission.js';
 import { website } from './views/website.js';
 import { pack } from './views/pack.js';
 import { proof } from './views/proof.js';
+import { bookings } from './views/bookings.js';
 import { settings } from './views/settings.js';
 import { account } from './views/account.js';
 import { competitors } from './views/competitors.js';
@@ -33,7 +34,7 @@ import { scene } from './scene.js';
 import { loadAuthConfig, authOn, signedIn, isAdmin, userEmail, userId, onAuthChange, readAuthHash, adoptLinkSession, signOut, refreshMe } from './auth.js';
 import { loadOwn, flush, viewingClient, closeClient, onCloud, localOwner } from './cloud.js';
 
-const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, pack, proof, settings, account, admin, plans, info].map((v) => [v.id, v]));
+const views = Object.fromEntries([overview, signals, competitors, diagnosis, mission, website, bookings, pack, proof, settings, account, admin, plans, info].map((v) => [v.id, v]));
 let route = 'overview';
 let pendingAnchor = null;
 let screen = 'boot'; // boot | signin | loading | app

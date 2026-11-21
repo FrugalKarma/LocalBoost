@@ -42,5 +42,8 @@ export const publishSite = (slug, doc) => call('/api/site', { method: 'POST', bo
 export const unpublishSite = () => call('/api/site', { method: 'POST', body: { op: 'unpublish' } });
 export const setRequestStatus = (id, status) => call('/api/site', { method: 'POST', body: { op: 'request-status', id, status } });
 export const deleteRequest = (id) => call('/api/site', { method: 'POST', body: { op: 'request-delete', id } });
+export const addBooking = (b) => call('/api/site', { method: 'POST', body: { op: 'request-add', ...b } });
+/** Booking notifications on this phone: send the subscription, forget it, or send a test. */
+export const bookingPush = (op, extra = {}) => call('/api/site', { method: 'POST', body: { op: `push-${op}`, ...extra } });
 /** Public address of the published site (same server as the app). */
 export const siteUrl = (slug) => `${apiUrl('') || location.origin}/s/${slug}`;

@@ -10,12 +10,12 @@ Object.assign(process.env, { SUPABASE_URL: 'https://sb.test', SUPABASE_PUBLISHAB
 const phone = createECDH('prime256v1'); phone.generateKeys(); const auth = randomBytes(16);
 const subs = [{ endpoint: 'https://push.test/live', p256dh: phone.getPublicKey().toString('base64url'), auth: auth.toString('base64url') },
   { endpoint: 'https://push.test/gone', p256dh: phone.getPublicKey().toString('base64url'), auth: auth.toString('base64url') }];
-const leads = []; const pushed = []; const deleted = [];
+const leads = []; const pushed = []; const deleted = []; const subQueries = [];
 const j = (status, body) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 globalThis.fetch = async (url, init = {}) => {
   const u = new URL(url); const m = init.method || 'GET';
   if (u.pathname === '/rest/v1/leads' && m === 'POST') { leads.push(JSON.parse(init.body)); return j(201, []); }
-  if (u.pathname === '/rest/v1/push_subs' && m === 'GET') return j(200, subs);
+  if (u.pathname === '/rest/v1/push_subs' && m === 'GET') { subQueries.push(u.searchParams.get('user_ref')); return j(200, subs); }
   if (u.pathname === '/rest/v1/push_subs' && m === 'DELETE') { deleted.push(u.searchParams.get('endpoint')); return j(204, null); }
   if (u.hostname === 'push.test') { pushed.push({ path: u.pathname, headers: init.headers, body: Buffer.from(init.body) }); return new Response(null, { status: u.pathname === '/gone' ? 410 : 201 }); }
   return j(404, {});
@@ -27,6 +27,7 @@ let r = await send({ name: 'Ana Pop', reply: 'ana@test.ro', message: 'Bună,\nvr
 assert.equal(r.status, 200);
 assert.deepEqual(leads[0], { name: 'Ana Pop', reply: 'ana@test.ro', message: 'Bună,\nvreau o ofertă pentru salon.', source: 'launch', lang: 'ro' });
 assert.equal(pushed.length, 2, 'one push per subscribed phone');
+assert.equal(subQueries[0], 'not.like.owner:*', 'business owners\' booking phones never get admin messages');
 assert.deepEqual(deleted, ['eq.https://push.test/gone'], 'the phone that unsubscribed is forgotten');
 const p = pushed.find((x) => x.path === '/live');
 assert.match(p.headers.authorization, /^vapid t=[\w-]+\.[\w-]+\.[\w-]+, k=/); assert.equal(p.headers['content-encoding'], 'aes128gcm');
@@ -47,4 +48,8 @@ const before = leads.length; assert.equal((await send({ name: 'Bot', reply: 'b@b
 // too many from one address
 const many = []; for (let i = 0; i < 4; i++) many.push((await handleAccount('auth', { method: 'POST', query: {}, body: { op: 'contact', name: 'Y', reply: 'y@y.ro', message: 'hello', consent: true }, headers: {}, ip: '9.9.9.9' })).status);
 assert.deepEqual(many, [200, 200, 200, 429]);
+// a business owner's phones: only that owner's subscriptions are asked for
+const { notifyUser } = await import('../lib/auth-core.mjs');
+await notifyUser('11111111-2222-3333-4444-555555555555', { title: 'Rezervare nouă: Ana' });
+assert.equal(subQueries.at(-1), 'eq.owner:11111111-2222-3333-4444-555555555555');
 console.log('contact ok');

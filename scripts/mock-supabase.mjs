@@ -97,6 +97,7 @@ function restRoute(method, table, q, body, h) {
     if (v.startsWith('lt.')) return String(r[k]) < v.slice(3);
     if (v.startsWith('gt.')) return Number(r[k]) > Number(v.slice(3));
     if (v.startsWith('is.')) return String(r[k] ?? null) === v.slice(3);
+    if (v.startsWith('not.like.')) return !String(r[k] ?? '').startsWith(v.slice(9).replace(/\*$/, '')); // prefix patterns only
     if (v.startsWith('in.(')) return v.slice(4, -1).split(',').map((x) => x.replace(/^"|"$/g, '')).includes(String(r[k]));
     return true;
   };
@@ -118,8 +119,8 @@ function restRoute(method, table, q, body, h) {
     const row = { ...(Array.isArray(body) ? body[0] : body) };
     if (table === 'payments') { row.id = seq++; row.created_at = new Date().toISOString(); }
     if (table === 'waitlist') row.created_at = new Date().toISOString();
-    if (table === 'leads') { row.id = randomUUID(); row.created_at = new Date().toISOString(); row.status = 'new'; }
-    if (table === 'site_requests') { row.id = seq++; row.created_at = new Date().toISOString(); row.status = 'new'; }
+    if (table === 'leads') { row.id = randomUUID(); row.created_at = new Date().toISOString(); row.status ||= 'new'; }
+    if (table === 'site_requests') { row.id = seq++; row.created_at = new Date().toISOString(); row.status ||= 'new'; }
     if (table === 'sites') { const other = [...store.values()].find((r) => r.slug === row.slug && r.owner !== row.owner); if (other) return [409, { code: '23505', message: 'duplicate slug' }]; }
     if (store.has(row[pk])) {
       if (prefer.includes('ignore-duplicates')) return [201, []];

@@ -9,6 +9,8 @@ const listeners = new Set();
 let session = read(SKEY);
 let enabled = read(CKEY) === true;
 let support = read(MKEY) || '';
+let pushKey = ''; // the server's public key for phone notifications (empty until set up)
+export const pushPublicKey = () => pushKey;
 /** Where owners ask for a plan change (LOCALBOOST_SUPPORT_EMAIL on the server). */
 export const supportEmail = () => support;
 
@@ -33,7 +35,7 @@ export function setSession(s, reason = 'signin') {
 export async function loadAuthConfig() {
   try {
     const r = await fetch(apiUrl('/api/auth?op=config'), { cache: 'no-store', signal: AbortSignal.timeout(5000) });
-    if (r.ok) { const j = await r.json(); enabled = !!j.enabled; write(CKEY, enabled); support = typeof j.support === 'string' ? j.support : ''; write(MKEY, support || null); }
+    if (r.ok) { const j = await r.json(); enabled = !!j.enabled; write(CKEY, enabled); support = typeof j.support === 'string' ? j.support : ''; write(MKEY, support || null); pushKey = typeof j.push === 'string' ? j.push : ''; }
   } catch { /* offline or no server: keep the cached answer */ }
   return enabled;
 }
