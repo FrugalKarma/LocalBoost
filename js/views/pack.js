@@ -11,7 +11,7 @@ import { needSignals } from '../collect.js';
 import { getBiz, displayName } from '../business.js';
 import { can, upgradePrompt, lockBadge } from '../plans.js';
 import { repliesSection, posterSection, askSection } from './tools.js';
-import { stickerSvg, mockupSvg, postSvg, defaultSticker, normSticker, FONTS, FONT_IDS, PALETTES, PALETTE_IDS, ICON_IDS, ICONS, SHAPES, RINGS, FILLS, PATTERNS, MOCKUPS, EMOJIS, FORMATS, LAYOUTS, stickerColors, downloadText, downloadPng, inlinePhoto, printSheet } from '../studio.js';
+import { stickerSvg, mockupSvg, postSvg, defaultSticker, normSticker, FONTS, FONT_IDS, PALETTES, PALETTE_IDS, ICON_IDS, ICONS, SHAPES, ROUND, RINGS, FILLS, PATTERNS, MOCKUPS, EMOJIS, FORMATS, LAYOUTS, stickerColors, downloadText, downloadPng, inlinePhoto, printSheet } from '../studio.js';
 import { siteLang } from '../website.js';
 import { confetti } from '../fun.js';
 
@@ -128,7 +128,7 @@ const stkHist = { past: [], future: [] };
 const slider = (k, label, v, min, max, step = 1, unit = '') => html`<label class="slider"><span>${label}<output data-out="${k}">${v}${unit}</output></span><input type="range" min="${min}" max="${max}" step="${step}" value="${v}" data-in="stk-range" data-k="${k}" data-unit="${unit}"></label>`;
 const toggle = (k, label, on) => html`<label class="switch"><input type="checkbox" data-in="stk-flag" data-k="${k}" ${on ? 'checked' : ''}><i aria-hidden="true"></i><span>${label}</span></label>`;
 function stkPanel(d) {
-  const col = stickerColors(d); const round = ['circle', 'scallop', 'star', 'flower'].includes(d.shape);
+  const col = stickerColors(d); const round = ROUND.includes(d.shape);
   const picker = (k) => html`<label class="color-mini"><input type="color" data-in="st-color" data-k="${k}" value="${col[k]}"><span>${t(`studio.col.${k}`)}</span></label>`;
   switch (stkTab) {
     case 'shape': return html`<div class="shape-pick big">${SHAPES.map((sh) => html`<button type="button" class="${d.shape === sh ? 'on' : ''}" aria-pressed="${d.shape === sh}" data-act="st-set" data-k="shape" data-v="${sh}">${raw(stickerSvg({ ...d, shape: sh, top: '', bottom: '', center: '', art: 'none', inner: false, ring: 'none', pattern: 'none', shadow: false }, { size: 46, uid: `sh-${sh}` }))}<span>${t(`studio.shape.${sh}`)}</span></button>`)}</div>
@@ -140,9 +140,9 @@ function stkPanel(d) {
       ${d.colors ? html`<button class="link-btn" data-act="st-colors-reset">${t('studio.resetColours')}</button>` : ''}
       <div class="sub-h">${t('studio.patternT')}</div>${chips('st-set', 'pattern', PATTERNS, d.pattern, (x) => t(`studio.pattern.${x}`))}
       ${d.pattern !== 'none' ? html`<div class="color-row-mini">${picker('pattern')}</div>${slider('patternOpacity', t('studio.strength'), Math.round(d.patternOpacity * 100), 5, 60, 1, '%')}` : ''}`;
-    case 'text': return html`${field(t('studio.top'), 'top', d.top, { attr: 'st-text', max: 30 })}${slider('topSize', t('studio.size'), d.topSize, 8, 22)}
+    case 'text': return html`${field(t('studio.top'), 'top', d.top, { attr: 'st-text', max: 30 })}<div class="slider-pair">${slider('topSize', t('studio.size'), d.topSize, 8, 22)}${round ? '' : slider('topY', t('studio.moveY'), d.topY, -30, 30)}</div>
       ${field(t('studio.center'), 'center', d.center, { attr: 'st-text', max: 16 })}<div class="slider-pair">${slider('centerSize', t('studio.size'), d.centerSize || 0, 0, 56)}${slider('centerY', t('studio.moveY'), d.centerY, -40, 40)}</div>
-      ${field(t('studio.bottom'), 'bottom', d.bottom, { attr: 'st-text', max: 32 })}${slider('bottomSize', t('studio.size'), d.bottomSize, 8, 20)}
+      ${field(t('studio.bottom'), 'bottom', d.bottom, { attr: 'st-text', max: 32 })}<div class="slider-pair">${slider('bottomSize', t('studio.size'), d.bottomSize, 8, 20)}${round ? '' : slider('bottomY', t('studio.moveY'), d.bottomY, -30, 30)}</div>
       <div class="slider-pair">${round ? slider('arc', t('studio.arc'), d.arc, 50, 84) : ''}${slider('spacing', t('studio.spacing'), d.spacing, 0, 8, 0.5)}</div>
       <div class="sub-h">${t('studio.h.font')}</div>${chips('st-set', 'font', FONT_IDS, d.font, (f) => html`<span style="font-family:${raw(FONTS[f])}">${t(`studio.font.${f}`)}</span>`)}
       <div class="switches">${toggle('upper', t('studio.upper'), d.upper)}${toggle('textStroke', t('studio.textStroke'), d.textStroke)}</div>`;
@@ -163,7 +163,9 @@ function stkPanel(d) {
 }
 function stickersTab() {
   const s = studio(); const d = activeSticker();
-  return html`<div class="studio-grid sticker-grid">
+  if (variants?.of !== d.id) variants = { of: d.id, list: makeVariants(d) };
+  return html`<p class="stk-note">${icon('info', 16)} <span>${t('studio.printNote')}</span></p>
+    <div class="studio-grid sticker-grid">
     <div class="studio-ctl card stk-ctl">
       <div class="stk-tabs" role="tablist">${STK_TABS.map(([k, ic]) => html`<button role="tab" aria-selected="${stkTab === k}" data-act="stk-tab" data-tab="${k}">${icon(ic, 16)}<span>${t(`studio.stk.${k}`)}</span></button>`)}</div>
       <div class="stk-panel">${stkPanel(d)}</div>
@@ -177,6 +179,8 @@ function stickersTab() {
         <button class="btn btn-secondary" data-act="st-svg">${icon('download', 16)} SVG</button>
         <button class="btn btn-secondary" data-act="st-dup">${icon('copy', 16)} ${t('studio.duplicate')}</button>
         <button class="btn btn-ghost" data-act="st-random">${icon('sparkle', 16)} ${t('studio.surprise')}</button></div>
+      <div class="pan-h-row"><h3 class="pan-h">${t('studio.variants')}</h3><button class="btn btn-ghost btn-sm" data-act="st-variants">${icon('refresh', 15)} ${t('studio.moreVariants')}</button></div>
+      <div class="st-variants">${variants.list.map((v, i) => html`<button type="button" data-act="st-variant" data-i="${i}" aria-label="${t('studio.useVariant', { n: i + 1 })}">${raw(stickerSvg(v, { size: 96, uid: `v${i}` }))}</button>`)}</div>
       <h3 class="pan-h">${t('studio.myStickers', { n: s.stickers.length })}</h3>
       <div class="st-gallery">${s.stickers.map((x) => html`<div class="st-item ${x.id === d.id ? 'on' : ''}"><button type="button" data-act="st-pick" data-id="${x.id}" aria-label="${t('studio.edit')}">${raw(stickerSvg(x, { size: 92, uid: `g-${x.id}` }))}</button>
         ${s.stickers.length > 1 ? html`<button type="button" class="icon-btn st-del" data-act="st-del" data-id="${x.id}" aria-label="${t('bld.remove')}">${icon('x', 14)}</button>` : ''}</div>`)}
@@ -198,7 +202,22 @@ const TEMPLATES = () => { const n = displayName(); const c = city(); const ig = 
     { k: 'new', d: defaultSticker({ shape: 'star', palette: 'aurora', fill: 'radial', font: 'bold', art: 'emoji', emoji: '✨', top: t('studio.tplNew'), center: 'NEW', bottom: n, ring: 'none', pattern: 'waves' }) },
     { k: 'love', d: defaultSticker({ shape: 'heart', palette: 'sunset', art: 'emoji', emoji: '❤️', top: t('studio.tplLove'), center: c.slice(0, 10), bottom: n, ring: 'none', inner: false }) },
     { k: 'vegan', d: defaultSticker({ shape: 'oval', palette: 'mint', art: 'icon', icon: 'leaf', top: t('studio.tplVegan'), center: 'VEGAN', bottom: n, inner: false }) },
+    { k: 'open', d: defaultSticker({ shape: 'pill', palette: 'neon', font: 'poster', art: 'none', top: '', center: t('studio.tplOpen'), bottom: n, ring: 'solid', inner: false, outline: 8 }) },
+    { k: 'wifi', d: defaultSticker({ shape: 'badge', palette: 'ocean', art: 'icon', icon: 'wifi', top: t('studio.tplWifi'), center: '', bottom: n, ring: 'dashed', pattern: 'grid', patternOpacity: 0.12 }) },
+    { k: 'takeaway', d: defaultSticker({ shape: 'arch', palette: 'earth', font: 'narrow', art: 'icon', icon: 'bag', top: t('studio.tplTakeaway'), center: 'TO GO', bottom: n, ring: 'solid', inner: false }) },
+    { k: 'handmade', d: defaultSticker({ shape: 'burst', palette: 'peach', font: 'script', art: 'icon', icon: 'heart', top: t('studio.tplHandmade'), center: '', bottom: n, upper: false, ring: 'dotted', pattern: 'stars', patternOpacity: 0.16 }) },
+    { k: 'since', d: defaultSticker({ shape: 'badge', palette: 'bordo', font: 'classic', art: 'icon', icon: 'crown', top: n, center: t('studio.tplSince', { y: new Date().getFullYear() }), bottom: c, ring: 'double' }) },
+    { k: 'thanks', d: defaultSticker({ shape: 'cloud', palette: 'lavender', font: 'round', art: 'emoji', emoji: '😊', top: '', center: t('studio.tplThanks'), bottom: n, ring: 'none', inner: false, upper: false }) },
+    { k: 'pet', d: defaultSticker({ shape: 'diamond', palette: 'matcha', font: 'round', art: 'icon', icon: 'paw', top: t('studio.tplPet'), center: '', bottom: n, ring: 'solid', inner: false }) },
+    { k: 'music', d: defaultSticker({ shape: 'circle', palette: 'cherry', font: 'poster', art: 'icon', icon: 'music', top: t('studio.tplMusic'), center: 'LIVE', bottom: n, ring: 'dashed', pattern: 'zigzag', patternOpacity: 0.12 }) },
   ]; };
+/** Six takes on the same sticker: same words and picture, new shape, colours, pattern, border and letters. */
+let variants = null;
+function makeVariants(d) {
+  const r = (a) => a[Math.floor(Math.random() * a.length)];
+  return Array.from({ length: 6 }, (_, i) => normSticker({ ...d, id: `${d.id}v${i}`, colors: null, shape: i === 0 ? d.shape : r(SHAPES), palette: r(PALETTE_IDS.filter((p) => p !== d.palette)), font: r(FONT_IDS),
+    fill: r(FILLS), gradAngle: r([45, 90, 135, 180]), pattern: r(PATTERNS), patternOpacity: r([0.1, 0.14, 0.2]), ring: r(RINGS), inner: r([true, false]), outline: r([0, 6, 8, 10]), rotate: r([-6, -3, 0, 0, 3, 6]), topY: 0, bottomY: 0 }));
+}
 
 function wordsTab() {
   const a = getAssets() || ensureAssetsSync(); const p = studio().post; const max = 2200; const full = `${p.caption}\n\n${p.hashtags}`;
@@ -336,6 +355,8 @@ actions['st-new'] = () => { const d = defaultSticker({ top: displayName(), botto
 actions['st-dup'] = () => { const s = studio(); if (s.stickers.length >= 12) return toast(t('studio.max'), 'info'); const d = { ...activeSticker(), id: defaultSticker().id }; setStudio((x) => ({ stickers: [...x.stickers, d], active: d.id })); rerender(); };
 actions['st-del'] = (el) => { setStudio((s) => ({ stickers: s.stickers.filter((x) => x.id !== el.dataset.id), active: s.active === el.dataset.id ? null : s.active })); rerender(); };
 actions['st-template'] = (el) => { const tp = TEMPLATES()[+el.dataset.i]; if (!tp) return; const s = studio(); if (s.stickers.length >= 12) return toast(t('studio.max'), 'info'); const d = { ...tp.d, id: defaultSticker().id }; setStudio((x) => ({ stickers: [...x.stickers, d], active: d.id })); rerender(); };
+actions['st-variants'] = () => { variants = null; rerender(); };
+actions['st-variant'] = (el) => { const v = variants?.list[+el.dataset.i]; if (!v) return; const { id, ...look } = v; setSticker(() => look); variants = null; rerender(); }; // eslint-disable-line no-unused-vars
 actions['st-random'] = () => { const r = (a) => a[Math.floor(Math.random() * a.length)]; const art = r(['icon', 'emoji', 'icon']);
   setSticker(() => ({ shape: r(SHAPES), palette: r(PALETTE_IDS), font: r(FONT_IDS), fill: r(FILLS), pattern: r(PATTERNS), art, icon: r(ICON_IDS.filter((x) => x !== 'none')), emoji: r(EMOJIS), ring: r(RINGS), colors: null, rotate: r([-8, -4, 0, 0, 4, 8]), outline: r([0, 6, 8, 10]), gradAngle: r([45, 90, 135, 180]) })); rerender(); };
 actions['st-png'] = async () => { if (!exportGate()) return; try { await downloadPng(`${fileBase()}-sticker.png`, stickerSvg(activeSticker(), { size: 200, uid: 'exp' }), 2000); toast(t('studio.saved'), 'success'); } catch { toast(t('studio.pngFail'), 'error'); } };

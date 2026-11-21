@@ -11,6 +11,10 @@ export const FONTS = {
   elegant: "'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif",
   mono: "'Courier New', Courier, monospace",
   hand: "'Comic Sans MS', 'Chalkboard SE', 'Segoe Print', cursive",
+  poster: "Impact, 'Haettenschweiler', 'Arial Narrow Bold', sans-serif-condensed, sans-serif",
+  round: "'Arial Rounded MT Bold', 'Varela Round', 'Nunito', 'Trebuchet MS', sans-serif",
+  script: "'Brush Script MT', 'Segoe Script', 'Lucida Handwriting', cursive",
+  narrow: "'Arial Narrow', 'Roboto Condensed', 'Helvetica Neue', Arial, sans-serif",
 };
 export const FONT_IDS = Object.keys(FONTS);
 
@@ -24,6 +28,16 @@ export const PALETTES = {
   candy: ['#FCE7F3', '#DB2777', '#831843', '#F472B6', '#FBCFE8'],
   night: ['#0F172A', '#FBBF24', '#F8FAFC', '#FBBF24', '#1E293B'],
   mono: ['#FFFFFF', '#111111', '#111111', '#111111', '#F3F4F6'],
+  bordo: ['#5A1020', '#E0C29F', '#FFF4E6', '#E2576C', '#7A1A2E'],
+  forest: ['#1F3D2B', '#A7C4A0', '#F1F7EE', '#E9C46A', '#2E5A3F'],
+  ocean: ['#023E8A', '#90E0EF', '#FFFFFF', '#48CAE4', '#0077B6'],
+  lemon: ['#FFF3B0', '#E09F3E', '#540B0E', '#E09F3E', '#FFE680'],
+  peach: ['#FFDAB9', '#E76F51', '#5C2A1A', '#F4A261', '#FFC49B'],
+  lavender: ['#E9E3FF', '#7B61FF', '#2D1B69', '#A08CFF', '#D4CBFF'],
+  earth: ['#C2A878', '#5B4636', '#2E2118', '#8C6A4F', '#D8C3A0'],
+  neon: ['#111111', '#39FF14', '#FFFFFF', '#FF2BD6', '#262626'],
+  matcha: ['#DDE5B6', '#6C584C', '#283618', '#606C38', '#ADC178'],
+  cherry: ['#FFF0F3', '#C9184A', '#590D22', '#FF4D6D', '#FFCCD5'],
 };
 export const PALETTE_IDS = Object.keys(PALETTES);
 
@@ -44,12 +58,26 @@ export const ICONS = {
   cake: '<path d="M4 20h16v-7H4z"/><path d="M4 15c2 1.5 4 1.5 6 0s4-1.5 6 0 3 1 4 0"/><path d="M12 13V9M12 6.5v.01"/>',
   camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
   smile: '<circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4 4 0 0 0 7 0M9 10h.01M15 10h.01"/>',
+  pizza: '<path d="M12 21L3.5 6a14 14 0 0 1 17 0z"/><path d="M5 8.5a12 12 0 0 1 14 0"/><circle cx="10" cy="11" r="1"/><circle cx="13.5" cy="14" r="1"/>',
+  wine: '<path d="M8 3h8l-.5 5a3.5 3.5 0 0 1-7 0z"/><path d="M12 11.5V20M8.5 20h7"/>',
+  burger: '<path d="M4 11a8 6 0 0 1 16 0z"/><path d="M3.5 14h17M5 17h14a1 1 0 0 1-1 3H6a1 1 0 0 1-1-3"/>',
+  flower: '<circle cx="12" cy="10" r="2.5"/><path d="M12 7.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 1 1 0 5zM14.5 10a2.5 2.5 0 1 1 5 0 2.5 2.5 0 1 1-5 0zM12 12.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 1 1 0-5zM9.5 10a2.5 2.5 0 1 1-5 0 2.5 2.5 0 1 1 5 0zM12 17.5V22"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/>',
+  music: '<path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+  paw: '<circle cx="7" cy="9" r="1.8"/><circle cx="11" cy="6" r="1.8"/><circle cx="15" cy="6.5" r="1.8"/><circle cx="18" cy="10" r="1.8"/><path d="M8 16a4 3.5 0 0 1 8 0c0 2-1.5 3.5-4 3.5S8 18 8 16z"/>',
+  dumbbell: '<path d="M7 7v10M17 7v10M4 9v6M20 9v6M7 12h10"/>',
+  wrench: '<path d="M14.5 4.5a4.5 4.5 0 0 0 4.9 6L21 12l-8.5 8.5a2.1 2.1 0 0 1-3-3L18 9l-1.5-1.5"/><path d="M14.5 4.5L17 7"/>',
+  book: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13v2"/>',
+  car: '<path d="M4 16V12l2-5h12l2 5v4z"/><circle cx="7.5" cy="16.5" r="1.8"/><circle cx="16.5" cy="16.5" r="1.8"/><path d="M4 12h16"/>',
+  wifi: '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r=".8"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  crown: '<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',
 };
 export const ICON_IDS = Object.keys(ICONS);
-export const SHAPES = ['circle', 'scallop', 'star', 'flower', 'heart', 'square', 'oval', 'ticket', 'bubble', 'hexagon', 'shield'];
+export const SHAPES = ['circle', 'scallop', 'star', 'flower', 'burst', 'badge', 'heart', 'square', 'oval', 'ticket', 'bubble', 'hexagon', 'shield', 'diamond', 'pill', 'arch', 'cloud'];
 export const RINGS = ['solid', 'dashed', 'dotted', 'double', 'none'];
 export const FILLS = ['solid', 'gradient', 'radial'];
-export const PATTERNS = ['none', 'dots', 'stripes', 'checks', 'rays', 'waves', 'confetti'];
+export const PATTERNS = ['none', 'dots', 'stripes', 'checks', 'rays', 'waves', 'confetti', 'grid', 'zigzag', 'stars'];
 export const MOCKUPS = ['plain', 'cup', 'bag', 'window', 'laptop'];
 export const EMOJIS = ['☕', '🥐', '🍰', '🍕', '🍔', '🥗', '🍷', '🌿', '🌸', '✨', '❤️', '⭐', '🎉', '💇', '💅', '🛍️', '🎁', '📍', '😊', '🔥', '🐾', '🌞', '🧁', '🍦'];
 
@@ -63,7 +91,7 @@ export function normSticker(d = {}) {
     fill: FILLS.includes(d.fill) ? d.fill : 'solid', gradAngle: n(d.gradAngle, 135, 0, 360), pattern: PATTERNS.includes(d.pattern) ? d.pattern : 'none', patternOpacity: n(d.patternOpacity, 0.18, 0.05, 0.6),
     font: FONTS[d.font] ? d.font : 'bold', upper: d.upper !== false, spacing: n(d.spacing, 2, 0, 8), textStroke: !!d.textStroke,
     top: String(d.top ?? 'CAFENEAUA AURORA'), center: String(d.center ?? 'HELLO'), bottom: String(d.bottom ?? 'IAȘI · 2026'),
-    topSize: n(d.topSize, 13, 8, 22), centerSize: n(d.centerSize, 0, 0, 56), bottomSize: n(d.bottomSize, 11, 8, 20), centerY: n(d.centerY, 0, -40, 40), arc: n(d.arc, 70, 50, 84),
+    topSize: n(d.topSize, 13, 8, 22), topY: n(d.topY, 0, -30, 30), bottomY: n(d.bottomY, 0, -30, 30), centerSize: n(d.centerSize, 0, 0, 56), bottomSize: n(d.bottomSize, 11, 8, 20), centerY: n(d.centerY, 0, -40, 40), arc: n(d.arc, 70, 50, 84),
     art: ['icon', 'emoji', 'image', 'none'].includes(d.art) ? d.art : (d.icon && d.icon !== 'none' ? 'icon' : 'none'), icon: ICONS[d.icon] !== undefined ? d.icon : 'coffee', emoji: String(d.emoji || '☕').slice(0, 4), image: typeof d.image === 'string' ? d.image : '', imageRound: d.imageRound !== false,
     artSize: n(d.artSize, 40, 16, 110), artY: n(d.artY, 0, -50, 50),
     ring: RINGS.includes(d.ring) ? d.ring : 'dashed', ringWidth: n(d.ringWidth, 3.5, 1, 10), ringInset: n(d.ringInset, 10, 4, 30),
@@ -86,10 +114,16 @@ function basePath(shape) {
     case 'bubble': return 'M30,16 H170 A22,22 0 0 1 192,38 V128 A22,22 0 0 1 170,150 H92 L56,184 V150 H30 A22,22 0 0 1 8,128 V38 A22,22 0 0 1 30,16Z';
     case 'hexagon': return P(Array.from({ length: 6 }, (_, i) => { const a = -Math.PI / 2 + (i * Math.PI) / 3; return [c + r * Math.cos(a), c + r * Math.sin(a)]; }));
     case 'shield': return 'M100,8 L184,34 V96 C184,146 148,178 100,194 C52,178 16,146 16,96 V34Z';
+    case 'burst': return P(polar(24, r, r * 0.86));
+    case 'badge': return P(polar(10, r, r * 0.9));
+    case 'diamond': return 'M100,6 L194,100 L100,194 L6,100Z';
+    case 'pill': return 'M54,52 H146 A48,48 0 0 1 146,148 H54 A48,48 0 0 1 54,52Z';
+    case 'arch': return 'M100,8 C152,8 186,44 186,96 V192 H14 V96 C14,44 48,8 100,8Z';
+    case 'cloud': return 'M54,160 C26,160 10,140 12,116 C14,94 32,82 50,84 C52,56 76,38 102,42 C122,26 156,34 164,62 C186,64 196,86 190,108 C202,124 194,160 160,160Z';
     default: return `M${c - r},${c} A${r},${r} 0 1 1 ${c + r},${c} A${r},${r} 0 1 1 ${c - r},${c}Z`;
   }
 }
-const ROUND = ['circle', 'scallop', 'star', 'flower'];
+export const ROUND = ['circle', 'scallop', 'star', 'flower', 'burst', 'badge'];
 /** Path scaled around the centre: k > 1 grows (die-cut border), k < 1 shrinks (rings). */
 const scaled = (shape, k) => `<path d="${basePath(shape)}" transform="translate(100 100) scale(${k.toFixed(4)}) translate(-100 -100)"`;
 const ringDash = (ring, w) => (ring === 'dashed' ? `stroke-dasharray="${(w * 2.6).toFixed(1)} ${(w * 2).toFixed(1)}"` : ring === 'dotted' ? `stroke-dasharray="0.1 ${(w * 2.4).toFixed(1)}" stroke-linecap="round"` : '');
@@ -103,6 +137,9 @@ function patternDef(id, kind, col, op) {
     case 'checks': return `<pattern id="${id}" width="20" height="20" patternUnits="userSpaceOnUse"><rect width="10" height="10" ${o}/><rect x="10" y="10" width="10" height="10" ${o}/></pattern>`;
     case 'waves': return `<pattern id="${id}" width="24" height="12" patternUnits="userSpaceOnUse"><path d="M0,6 Q6,0 12,6 T24,6" fill="none" stroke-width="2" ${st}/></pattern>`;
     case 'confetti': return `<pattern id="${id}" width="40" height="40" patternUnits="userSpaceOnUse"><rect x="4" y="6" width="6" height="3" rx="1.5" transform="rotate(30 7 7)" ${o}/><circle cx="28" cy="10" r="2.5" ${o}/><rect x="20" y="28" width="7" height="3" rx="1.5" transform="rotate(-25 23 29)" ${o}/><circle cx="8" cy="30" r="2" ${o}/></pattern>`;
+    case 'grid': return `<pattern id="${id}" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M16,0 V16 M0,16 H16" fill="none" stroke-width="1.6" ${st}/></pattern>`;
+    case 'zigzag': return `<pattern id="${id}" width="20" height="12" patternUnits="userSpaceOnUse"><path d="M0,9 L5,3 L10,9 L15,3 L20,9" fill="none" stroke-width="2" ${st}/></pattern>`;
+    case 'stars': return `<pattern id="${id}" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M8,3 L9.4,6.6 L13,8 L9.4,9.4 L8,13 L6.6,9.4 L3,8 L6.6,6.6Z" ${o}/><path d="M23,17 L24,19.5 L26.5,20.5 L24,21.5 L23,24 L22,21.5 L19.5,20.5 L22,19.5Z" ${o}/></pattern>`;
     default: return '';
   }
 }
@@ -141,8 +178,9 @@ export function stickerSvg(input, { size = 200, uid = input?.id || 'x', title = 
       ${d.top ? `<text font-family="${esc(font)}" font-weight="700" font-size="${d.topSize}" fill="${col.text}" letter-spacing="${d.spacing}" ${stroke}><textPath href="#${id}a" startOffset="50%" text-anchor="middle">${esc(up(d.top).slice(0, 30))}</textPath></text>` : ''}
       ${d.bottom ? `<text font-family="${esc(font)}" font-weight="700" font-size="${d.bottomSize}" fill="${col.text}" letter-spacing="${d.spacing}" ${stroke}><textPath href="#${id}b" startOffset="50%" text-anchor="middle">${esc(up(d.bottom).slice(0, 32))}</textPath></text>` : ''}`;
   } else {
-    const Y = { heart: [48, 150], oval: [62, 148], ticket: [62, 148], bubble: [44, 136], shield: [44, 160], hexagon: [48, 160], square: [38, 172] }[d.shape] || [44, 166];
-    const W = { heart: 110, oval: 150, ticket: 150, bubble: 150, shield: 120, hexagon: 120, square: 150 }[d.shape] || 136;
+    const Y0 = { heart: [48, 150], oval: [62, 148], ticket: [62, 148], bubble: [44, 136], shield: [44, 160], hexagon: [48, 160], square: [38, 172], diamond: [64, 146], pill: [76, 136], arch: [52, 176], cloud: [72, 150] }[d.shape] || [44, 166];
+    const Y = [Y0[0] + d.topY, Y0[1] + d.bottomY];
+    const W = { heart: 110, oval: 150, ticket: 150, bubble: 150, shield: 120, hexagon: 120, square: 150, diamond: 96, pill: 160, arch: 140, cloud: 140 }[d.shape] || 136;
     const fit = (txt, fs) => (txt.length * fs * (0.62 + d.spacing * 0.04) > W ? `textLength="${W}" lengthAdjust="spacingAndGlyphs"` : '');
     const T = up(d.top).slice(0, 26); const B = up(d.bottom).slice(0, 28);
     around = `${T ? `<text x="100" y="${Y[0]}" text-anchor="middle" font-family="${esc(font)}" font-weight="700" font-size="${d.topSize}" fill="${col.text}" letter-spacing="${d.spacing / 2}" ${stroke} ${fit(T, d.topSize)}>${esc(T)}</text>` : ''}
