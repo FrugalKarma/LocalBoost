@@ -388,3 +388,8 @@
 .bk-msg { font-size: .92rem; color: var(--text); }
 .bk-acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 4px; }
 @media (max-width: 520px) { .bk { grid-template-columns: 1fr; gap: 4px; } .bk-stats b { font-size: 1.6rem; } }
+
+/* review replies: automatic switch and the "posted on Google" state */
+.reply-auto { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--glass-line, var(--line)); border-radius: 14px; margin: 4px 0 14px; }
+.reply-auto input { margin-top: 3px; flex: none; }
+.reply.is-posted { opacity: .72; } .reply .pill { font-size: .74rem; vertical-align: middle; }

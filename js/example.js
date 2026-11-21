@@ -120,7 +120,7 @@ export function loadExample(kind = 'cafe') {
     signals: { notes: e.notes.map(([kind, source, text], i) => ({ id: `ex${i}`, kind, source, text, at: Date.now() - i * 36e5 })), google: { ...e.google, fetchedAt: t0 }, site: { ...e.site, checkedAt: t0 },
       themes: { mode: 'example', items: e.themes, at: t0 }, errors: {}, collectedAt: t0 },
     competitors: { list: e.competitors, custom: [], fetchedAt: t0 },
-    diagnosis: null, mission: null, assets: null, checkpoint: null, replies: null, studio: null, site: defaultSite(),
+    diagnosis: null, mission: null, assets: null, checkpoint: null, replies: null, repliesDone: null, studio: null, site: defaultSite(),
   });
 }
 
@@ -130,6 +130,6 @@ export function clearExample() {
     example: false, business: { loaded: false }, names: null,
     signals: { notes: [], google: null, site: null, themes: null, errors: {}, collectedAt: null },
     competitors: { list: [], custom: [], fetchedAt: null },
-    diagnosis: null, mission: null, assets: null, checkpoint: null, replies: null, studio: null, site: defaultSite(),
+    diagnosis: null, mission: null, assets: null, checkpoint: null, replies: null, repliesDone: null, studio: null, site: defaultSite(),
   });
 }

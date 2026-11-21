@@ -33,22 +33,45 @@ function templateReply(r, i) {
   return s.replace(/\{name\}/g, firstName(r.author) || tIn(lang, 'replies.there')).replace(/\{biz\}/g, b.name || '').replace(/\{contact\}/g, contact).replace(/\s+\(\)/, '').trim();
 }
 
+/** A review's key that survives new reviews arriving (Google's own times are relative, so not part of it). */
+const rk = (r) => `${r.author || ''}|${String(r.text || '').slice(0, 60)}`;
+const draftOf = (r, i) => { const s = getState().replies || {}; return s[rk(r)] ?? s[i]; }; // older saves were by index
+const missing = () => reviews().filter((r, i) => draftOf(r, i) == null);
+let busyKey = null; const autoTried = new Set();
+
 export function repliesSection() {
-  const list = reviews(); const saved = getState().replies || {};
-  const locked = !can('replies');
+  const list = reviews(); const done = getState().repliesDone || {}; const auto = !!getState().repliesAuto;
+  const locked = !can('replies'); const todo = missing().length;
+  if (auto && !locked && todo && !busy) { const keys = missing().map(rk).filter((k) => !autoTried.has(k)); if (keys.length) { keys.forEach((k) => autoTried.add(k)); queueMicrotask(() => draftReplies(missing(), { quiet: true })); } }
   return html`<section class="card tool-card" id="replies">
     <div class="tool-head"><span class="tool-ic">${icon('reply', 22)}</span><div><h2>${t('replies.title')} ${locked ? lockBadge('replies') : ''}</h2><p class="muted">${t('replies.sub')}</p></div>
-      ${list.length ? html`<button class="btn btn-primary btn-sm" data-act="replies-gen" ${busy ? 'disabled' : ''}>${busy ? html`<i class="spin"></i>` : icon('sparkle', 16)} ${t(Object.keys(saved).length ? 'replies.regen' : 'replies.gen')}</button>` : ''}</div>
+      ${list.length ? html`<button class="btn btn-primary btn-sm" data-act="replies-gen" ${busy ? 'disabled' : ''}>${busy ? html`<i class="spin"></i>` : icon('sparkle', 16)} ${todo ? t('replies.genAll', { n: todo }) : t('replies.regen')}</button>` : ''}</div>
+    ${list.length ? html`<label class="check reply-auto"><input type="checkbox" data-in="replies-auto" ${auto ? 'checked' : ''} ${locked ? 'disabled' : ''}><span><b>${t('replies.autoTitle')}</b><br><small class="muted">${t('replies.autoBody')}</small></span></label>` : ''}
     ${!list.length ? html`<p class="muted">${t('replies.none')}</p><button class="btn btn-secondary btn-sm" data-act="go" data-route="signals">${t('collect.refresh')}</button>`
-      : html`<ol class="reply-list">${list.map((r, i) => html`<li class="reply ${r.rating <= 3 ? 'is-low' : ''}">
-        <div class="reply-review"><span class="stars" aria-label="${t('replies.stars', { n: r.rating })}">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span> <b>${r.author}</b>${r.time ? html` <small class="muted">${r.time}</small>` : ''}
+      : html`<ol class="reply-list">${list.map((r, i) => { const k = rk(r); const d = draftOf(r, i); const posted = !!done[k]; const working = busy && (busyKey == null || busyKey === k); return html`<li class="reply ${r.rating <= 3 ? 'is-low' : ''} ${posted ? 'is-posted' : ''}">
+        <div class="reply-review"><span class="stars" aria-label="${t('replies.stars', { n: r.rating })}">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span> <b>${r.author}</b>${r.time ? html` <small class="muted">${r.time}</small>` : ''}${posted ? html` <span class="pill pill-on">${icon('check', 13)} ${t('replies.posted')}</span>` : d == null ? html` <span class="pill">${t('replies.noReply')}</span>` : ''}
           <p>“${r.text.length > 320 ? `${r.text.slice(0, 320)}…` : r.text}”</p></div>
-        ${saved[i] != null ? html`<label class="field"><span>${t('replies.yours')}</span><textarea data-in="reply-edit" data-i="${i}" rows="4" maxlength="1200">${saved[i]}</textarea></label>
-          <div class="btn-row"><button class="btn btn-secondary btn-sm" data-act="reply-copy" data-i="${i}">${icon('copy', 15)} ${t('actions.copy')}</button>
-            ${mapsReviewsUrl() ? html`<a class="btn btn-ghost btn-sm" href="${mapsReviewsUrl()}" target="_blank" rel="noopener">${icon('external', 15)} ${t('replies.openGoogle')}</a>` : ''}</div>` : ''}
-      </li>`)}</ol>
+        ${d != null ? html`<label class="field"><span>${t('replies.yours')}</span><textarea data-in="reply-edit" data-k="${k}" rows="4" maxlength="1200">${d}</textarea></label>` : ''}
+        <div class="btn-row">${d == null
+          ? html`<button class="btn btn-secondary btn-sm" data-act="reply-one" data-i="${i}" ${busy ? 'disabled' : ''}>${working ? html`<i class="spin"></i>` : icon('sparkle', 15)} ${t('replies.one')}</button>`
+          : html`<button class="btn btn-secondary btn-sm" data-act="reply-copy" data-k="${k}">${icon('copy', 15)} ${t('actions.copy')}</button>
+            ${mapsReviewsUrl() ? html`<a class="btn btn-ghost btn-sm" href="${mapsReviewsUrl()}" target="_blank" rel="noopener">${icon('external', 15)} ${t('replies.openGoogle')}</a>` : ''}
+            <button class="btn btn-ghost btn-sm" data-act="reply-one" data-i="${i}" ${busy ? 'disabled' : ''}>${working ? html`<i class="spin"></i>` : icon('refresh', 15)} ${t('replies.again')}</button>
+            <button class="btn btn-ghost btn-sm" data-act="reply-posted" data-k="${k}" aria-pressed="${posted}">${icon('check', 15)} ${t(posted ? 'replies.unpost' : 'replies.markPosted')}</button>`}</div>
+      </li>`; })}</ol>
       <p class="muted small">${icon('info', 14)} ${t('replies.how')}</p>`}
   </section>`;
+}
+
+/** Drafts replies for these reviews (AI when it can, templates otherwise) and saves them by review. */
+async function draftReplies(list, { quiet = false, key = null } = {}) {
+  if (busy || !list.length) return; busy = true; busyKey = key; rerender();
+  const r = await runReplies(list); const all = reviews();
+  const out = { ...(getState().replies || {}) };
+  list.forEach((rv, i) => { out[rk(rv)] = r.replies?.find((x) => x.index === i)?.reply || templateReply(rv, all.indexOf(rv)); });
+  for (const k of Object.keys(out)) if (/^\d+$/.test(k)) delete out[k]; // drop old index-keyed drafts once re-keyed
+  update({ replies: out }); busy = false; busyKey = null; rerender();
+  if (!quiet) toast(r.mode === 'ai' ? t(list.length === 1 ? 'replies.toastOne' : 'replies.toastAi') : t('replies.toastTpl'), r.mode === 'ai' ? 'success' : 'info');
 }
 
 /* ---------- poster ---------- */
@@ -100,19 +123,18 @@ export function posterSection() {
 }
 
 /* ---------- actions ---------- */
-actions['replies-gen'] = async () => {
+actions['replies-gen'] = () => {
   if (!can('replies')) return upgradePrompt('replies');
-  if (busy) return; busy = true; rerender();
-  const list = reviews();
-  const r = await runReplies(list);
-  const out = {};
-  list.forEach((rv, i) => { const ai = r.replies?.find((x) => x.index === i)?.reply; out[i] = ai || templateReply(rv, i); });
-  update({ replies: out }); busy = false; rerender();
-  toast(r.mode === 'ai' ? t('replies.toastAi') : t('replies.toastTpl'), r.mode === 'ai' ? 'success' : 'info');
-  document.getElementById('replies')?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  const todo = missing(); draftReplies(todo.length ? todo : reviews());
 };
-inputs['reply-edit'] = (el) => update((s) => ({ replies: { ...(s.replies || {}), [el.dataset.i]: limit(el.value, 1200) } }));
-actions['reply-copy'] = async (el) => { const ok = await copyText((getState().replies || {})[el.dataset.i] || ''); toast(ok ? t('common.copied') : t('common.copyFailed'), ok ? 'success' : 'error'); };
+actions['reply-one'] = (el) => {
+  if (!can('replies')) return upgradePrompt('replies');
+  const r = reviews()[+el.dataset.i]; if (r) draftReplies([r], { key: rk(r) });
+};
+inputs['replies-auto'] = (el) => { if (!can('replies')) { el.checked = false; return upgradePrompt('replies'); } update({ repliesAuto: el.checked }); rerender(); };
+inputs['reply-edit'] = (el) => update((s) => ({ replies: { ...(s.replies || {}), [el.dataset.k]: limit(el.value, 1200) } }));
+actions['reply-copy'] = async (el) => { const ok = await copyText((getState().replies || {})[el.dataset.k] || ''); toast(ok ? t('common.copied') : t('common.copyFailed'), ok ? 'success' : 'error'); };
+actions['reply-posted'] = (el) => { const k = el.dataset.k; update((s) => { const d = { ...(s.repliesDone || {}) }; if (d[k]) delete d[k]; else d[k] = Date.now(); return { repliesDone: d }; }); rerender(); };
 actions['poster-target'] = (el) => { posterTarget = el.dataset.v; rerender(); };
 actions['poster-style'] = (el) => { posterStyle = el.dataset.v; rerender(); };
 const curTarget = () => { const ts = posterTargets(); return ts.find((x) => x.id === posterTarget) || ts[0]; };
