@@ -81,7 +81,7 @@ async function handleSiteReq(req, res, url, cors) {
   let body = {};
   if (req.method === 'POST') { try { body = JSON.parse((await readBody(req, 256 * 1024)) || '{}'); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, PUBLIC_CORS); } }
   const r = await handleSite({ method: req.method, query: Object.fromEntries(url.searchParams), body, headers: req.headers, origin: originOf(req.headers), ip: req.socket.remoteAddress || 'local' });
-  const pub = ['hit', 'request'].includes(body.op || url.searchParams.get('op'));
+  const pub = ['hit', 'request', 'slots'].includes(body.op || url.searchParams.get('op'));
   const headers = { 'cache-control': 'no-store', ...(r.headers || {}), ...(pub ? PUBLIC_CORS : cors) };
   return typeof r.body === 'string' ? send(res, r.status, r.body, headers['content-type'] || 'text/html; charset=utf-8', headers) : send(res, r.status, JSON.stringify(r.body), undefined, headers);
 }

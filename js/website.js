@@ -81,7 +81,8 @@ export function ensureSiteV2() {
 
 const LABELS = ['cta', 'call', 'directions', 'reviewsTitle', 'reviewsOn', 'reviewsAll', 'writeReview', 'visitTitle', 'hoursTitle', 'mapTitle', 'faqTitle', 'servicesTitle', 'menuTitle', 'galleryTitle', 'aboutTitle',
   'contactTitle', 'followTitle', 'navServices', 'navMenu', 'navGallery', 'navReviews', 'navVisit', 'navFaq', 'navLabel', 'skip', 'enlarge', 'close', 'openNow', 'closesAt', 'closed', 'opensAt', 'madeWith', 'locked',
-  'privacyTitle', 'privacyText', 'bookName', 'bookContact', 'bookDate', 'bookTime', 'bookParty', 'bookService', 'bookMsg', 'bookConsent', 'bookSubmit', 'bookSending', 'bookDone', 'bookDoneApp', 'bookRequired', 'bookFail', 'bookPreview', 'bookIntro', 'bookTitle'];
+  'privacyTitle', 'privacyText', 'bookName', 'bookContact', 'bookDate', 'bookTime', 'bookParty', 'bookService', 'bookMsg', 'bookConsent', 'bookSubmit', 'bookSending', 'bookDone', 'bookDoneApp', 'bookRequired', 'bookFail', 'bookPreview', 'bookIntro', 'bookTitle',
+  'bookFull', 'bookFew', 'bookPick', 'bookNoSlots', 'bookTaken', 'bookDoneOk', 'bookDoneMail', 'bookMailNote'];
 
 /** The complete document for the template, from the current state. */
 export function resolveDoc(s = getState()) {

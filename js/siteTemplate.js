@@ -120,6 +120,9 @@ export function normalizeDoc(raw) {
     booking: {
       askParty: !!bk.askParty, askDate: bk.askDate !== false, askTime: bk.askTime !== false, askService: !!bk.askService,
       services: arr(bk.services, 20).map((s) => S(s, 60)).filter(Boolean), note: S(bk.note, 240),
+      // free slots: how many fit in one time slot (0 = no limit), counted in people or bookings; how the customer hears back
+      capacity: Math.max(0, Math.min(500, Math.round(Number(bk.capacity) || 0))), per: bk.per === 'bookings' ? 'bookings' : 'people',
+      slot: [15, 30, 45, 60, 90, 120].includes(Number(bk.slot)) ? Number(bk.slot) : 30, notify: bk.notify === 'whatsapp' ? 'whatsapp' : 'email',
     },
     announcement: { on: !!r.announcement?.on && !!S(r.announcement?.text, 160), text: S(r.announcement?.text, 160) },
     seo: { title: S(r.seo?.title, 70), description: S(r.seo?.description, 170), image: imgUrl(r.seo?.image) },
@@ -240,6 +243,10 @@ textarea{min-height:100px;resize:vertical}
 .chk{display:flex;gap:12px;align-items:flex-start;font-weight:500;font-size:.92rem;color:var(--muted)}.chk input{width:24px;height:24px;min-height:0;margin-top:1px;accent-color:var(--brand);flex:none}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .done{display:none;border:2px solid #16A34A;border-radius:14px;padding:20px;font-weight:600}.done.show{display:block}
+.slots{border:0;padding:0;margin:0;display:grid;gap:8px}.slots legend{font-weight:600;margin-bottom:6px;padding:0}.slot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.slot{font:inherit;font-weight:700;padding:10px 6px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer;display:grid;gap:2px;justify-items:center;line-height:1.2}
+.slot small{font-weight:500;font-size:.72rem;color:var(--muted)}.slot.few small{color:var(--brand)}.slot[aria-pressed=true]{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}.slot[aria-pressed=true] small{color:inherit}
+.slot:disabled{cursor:not-allowed;opacity:.45;text-decoration:line-through}.slot:focus-visible{outline:3px solid var(--focus);outline-offset:2px}.slots .empty{color:var(--muted);margin:0}
 .err{color:#B91C1C;font-weight:600;min-height:1.4em}
 footer{background:var(--brand);color:var(--brand-ink);padding:40px 0 28px;margin-top:0}
 footer .wrap{display:grid;grid-template-columns:2fr 1fr 1fr;gap:24px}footer h2{font-size:1.3rem;margin-bottom:10px}footer p,footer a{opacity:.88}footer a{display:block;padding:6px 0;text-decoration:none}footer a:hover{opacity:1;text-decoration:underline}
@@ -295,6 +302,19 @@ var o0=document.createElement('option');o0.value='';o0.textContent='—';sel.app
 if(day.closed){o0.textContent=L.closed||'Closed';return}
 day.r.forEach(function(r){var a=mins(r[0]),b=mins(r[1]);if(b<=a)b+=1440;for(var x=a;x<=b-30;x+=30){var hh=Math.floor(x/60)%24,mm=x%60,s=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm;var o=document.createElement('option');o.value=o.textContent=s;sel.appendChild(o)}})}
 if(dt)dt.addEventListener('change',times);times();
+/* free times: each slot shows whether there is room; full or past ones cannot be picked */
+var box=f.querySelector('[data-slots]'),cap=+f.getAttribute('data-cap')||0,per=f.getAttribute('data-per'),step=+f.getAttribute('data-step')||30,used={},seq=0;
+function need(){return per==='people'?(+(f.elements.party&&f.elements.party.value)||1):1}
+function day0(){return dt&&dt.value?dt.value:new Date().toISOString().slice(0,10)}
+function paint(){if(!box||!H)return;var v=new Date(day0()+'T12:00'),day=H[(v.getDay()+6)%7],now=new Date(),today=day0()===now.toISOString().slice(0,10),nowM=now.getHours()*60+now.getMinutes(),hid=f.elements.time,out=[];
+if(!day.closed)day.r.forEach(function(r){var a=mins(r[0]),b=mins(r[1]);if(b<=a)b+=1440;for(var x=a;x<=b-step;x+=step){var hh=Math.floor(x/60)%24,mm=x%60,s=(hh<10?'0':'')+hh+':'+(mm<10?'0':'')+mm,left=cap-(used[s]||0),full=left<need()||(today&&x<=nowM);
+out.push('<button type="button" class="slot'+(!full&&left<=Math.max(1,Math.ceil(cap*0.2))?' few':'')+'" data-t="'+s+'" aria-pressed="'+(hid.value===s)+'"'+(full?' disabled':'')+'>'+s+'<small>'+(full?f.getAttribute('data-full'):left<=Math.max(1,Math.ceil(cap*0.2))?f.getAttribute('data-few'):'&nbsp;')+'</small></button>')}});
+if(hid.value&&!out.some(function(o){return o.indexOf('data-t="'+hid.value+'" aria-pressed="true">')>0}))hid.value='';
+box.innerHTML=out.length?out.join(''):'<p class="empty">'+f.getAttribute('data-none')+'</p>'}
+function load(){if(!box)return;used={};paint();if(!api||preview||locked)return;var my=++seq;
+fetch(api+'?op=slots&slug='+encodeURIComponent(slug)+'&date='+day0(),{mode:'cors'}).then(function(r){return r.json()}).then(function(j){if(my!==seq)return;used=j.used||{};paint()}).catch(function(){})}
+if(box){if(dt&&!dt.value)dt.value=new Date().toISOString().slice(0,10);dt&&dt.addEventListener('change',function(){f.elements.time.value='';load()});f.elements.party&&f.elements.party.addEventListener('change',paint);
+box.addEventListener('click',function(e){var b=e.target.closest('.slot');if(!b||b.disabled)return;f.elements.time.value=b.getAttribute('data-t');paint()});load()}
 function finish(msg){f.querySelector('.fields').hidden=true;done.textContent='\\u2713 '+msg;done.classList.add('show');done.focus()}
 function fallback(text){var wa=B.wa,mail=B.mail;if(wa){window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(text),'_blank','noopener');return finish(f.getAttribute('data-done-app'))}
 if(mail){location.href='mailto:'+mail+'?subject='+encodeURIComponent(document.title)+'&body='+encodeURIComponent(text);return finish(f.getAttribute('data-done-app'))}
@@ -302,13 +322,15 @@ er.textContent=f.getAttribute('data-fail')}
 f.addEventListener('submit',function(e){e.preventDefault();var v=function(n){return(f.elements[n]&&f.elements[n].value||'').trim()};
 if(v('website'))return;
 if(locked){er.textContent=f.getAttribute('data-locked');return}
-if(!v('name')||v('contact').length<5||!f.elements.consent.checked){er.textContent=f.getAttribute('data-required');(v('name')?f.elements.contact:f.elements.name).focus();return}er.textContent='';
+if(!v('name')||v('contact').length<5||!f.elements.consent.checked){er.textContent=f.getAttribute('data-required');(v('name')?f.elements.contact:f.elements.name).focus();return}
+if(box&&!v('time')){er.textContent=f.getAttribute('data-pick');box.scrollIntoView({block:'center'});return}er.textContent='';
 var d={name:v('name'),contact:v('contact'),date:v('date'),time:v('time'),party:v('party'),service:v('service'),message:v('message')};
 if(preview)return finish(f.getAttribute('data-preview'));
 var text=f.getAttribute('data-intro')+'\\n'+d.name+' \\u00b7 '+d.contact+(d.date?'\\n'+d.date+' '+d.time:'')+(d.service?'\\n'+d.service:'')+(d.party?'\\n'+d.party:'')+(d.message?'\\n'+d.message:'');
 var btn=f.querySelector('button[type=submit]'),label=btn.textContent;btn.disabled=true;btn.textContent=f.getAttribute('data-sending');
 send({op:'request',slug:slug,name:d.name,contact:d.contact,date:d.date,time:d.time,party:d.party,message:(d.service?d.service+(d.message?' \\u00b7 ':''):'')+d.message,consent:true})
-.then(function(){finish(f.getAttribute('data-done'))}).catch(function(){btn.disabled=false;btn.textContent=label;fallback(text)})});
+.then(function(r){return r.json().catch(function(){return{}})}).then(function(j){finish(j.status==='confirmed'?f.getAttribute(j.mailed?'data-ok-mail':'data-ok'):f.getAttribute('data-done'))})
+.catch(function(r){btn.disabled=false;btn.textContent=label;if(r&&r.status===409){er.textContent=f.getAttribute('data-taken');f.elements.time.value='';load();return}fallback(text)})});
 })();
 `;
 
@@ -374,13 +396,16 @@ export function buildBody(doc, opts = {}) {
     if (s.type === 'booking') {
       const party = Array.from({ length: 20 }, (_, i) => `<option>${i + 1}</option>`).join('');
       const svc = bk.services.map((o) => `<option>${E(o)}</option>`).join('');
+      const slotted = bk.capacity > 0 && !!b.hours; // the visitor picks a free time; full ones are crossed out
       parts.push(wrapSec(s, `<div class="wrap">${h2(s, x.bookTitle)}${s.sub ? `<p class="lead">${E(s.sub)}</p>` : ''}
-      <form id="book" novalidate aria-describedby="err" data-required="${E(x.bookRequired)}" data-done="${E(x.bookDone)}" data-done-app="${E(x.bookDoneApp)}" data-fail="${E(x.bookFail)}" data-preview="${E(x.bookPreview)}" data-sending="${E(x.bookSending)}" data-intro="${E(x.bookIntro)}" data-locked="${E(x.locked)}"><div class="fields" style="display:grid;gap:16px">
+      <form id="book" novalidate aria-describedby="err" data-required="${E(x.bookRequired)}" data-done="${E(x.bookDone)}" data-done-app="${E(x.bookDoneApp)}" data-fail="${E(x.bookFail)}" data-preview="${E(x.bookPreview)}" data-sending="${E(x.bookSending)}" data-intro="${E(x.bookIntro)}" data-locked="${E(x.locked)}"${slotted ? ` data-cap="${bk.capacity}" data-per="${bk.per}" data-step="${bk.slot}" data-full="${E(x.bookFull)}" data-few="${E(x.bookFew)}" data-pick="${E(x.bookPick)}" data-none="${E(x.bookNoSlots)}" data-taken="${E(x.bookTaken)}"` : ''} data-ok="${E(x.bookDoneOk)}" data-ok-mail="${E(x.bookDoneMail)}"><div class="fields" style="display:grid;gap:16px">
         <div class="row2"><label>${E(x.bookName)}<input name="name" maxlength="80" autocomplete="name" required aria-required="true"></label><label>${E(x.bookContact)}<input name="contact" maxlength="120" autocomplete="tel" inputmode="tel" required aria-required="true"></label></div>
         ${bk.askService && svc ? `<label>${E(x.bookService)}<select name="service"><option value="">—</option>${svc}</select></label>` : ''}
-        ${bk.askDate || bk.askTime ? `<div class="row2">${bk.askDate ? `<label>${E(x.bookDate)}<input type="date" name="date"></label>` : ''}${bk.askTime ? (b.hours ? `<label>${E(x.bookTime)}<select name="time"><option value="">—</option></select></label>` : `<label>${E(x.bookTime)}<input type="time" name="time" step="900"></label>`) : ''}</div>` : ''}
-        ${bk.askParty ? `<label>${E(x.bookParty)}<select name="party">${party}</select></label>` : ''}
-        <label>${E(x.bookMsg)}<textarea name="message" maxlength="600"></textarea></label>
+        ${slotted ? `<div class="row2"><label>${E(x.bookDate)}<input type="date" name="date" required></label>${bk.askParty ? `<label>${E(x.bookParty)}<select name="party">${party}</select></label>` : ''}</div>
+        <fieldset class="slots"><legend>${E(x.bookTime)}</legend><div class="slot-grid" data-slots></div><input type="hidden" name="time"></fieldset>`
+        : `${bk.askDate || bk.askTime ? `<div class="row2">${bk.askDate ? `<label>${E(x.bookDate)}<input type="date" name="date"></label>` : ''}${bk.askTime ? (b.hours ? `<label>${E(x.bookTime)}<select name="time"><option value="">—</option></select></label>` : `<label>${E(x.bookTime)}<input type="time" name="time" step="900"></label>`) : ''}</div>` : ''}
+        ${bk.askParty ? `<label>${E(x.bookParty)}<select name="party">${party}</select></label>` : ''}`}
+        <label>${E(x.bookMsg)}<textarea name="message" maxlength="600"></textarea></label>${bk.notify === 'email' ? `<p class="note">${E(x.bookMailNote)}</p>` : ''}
         <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
         <label class="chk"><input type="checkbox" name="consent"><span>${E(x.bookConsent)}</span></label>${bk.note ? `<p class="note">${E(bk.note)}</p>` : ''}
         <p class="err" id="err" role="alert" aria-live="assertive"></p><button class="btn" type="submit">${E(x.bookSubmit)}</button></div>

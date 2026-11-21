@@ -235,7 +235,14 @@ function bookingPanel() {
     <fieldset class="toggles"><legend>${t('bld.bkAsk')}</legend>${chk('askDate', t('bld.bkDate'), doc.booking.askDate)}${chk('askTime', t('bld.bkTime'), doc.booking.askTime)}${chk('askParty', t('bld.bkParty'), doc.booking.askParty)}${chk('askService', t('bld.bkService'), doc.booking.askService)}</fieldset>
     ${doc.booking.askService ? fld(t('bld.bkServices'), 'data-in="bk-services"', (bk.services?.length ? bk.services : doc.booking.services).join('\n'), { area: true, max: 1200, rows: 5, hint: t('bld.bkServicesHint') }) : ''}
     ${fld(t('bld.bkNote'), 'data-in="bk-note"', bk.note, { area: true, max: 240, ph: t('bld.bkNotePh') })}
-    ${doc.biz.hours ? html`<p class="muted small">${icon('clock', 14)} ${t('bld.bkSlots')}</p>` : ''}
+    ${doc.biz.hours && !doc.booking.capacity ? html`<p class="muted small">${icon('clock', 14)} ${t('bld.bkSlots')}</p>` : ''}
+    <fieldset class="toggles bk-cap"><legend>${t('bld.capTitle')}</legend><p class="muted small">${t('bld.capSub')}</p>
+      <div class="field-pair"><label class="field"><span>${t('bld.capN')}</span><input type="number" min="0" max="500" inputmode="numeric" value="${doc.booking.capacity || ''}" placeholder="0" data-in="bk-set" data-k="capacity"></label>
+        <label class="field"><span>${t('bld.capPer')}</span><select data-in="bk-set" data-k="per">${['people', 'bookings'].map((v) => html`<option value="${v}" ${doc.booking.per === v ? 'selected' : ''}>${t(`bld.capPer_${v}`)}</option>`)}</select></label></div>
+      <label class="field"><span>${t('bld.capSlot')}</span><select data-in="bk-set" data-k="slot">${[15, 30, 45, 60, 90, 120].map((v) => html`<option value="${v}" ${doc.booking.slot === v ? 'selected' : ''}>${t('bld.capMin', { n: v })}</option>`)}</select></label>
+      ${doc.booking.capacity && !doc.biz.hours ? html`<p class="muted small">${icon('info', 14)} ${t('bld.capNoHours')}</p>` : ''}</fieldset>
+    <fieldset class="toggles"><legend>${t('bld.notifyTitle')}</legend>
+      ${['email', 'whatsapp'].map((v) => html`<label class="check"><input type="radio" name="bk-notify" data-in="bk-set" data-k="notify" value="${v}" ${doc.booking.notify === v ? 'checked' : ''}><span><b>${t(`bld.notify_${v}`)}</b><br><small class="muted">${t(`bld.notify_${v}Sub`)}</small></span></label>`)}</fieldset>
     <div class="callout">${icon('info', 18)}<p><b>${t('bld.bkWhere')}</b> ${where}</p></div>`;
 }
 
@@ -489,6 +496,8 @@ inputs['ann-on'] = (el) => { setSite((st) => ({ announcement: { ...st.announceme
 inputs['ann-text'] = (el) => { setSite((st) => ({ announcement: { ...st.announcement, text: limit(el.value, 160), on: st.announcement?.on || !!el.value } })); };
 
 /* ---------- booking ---------- */
+inputs['bk-set'] = (el) => { const k = el.dataset.k; const v = k === 'capacity' || k === 'slot' ? Math.max(0, Math.min(500, Math.round(Number(el.value) || 0))) : el.value;
+  setSite((st) => ({ booking: { ...st.booking, [k]: v } }), { force: true }); if (k !== 'capacity') repaint(); };
 inputs['bk-flag'] = (el) => { setSite((st) => ({ booking: { ...st.booking, [el.dataset.k]: el.checked } }), { force: true }); if (el.dataset.k === 'askService') repaint(); };
 inputs['bk-services'] = (el) => { setSite((st) => ({ booking: { ...st.booking, services: el.value.split('\n').map((x) => limit(x.trim(), 60)).filter(Boolean).slice(0, 20) } })); };
 inputs['bk-note'] = (el) => { setSite((st) => ({ booking: { ...st.booking, note: limit(el.value, 240) } })); };
