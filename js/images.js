@@ -1,6 +1,7 @@
 // Photos for the website: pick, resize in the browser (fast uploads, small pages), upload to the account.
 // Without accounts the photo stays inside the site as a data URL (preview and download only).
 import { authOn, signedIn, api } from './auth.js';
+import { viewingClient } from './cloud.js';
 
 const LIMITS = { logo: 600, hero: 1800, about: 1400, gallery: 1400, seo: 1200 };
 
@@ -32,7 +33,8 @@ export async function resize(file, kind = 'gallery') {
 /** Stores the photo: uploaded to the account when possible. Returns { url } or { error }. */
 export async function storeImage(dataUrl) {
   if (!authOn() || !signedIn()) return dataUrl.length < 400_000 ? { url: dataUrl, local: true } : { error: 'too_big_local' };
-  const r = await api('/api/site', { method: 'POST', body: { op: 'upload', data: dataUrl } });
+  const vc = viewingClient(); // the admin adding photos to a client's site stores them under the client
+  const r = await api('/api/site', { method: 'POST', body: { op: 'upload', data: dataUrl, ...(vc ? { as: vc.id } : {}) } });
   return r.status === 200 ? { url: r.body.url } : { error: r.body?.error || 'upload_failed' };
 }
 

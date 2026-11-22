@@ -271,11 +271,12 @@ function qrBlock(url) {
 function publishPanel() {
   const st = site(); const sd = getSiteData(); const audit = auditDoc(resolveDoc());
   const online = !!(st.slug && st.publishedAt && sd?.site?.published !== false);
+  const custom = sd?.site?.custom_at ? html`<div class="callout">${icon('info', 18)}<p><b>${t('custom.liveTitle')}</b> ${t('custom.liveBody', { date: fmtDate(sd.site.custom_at) })}</p></div>` : '';
+  const asClient = viewingClient() ? html`<p class="callout">${icon('account', 18)} ${t('custom.asClient', { email: viewingClient().email })}</p>` : '';
   const checklist = html`<div class="qa"><div class="qa-head"><span class="qa-score ${audit.score >= 80 ? 'good' : audit.score >= 55 ? 'mid' : 'low'}">${audit.score}</span><div><b>${t('bld.qaTitle')}</b><small>${t(audit.items.length ? 'bld.qaSome' : 'bld.qaAll')}</small></div></div>
     ${audit.items.length ? html`<ul class="qa-list">${audit.items.map((x) => html`<li class="${x.level}">${icon(x.level === 'error' ? 'x' : 'info', 15)}<span>${t(`qa.${x.key}`, x.vars || {})}</span><button type="button" class="link-btn" data-act="qa-fix" data-key="${x.key}">${t('bld.qaFix')}</button></li>`)}</ul>` : ''}</div>`;
-  if (viewingClient()) return html`${checklist}<p class="muted">${t('website.adminNoPublish')}</p>`;
   if (!can('publish')) {
-    return html`${checklist}<div class="upsell"><span class="upsell-ic">${icon('external', 22)}</span><h3>${t('bld.upTitle')}</h3><p>${t('bld.upBody', { plan: t(`plans.${currentPlan()}.name`) })}</p>
+    return html`${custom}${checklist}<div class="upsell"><span class="upsell-ic">${icon('external', 22)}</span><h3>${t('bld.upTitle')}</h3><p>${t('bld.upBody', { plan: t(`plans.${currentPlan()}.name`) })}</p>
       <ul>${['upLive', 'upInbox', 'upStats', 'upBrand', 'upDownload'].map((k) => html`<li>${icon('check', 15)} ${t(`bld.${k}`)}</li>`)}</ul>
       <button type="button" class="btn btn-primary" data-act="go" data-route="plans">${t('bld.upCta')}</button></div>`;
   }
@@ -286,7 +287,7 @@ function publishPanel() {
   const slug = slugDraft ?? st.slug ?? suggestedSlug();
   const stats = dailySeries(30); const sum = (k, n) => stats.slice(-n).reduce((a, d) => a + d[k], 0);
   const reqs = sd?.requests || []; const fresh = reqs.filter((r) => r.status === 'new').length;
-  return html`${checklist}
+  return html`${asClient}${custom}${checklist}
     ${online ? html`<div class="pub-live"><span class="pub-dot" aria-hidden="true"></span><div><strong>${t('website.live')}</strong>
       <a href="${publicSiteUrl(st.slug)}" target="_blank" rel="noopener">${publicSiteUrl(st.slug).replace(/^https?:\/\//, '')}</a></div></div>
       <div class="btn-row"><button class="btn btn-secondary btn-sm" data-act="copy-site-link">${icon('copy', 16)} ${t('actions.copy')}</button>

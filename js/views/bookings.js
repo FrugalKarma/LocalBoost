@@ -58,7 +58,7 @@ function item(r) {
 }
 
 function pushBox() {
-  if (!pushPublicKey()) return '';
+  if (!pushPublicKey() || viewingClient()) return ''; // notifications belong on the owner's own phone
   const s = pState;
   if (s === 'on') return html`<div class="bk-push"><span class="pill pill-on">${icon('check', 14)} ${t('bookings.pushOn')}</span><button class="btn btn-ghost btn-sm" data-act="bk-push-test">${t('admin.leads.test')}</button><button class="btn btn-ghost btn-sm" data-act="bk-push-off">${t('admin.leads.off')}</button></div>`;
   if (s === 'off') return html`<div class="bk-push"><button class="btn btn-secondary btn-sm" data-act="bk-push-on">${icon('sparkle', 15)} ${t('bookings.pushAsk')}</button></div>`;
@@ -71,7 +71,7 @@ export const bookings = {
   render() {
     const head = pageHead({ title: t('bookings.title'), sub: t('bookings.sub'),
       actions: html`<button class="btn btn-primary" data-act="bk-add">${icon('plus', 18)} ${t('bookings.add')}</button><button class="btn btn-ghost" data-act="bk-reload" aria-label="${t('actions.retry')}">${icon('refresh', 18)}</button>` });
-    if (!authOn() || !signedIn() || viewingClient()) return html`${head}<div class="card empty-hero"><p class="muted">${t('bookings.off')}</p></div>`;
+    if (!authOn() || !signedIn()) return html`${head}<div class="card empty-hero"><p class="muted">${t('bookings.off')}</p></div>`;
     const sd = getSiteData();
     if (!sd) return html`${head}<div class="card"><p class="muted"><i class="spin"></i> ${t('admin.leads.loading')}</p></div>`;
     if (!sd.available) return html`${head}<div class="card empty-hero"><p class="muted">${t('bookings.noSite')}</p><button class="btn btn-primary" data-act="go" data-route="website">${t('nav.website')}</button></div>`;

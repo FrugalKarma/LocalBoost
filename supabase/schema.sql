@@ -64,6 +64,9 @@ create table if not exists public.site_requests (
 );
 create index if not exists site_requests_owner on public.site_requests (owner, created_at desc);
 -- bookings can be confirmed or declined (older databases allowed only new/done)
+-- a site the Arcton team built by hand (Custom Premium), served instead of the template
+alter table public.sites add column if not exists custom_html text check (char_length(custom_html) <= 3000000);
+alter table public.sites add column if not exists custom_at timestamptz;
 alter table public.site_requests drop constraint if exists site_requests_status_check;
 alter table public.site_requests add constraint site_requests_status_check check (status in ('new', 'confirmed', 'declined', 'done'));
 

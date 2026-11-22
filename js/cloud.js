@@ -88,7 +88,7 @@ export async function openClient(id) {
   target = { kind: 'client', id, email: r.body.client.email, disabled: r.body.client.disabled };
   version = r.body.version || 0;
   enterShadow(r.body.data || {});
-  status = 'saved'; savedAt = r.body.updated_at ? Date.parse(r.body.updated_at) : null; emit();
+  status = 'saved'; savedAt = r.body.updated_at ? Date.parse(r.body.updated_at) : null; emit({ switched: true });
   return 'ok';
 }
 /** Admin: back to their own workspace. */
@@ -97,7 +97,7 @@ export async function closeClient() {
   await flush();
   exitShadow();
   target = { kind: 'own' };
-  await loadOwn();
+  await loadOwn(); emit({ switched: true });
 }
 
 /** Signing out wipes this browser's copy, so the next person on this device starts clean. */

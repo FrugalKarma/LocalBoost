@@ -79,7 +79,7 @@ async function handleDataReq(route, req, res, url, cors) {
 async function handleSiteReq(req, res, url, cors) {
   if (req.method === 'OPTIONS') { res.writeHead(204, { ...PUBLIC_CORS, ...cors, 'access-control-allow-methods': 'GET, POST, OPTIONS', 'access-control-allow-headers': 'content-type, authorization' }); return res.end(); }
   let body = {};
-  if (req.method === 'POST') { try { body = JSON.parse((await readBody(req, 256 * 1024)) || '{}'); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, PUBLIC_CORS); } }
+  if (req.method === 'POST') { try { body = JSON.parse((await readBody(req, 4 * 1024 * 1024)) || '{}'); } catch { return send(res, 400, JSON.stringify({ error: 'bad_request' }), undefined, PUBLIC_CORS); } } // custom sites can be ~3 MB
   const r = await handleSite({ method: req.method, query: Object.fromEntries(url.searchParams), body, headers: req.headers, origin: originOf(req.headers), ip: req.socket.remoteAddress || 'local' });
   const pub = ['hit', 'request', 'slots'].includes(body.op || url.searchParams.get('op'));
   const headers = { 'cache-control': 'no-store', ...(r.headers || {}), ...(pub ? PUBLIC_CORS : cors) };

@@ -5,6 +5,7 @@ import { t } from './i18n.js';
 import { getBiz } from './business.js';
 import { mySite, serverCaps } from './sources.js';
 import { authOn, signedIn } from './auth.js';
+import { onCloud } from './cloud.js';
 
 export const MISSION_HOURS = 48;
 const DAY = 864e5;
@@ -74,6 +75,7 @@ export async function loadSiteData(force = false) {
   return siteLoading;
 }
 export function clearSiteData() { siteData = null; }
+onCloud((e) => { if (e.switched) siteData = null; }); // the admin opened or left a client: their site, not ours
 
 function sumSince(stats, sinceMs) {
   const since = new Date(sinceMs).toISOString().slice(0, 10);

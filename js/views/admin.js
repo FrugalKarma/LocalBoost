@@ -7,6 +7,7 @@ import { loadExample, EXAMPLES } from '../example.js';
 import { openClient } from '../cloud.js';
 import { pageHead } from './shared.js';
 import { pushState, subscribe, unsubscribe } from '../push.js';
+import { setCustomSite, removeCustomSite, clientSite } from '../sources.js';
 
 let clients = null; // null = not loaded yet
 let loadErr = null;
@@ -71,6 +72,7 @@ function row(c) {
       : html`<span class="badge ${c.disabled ? 'badge-off' : 'badge-on'}">${t(c.disabled ? 'admin.statusDisabled' : 'admin.statusActive')}</span>`}</div>
     <div class="client-acts">
       <button class="btn btn-primary btn-sm" data-act="admin-open" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('eye', 16)} ${t('admin.open')}</button>
+      ${admin ? '' : html`<button class="btn btn-secondary btn-sm" data-act="admin-custom" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('website', 16)} ${t('custom.btn')}</button>`}
       ${admin ? '' : html`<button class="btn btn-secondary btn-sm" data-act="admin-note" data-id="${c.id}" ${busy ? 'disabled' : ''} title="${t('admin.note.title')}">${icon('mail', 16)} ${t(c.digestNote ? 'admin.note.edit' : 'admin.note.add')}</button>
       <button class="btn btn-secondary btn-sm" data-act="admin-toggle" data-id="${c.id}" ${busy ? 'disabled' : ''}>${t(c.disabled ? 'admin.enable' : 'admin.disable')}</button>
       <button class="btn btn-ghost btn-sm danger" data-act="admin-delete" data-id="${c.id}" ${busy ? 'disabled' : ''} aria-label="${t('admin.delete')}: ${c.email}">${icon('trash', 16)}</button>`}
@@ -144,6 +146,32 @@ actions['admin-open'] = async (el) => {
 };
 
 const find = (id) => clients?.find((c) => c.id === id);
+/** Custom Premium: upload the site the team built by hand (one .html file); it replaces the template site at the same address. */
+const slugify = (x) => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+actions['admin-custom'] = async (el) => {
+  const c = find(el.dataset.id); if (!c) return;
+  if (demo()) return toast(t('custom.demo'), 'info');
+  const cur = await clientSite(c.id); const site = cur.ok ? cur.data.site : null;
+  const live = site?.custom_at; const url = site?.slug ? `${location.origin}/s/${site.slug}` : '';
+  const v = await openModal({ title: t('custom.btn'), body: html`<p><b>${c.business?.name || c.email}</b> <span class="muted small">${c.email}</span></p><p class="muted small">${t('custom.sub')}</p>
+    ${live ? html`<p class="callout">${icon('check', 16)} ${t('custom.live', { date: new Date(live).toLocaleString(getLang()) })} ${url ? html`<a href="${url}" target="_blank" rel="noopener">${url}</a>` : ''}</p>` : ''}
+    <label class="field"><span>${t('custom.file')}</span><input id="cs-file" type="file" accept=".html,.htm,text/html"></label>
+    <label class="field"><span>${t('custom.slug')}</span><input id="cs-slug" maxlength="40" value="${site?.slug || slugify(c.business?.name)}" ${site?.slug ? 'readonly' : ''} pattern="[a-z0-9-]+"></label>
+    <p class="muted small">${t('custom.how')}</p>`,
+    actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: null }, ...(live ? [{ label: t('custom.remove'), kind: 'btn-ghost', value: 'remove' }] : []),
+      { label: t(live ? 'custom.replace' : 'custom.upload'), kind: 'btn-primary', collect: () => ({ file: $('#cs-file').files?.[0] || null, slug: $('#cs-slug').value.trim() }) }] });
+  if (!v) return;
+  if (v === 'remove') {
+    if (!(await confirmDialog(t('custom.removeQ'), t('custom.removeBody'), t('custom.remove')))) return;
+    const r = await removeCustomSite(c.id); return toast(t(r.ok ? 'custom.removed' : r.error === 'schema_old' ? 'custom.schema' : 'common.errorGeneric'), r.ok ? 'success' : 'error');
+  }
+  if (!v.file) return toast(t('custom.needFile'), 'error');
+  if (v.file.size > 3_000_000) return toast(t('custom.tooBig'), 'error');
+  const htmlText = await v.file.text();
+  const r = await setCustomSite(c.id, htmlText, v.slug, c.business?.name || '');
+  if (r.ok) { toast(t('custom.done'), 'success'); window.open(r.data.url, '_blank', 'noopener'); return; }
+  toast(t({ not_html: 'custom.notHtml', bad_slug: 'custom.badSlug', slug_taken: 'custom.slugTaken', data_too_large: 'custom.tooBig', schema_old: 'custom.schema' }[r.error] || 'common.errorGeneric'), 'error');
+};
 actions['admin-note'] = async (el) => {
   const c = find(el.dataset.id); if (!c) return;
   const v = await openModal({ title: t('admin.note.title'), body: html`<p class="muted small">${t('admin.note.sub', { email: c.email })}</p>

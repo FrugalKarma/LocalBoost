@@ -171,7 +171,7 @@ http.createServer(async (req, res) => {
   else if (url.pathname === '/mock/mail') r = [200, mail];
   else if (url.pathname === '/mock/session') { const u = byEmail(url.searchParams.get('email')); r = u ? [200, issue(u)] : [404, {}]; } // what a confirmation / reset link would hand the app
   else if (url.pathname === '/mock/plan') { const u = byEmail(url.searchParams.get('email')); if (u) profiles.get(u.id).plan = url.searchParams.get('plan') || 'business'; r = [200, { ok: !!u }]; }
-  else if (url.pathname === '/mock/role') { const u = byEmail(url.searchParams.get('email')); if (u) profiles.get(u.id).role = url.searchParams.get('role') || 'admin'; r = [200, { ok: !!u }]; }
+  else if (url.pathname === '/mock/role') { const u = byEmail(url.searchParams.get('email')); if (u) { const pr = profiles.get(u.id); pr.role = url.searchParams.get('role') || 'admin'; if (url.searchParams.get('plan')) pr.plan = url.searchParams.get('plan'); } r = [200, { ok: !!u }]; }
   else if (url.pathname.startsWith('/auth/v1/')) r = authRoute(req.method, url.pathname, url.searchParams, body, req.headers);
   else if (url.pathname.startsWith('/rest/v1/')) r = restRoute(req.method, url.pathname.slice(9), url.searchParams, body, req.headers);
   else if (url.pathname.startsWith('/storage/v1/object/') && req.method === 'POST') {
