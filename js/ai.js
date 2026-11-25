@@ -8,6 +8,7 @@ import { getBiz, cleanHandle } from './business.js';
 import { evidenceForAi, competitorList, ruleProblems, OPP_OF, siteGaps } from './insights.js';
 import { localNames } from './names.js';
 import { apiUrl, onApiBaseChange } from './api.js';
+import { isDemo } from './demo.js';
 
 export const AI_TIMEOUT_MS = 25000; // total budget for one step (the analysis makes two calls)
 const CALL_TIMEOUT_MS = 16000; // budget for a single call; the server has its own 15 s upstream limit
@@ -113,6 +114,7 @@ let availability = null;
 export const resetAiAvailability = () => { availability = null; };
 onApiBaseChange(resetAiAvailability);
 export async function aiAvailable() {
+  if (isDemo()) return false; // the demo never spends AI calls: everything comes from the local rules
   if (availability === null) {
     availability = fetch(apiUrl('/api/health'), { signal: AbortSignal.timeout(4000) }).then((r) => (r.ok ? r.json() : { ai: false })).then((j) => !!j.ai).catch(() => false);
   }
@@ -312,5 +314,6 @@ export async function runNames() {
 }
 
 export function reasonKey(reason) {
+  if (isDemo() && reason === 'not_configured') return 'ai.reason.demo';
   return ['timeout', 'not_configured', 'invalid_json', 'unreachable', 'http', 'not_run', 'plan_required', 'quota_reached', 'daily_limit'].includes(reason) ? `ai.reason.${reason}` : 'ai.reason.error';
 }

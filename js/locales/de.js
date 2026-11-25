@@ -108,6 +108,7 @@ export default {
     apiSaved: 'Serveradresse gespeichert.',
     apiInvalid: 'Gib eine vollständige https://-Adresse ein.',
     err_daily_limit: 'Sie haben das heutige Fragen-Limit erreicht. Kommen Sie morgen wieder.',
+    demoNote: 'In der Demo beantwortet der Assistent keine Fragen. Legen Sie ein Konto an, um ihn zu Ihrem Geschäft zu fragen. Bis dahin hier der passende Bildschirm.',
   },
   tag: {
     signal: 'signal',
@@ -270,6 +271,7 @@ export default {
       plan_required: 'Dafür brauchen Sie einen Tarif. Wählen Sie Growth oder fragen Sie einen kostenlosen Test an.',
       quota_reached: 'Sie haben das KI-Analyselimit Ihres Tarifs erreicht.',
       daily_limit: 'Sie haben das heutige KI-Limit erreicht. Kommen Sie morgen wieder.',
+      demo: 'In der Demo nutzt die Analyse die Regeln von Arcton mit den Daten des Beispielcafés. Mit einem Konto arbeitet die KI mit Ihren Daten.',
     },
     needsOwner: [
       'Bestätige, was du in den nächsten 48 Stunden anbieten kannst (Zeit, Kapazität, Preis).',
@@ -2664,5 +2666,62 @@ export default {
     liveTitle: 'Eigene Website online.',
     liveBody: 'Unter deiner Adresse ist die Website des Arcton-Teams zu sehen (hochgeladen {date}). Änderungen hier erscheinen dort nicht; schreib uns für Änderungen.',
     asClient: 'Du arbeitest an der Website von {email}. Was du veröffentlichst, erscheint unter dessen Adresse.',
+  },
+  demo: {
+    barTitle: 'Demo.',
+    barBody: '{name} ist ein erfundenes Café. Klicken Sie überall: nichts ist echt und nichts wird veröffentlicht.',
+    tourBtn: 'Geführte Tour',
+    signup: 'Konto erstellen',
+    landBtn: 'Demo ausprobieren',
+    blocked: 'In der Demo ist das ausgeschaltet. Legen Sie ein Konto an, um es für Ihr Geschäft zu nutzen.',
+    tour: {
+      label: 'Geführte Tour',
+      count: 'Schritt {n} von {total}',
+      skip: 'Tour schließen',
+      back: 'Zurück',
+      next: {
+        title: 'Sie wissen immer, was als Nächstes kommt',
+        body: 'Die Startseite zeigt eine Sache, die jetzt zu tun ist, dazu Ihre Google-Bewertung und Rezensionen.',
+      },
+      start: 'Tour starten',
+      explore: 'Selbst erkunden',
+      welcome: {
+        title: 'Willkommen bei Arcton Ai',
+        body: 'Cafeneaua Aurora ist ein erfundenes Café in Iași. In 8 Schritten zeigen wir, was die App für ein lokales Geschäft tut. Sie können die Tour jederzeit schließen.',
+      },
+      signals: {
+        title: 'Was Kunden sagen',
+        body: 'Arcton liest Ihre Rezensionen, Ihr Google-Profil und Ihre Website und ordnet sie nach Themen: was Kunden loben und worüber sie klagen.',
+      },
+      analysis: {
+        title: 'KI-Analyse',
+        body: 'Ein Klick zeigt, wo Sie Kunden verlieren und welche Chance diese Woche bringt. Arcton trennt Fakten von Vermutungen.',
+      },
+      compare: {
+        title: 'Sie im Vergleich',
+        body: 'Es vergleicht Sie mit jedem Ort in der Nähe: Bewertung, Rezensionen, Website und Entfernung, gemessen am Durchschnitt der Gegend.',
+      },
+      goals: {
+        title: 'Was Sie zum Aufsteigen brauchen',
+        body: 'Ziehen Sie den Regler und sehen Sie, wie viele neue Rezensionen Sie brauchen, um Ihre Nachbarn zu überholen, und in wie vielen Wochen.',
+      },
+      studio: {
+        title: 'Alles fertig vorbereitet',
+        body: 'Angebote, Beiträge, Antworten auf Rezensionen und ein 7-Tage-Plan, geschrieben und gestaltet für Ihr Geschäft. Sie geben nur frei.',
+      },
+      site: {
+        title: 'Website mit Reservierung',
+        body: 'Arcton erstellt eine Website mit Öffnungszeiten, Karte, Rezensionen und Online-Reservierung. Kunden wählen selbst eine freie Zeit.',
+      },
+      ask: {
+        title: 'Fragen Sie alles',
+        body: 'Der Inhaber fragt in eigenen Worten, etwa „Warum sind wir diesen Monat gesunken?“, und bekommt die Antwort aus seinen Daten.',
+      },
+      end: {
+        title: 'Das ist Arcton Ai',
+        body: 'Legen Sie ein Konto an und sehen Sie all das für Ihr Geschäft, mit Ihren echten Daten. Oder erkunden Sie die Demo weiter.',
+      },
+      go: 'Weiter',
+    },
   },
 };

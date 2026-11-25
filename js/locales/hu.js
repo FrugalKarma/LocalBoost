@@ -108,6 +108,7 @@ export default {
     apiSaved: 'Szervercím mentve.',
     apiInvalid: 'Adj meg egy teljes https:// címet.',
     err_daily_limit: 'Elérted a mai kérdéskeretet. Gyere vissza holnap.',
+    demoNote: 'A demóban az asszisztens nem válaszol kérdésekre. Hozz létre fiókot, hogy a vállalkozásodról kérdezd. Addig a megfelelő képernyőre viszlek.',
   },
   tag: {
     signal: 'jel',
@@ -270,6 +271,7 @@ export default {
       plan_required: 'Ehhez csomag kell. Válaszd a Growth-ot, vagy kérj ingyenes próbát.',
       quota_reached: 'Elérted a csomagod AI-elemzési korlátját.',
       daily_limit: 'Elérted a mai AI-keretet. Gyere vissza holnap.',
+      demo: 'A demóban az elemzés az Arcton szabályait használja a példakávézó adatain. Fiókkal az AI a saját adataidon dolgozik.',
     },
     needsOwner: [
       'Erősítsd meg, mit tudsz kínálni a következő 48 órában (időpont, kapacitás, ár).',
@@ -2644,5 +2646,62 @@ export default {
     liveTitle: 'Egyedi weboldal él.',
     liveBody: 'A címeden az Arcton csapata által készített oldal látszik (feltöltve: {date}). Az itteni módosítások nem jelennek meg rajta; írj nekünk a változtatásokért.',
     asClient: '{email} weboldalán dolgozol. Amit közzéteszel, az ő címén jelenik meg.',
+  },
+  demo: {
+    barTitle: 'Demó.',
+    barBody: 'A(z) {name} egy kitalált kávézó. Kattints bárhová: semmi sem valódi, és semmi sem kerül nyilvánosságra.',
+    tourBtn: 'Vezetett túra',
+    signup: 'Fiók létrehozása',
+    landBtn: 'Próbáld ki a demót',
+    blocked: 'Ez a demóban ki van kapcsolva. Hozz létre fiókot, hogy a vállalkozásodon használd.',
+    tour: {
+      label: 'Vezetett túra',
+      count: '{n}. lépés / {total}',
+      skip: 'Túra bezárása',
+      back: 'Vissza',
+      next: {
+        title: 'Mindig tudod, mi a következő',
+        body: 'A kezdőlap egyetlen most elvégzendő dolgot mutat, mellette a Google-értékelésedet és véleményeidet.',
+      },
+      start: 'Túra indítása',
+      explore: 'Egyedül nézelődöm',
+      welcome: {
+        title: 'Üdv az Arcton Ai-ban',
+        body: 'A Cafeneaua Aurora egy kitalált iași kávézó. 8 lépésben megmutatjuk, mit tesz az alkalmazás egy helyi vállalkozásért. A túrát bármikor bezárhatod.',
+      },
+      signals: {
+        title: 'Mit mondanak a vendégek',
+        body: 'Az Arcton elolvassa a véleményeidet, a Google-profilodat és a weboldaladat, majd témák szerint csoportosítja: mit dicsérnek és mire panaszkodnak.',
+      },
+      analysis: {
+        title: 'AI-elemzés',
+        body: 'Egy kattintás, és látod, hol veszítesz vendégeket, és mi a hét lehetősége. Az Arcton elválasztja a tényeket a feltételezésektől.',
+      },
+      compare: {
+        title: 'Te a versenytársakhoz képest',
+        body: 'Összehasonlít minden közeli hellyel: értékelés, vélemények, weboldal és távolság, a környék átlagához mérve.',
+      },
+      goals: {
+        title: 'Mi kell a feljebb jutáshoz',
+        body: 'Húzd a csúszkát, és nézd meg, hány új vélemény kell a szomszédok megelőzéséhez, és hány hét alatt érsz oda.',
+      },
+      studio: {
+        title: 'Minden készen áll',
+        body: 'Ajánlatok, bejegyzések, válaszok a véleményekre és 7 napos terv, a vállalkozásodra írva és tervezve. Te csak jóváhagyod.',
+      },
+      site: {
+        title: 'Weboldal foglalással',
+        body: 'Az Arcton weboldalt készít nyitvatartással, térképpel, véleményekkel és online foglalással. A vendégek maguk választanak szabad időpontot.',
+      },
+      ask: {
+        title: 'Kérdezz bármit',
+        body: 'A tulajdonos a saját szavaival kérdez, például „Miért estünk vissza ebben a hónapban?”, és a vállalkozása adataiból kap választ.',
+      },
+      end: {
+        title: 'Ez az Arcton Ai',
+        body: 'Hozz létre fiókot, és lásd mindezt a saját vállalkozásodon, valódi adatokkal. Vagy nézelődj tovább a demóban.',
+      },
+      go: 'Tovább',
+    },
   },
 };

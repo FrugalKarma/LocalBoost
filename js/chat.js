@@ -6,6 +6,7 @@ import { can, upgradePrompt } from './plans.js';
 import { t, getLang } from './i18n.js';
 import { getState, update } from './store.js';
 import { actions, go } from './registry.js';
+import { isDemo } from './demo.js';
 import { apiUrl } from './api.js';
 import { aiAvailable, getDiagnosis, getAssets, signalPayload } from './ai.js';
 import { getBiz, displayName } from './business.js';
@@ -60,7 +61,7 @@ function bubble(m, i) {
   return html`<div class="msg msg-ai" data-i="${i}">
     ${m.pending && !m.content ? html`<p class="typing" aria-label="${t('chat.thinking')}"><i></i><i></i><i></i></p>` : html`<div class="msg-text">${md(m.content)}</div>`}
     ${m.stopped ? html`<p class="msg-note">${t('chat.stopped')}</p>` : ''}
-    ${m.fallback ? html`<p class="msg-note">${t('chat.err_not_configured')}</p><button class="btn btn-secondary btn-sm" data-chat="go" data-route="${m.fallback}">${t('chat.fallbackGo', { screen: t(`nav.${m.fallback}`) })} ${icon('next', 15)}</button>` : ''}
+    ${m.fallback ? html`<p class="msg-note">${t(isDemo() ? 'chat.demoNote' : 'chat.err_not_configured')}</p><button class="btn btn-secondary btn-sm" data-chat="go" data-route="${m.fallback}">${t('chat.fallbackGo', { screen: t(`nav.${m.fallback}`) })} ${icon('next', 15)}</button>` : ''}
     ${m.error ? html`<p class="msg-err" role="alert">${icon('info', 15)} ${t(`chat.err_${m.error}`)}</p><button class="btn btn-secondary btn-sm" data-chat="retry">${icon('refresh', 15)} ${t('chat.retry')}</button>` : ''}
   </div>`;
 }

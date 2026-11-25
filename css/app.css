@@ -2890,3 +2890,24 @@ body.trail-open #trail-root { pointer-events: auto; }
   .cx-map-svg { margin: 10px -8px 0; width: calc(100% + 16px); }
   .cx-dot text { font-size: 21px; } .cx-grid text, .cx-axis-t { font-size: 19px; } .cx-q { font-size: 15px; letter-spacing: .06em; } .cx-dot circle { r: 9px; } .cx-dot.is-you circle { r: 12px; }
 }
+
+/* ---------- public demo: bar + guided tour pop-ups ---------- */
+.demo-bar { flex-wrap: wrap; }
+.demo-bar-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+.tour { position: fixed; inset: 0; z-index: 400; pointer-events: none; }
+.tour-spot { position: fixed; border-radius: 18px; box-shadow: 0 0 0 9999px rgba(8, 7, 7, .62), 0 0 0 2px var(--ox-300, #B8354A) inset; transition: left .3s var(--ease-heavy, ease), top .3s var(--ease-heavy, ease), width .3s, height .3s; }
+.tour-card { position: fixed; pointer-events: auto; width: min(400px, calc(100vw - 24px)); background: #181414; color: #EDE6DC; border-radius: 20px; padding: 20px 22px 18px;
+  box-shadow: 0 0 0 1px rgba(237, 230, 220, .14), 0 30px 80px -20px rgba(0, 0, 0, .8); display: grid; gap: 8px; animation: tour-in .28s var(--ease-heavy, ease) both; }
+.tour-card:focus, .tour-card:focus-visible { outline: none; } /* focused only so screen readers start reading here; its buttons keep their own rings */
+.tour-card.is-center { left: 50% !important; top: 50% !important; transform: translate(-50%, -50%); animation: none; }
+.tour-card.is-center ~ * , .tour:has(.tour-card.is-center) .tour-spot { display: none; }
+.tour:has(.tour-card.is-center) { background: rgba(8, 7, 7, .62); pointer-events: auto; }
+.tour-card.is-sheet { left: 12px !important; right: 12px; bottom: 12px; top: auto !important; width: auto; }
+.tour-n { margin: 0; display: flex; align-items: center; gap: 6px; font: 600 .72rem var(--f-ui); letter-spacing: .14em; text-transform: uppercase; color: #D2AE86; }
+.tour-card h2 { margin: 0; font: 800 1.6rem/1.05 var(--f-display); font-stretch: 62%; text-transform: uppercase; color: #EDE6DC; }
+.tour-card p { margin: 0; line-height: 1.45; color: rgba(237, 230, 220, .86); }
+.tour-actions { display: flex; align-items: center; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.tour-actions .link-btn { color: rgba(237, 230, 220, .7); } .tour-sp { flex: 1; }
+@keyframes tour-in { from { opacity: 0; transform: translateY(8px); } }
+:root[data-motion='reduce'] .tour-card { animation: none; } :root[data-motion='reduce'] .tour-spot { transition: none; }
+@media (prefers-reduced-motion: reduce) { .tour-card { animation: none; } .tour-spot { transition: none; } }

@@ -108,6 +108,7 @@ export default {
     apiSaved: 'Adresse du serveur enregistrée.',
     apiInvalid: 'Saisissez une adresse https:// complète.',
     err_daily_limit: 'Vous avez atteint la limite de questions du jour. Revenez demain.',
+    demoNote: 'Dans la démo, l’assistant ne répond pas aux questions. Créez un compte pour l’interroger sur votre entreprise. En attendant, voici le bon écran.',
   },
   tag: {
     signal: 'signal',
@@ -270,6 +271,7 @@ export default {
       plan_required: 'Il vous faut une formule pour utiliser ceci. Choisissez Growth ou demandez un essai gratuit.',
       quota_reached: 'Vous avez atteint la limite d’analyses IA de votre formule.',
       daily_limit: 'Vous avez atteint la limite IA du jour. Revenez demain.',
+      demo: 'Dans la démo, l’analyse utilise les règles d’Arcton sur les données du café d’exemple. Avec un compte, l’IA travaille sur vos données.',
     },
     needsOwner: [
       'Confirmez ce que vous pouvez proposer dans les 48 prochaines heures (horaire, capacité, prix).',
@@ -2647,5 +2649,62 @@ export default {
     liveTitle: 'Site sur mesure en ligne.',
     liveBody: 'Votre adresse affiche le site réalisé par l’équipe Arcton (téléversé le {date}). Ce que vous changez ici n’y apparaît pas ; écrivez-nous pour toute modification.',
     asClient: 'Vous travaillez sur le site de {email}. Ce que vous publiez apparaît à son adresse.',
+  },
+  demo: {
+    barTitle: 'Démo.',
+    barBody: '{name} est un café inventé. Cliquez partout : rien n’est réel et rien n’est publié.',
+    tourBtn: 'Visite guidée',
+    signup: 'Créer votre compte',
+    landBtn: 'Essayer la démo',
+    blocked: 'Désactivé dans la démo. Créez un compte pour l’utiliser sur votre entreprise.',
+    tour: {
+      label: 'Visite guidée',
+      count: 'Étape {n} sur {total}',
+      skip: 'Fermer la visite',
+      back: 'Retour',
+      next: {
+        title: 'Vous savez toujours quoi faire',
+        body: 'La page d’accueil montre une seule chose à faire maintenant, avec votre note et vos avis Google.',
+      },
+      start: 'Commencer la visite',
+      explore: 'J’explore seul',
+      welcome: {
+        title: 'Bienvenue dans Arcton Ai',
+        body: 'Cafeneaua Aurora est un café inventé à Iași. En 8 étapes, nous vous montrons ce que l’application fait pour un commerce local. Vous pouvez fermer la visite à tout moment.',
+      },
+      signals: {
+        title: 'Ce que disent les clients',
+        body: 'Arcton lit vos avis, votre fiche Google et votre site, puis les regroupe par thème : ce que les clients aiment et ce qu’ils reprochent.',
+      },
+      analysis: {
+        title: 'Analyse IA',
+        body: 'Un clic montre où vous perdez des clients et l’opportunité de la semaine. Arcton sépare les faits des suppositions.',
+      },
+      compare: {
+        title: 'Vous face à la concurrence',
+        body: 'Il vous compare à chaque lieu proche : note, avis, site et distance, par rapport à la moyenne du quartier.',
+      },
+      goals: {
+        title: 'Ce qu’il faut pour monter',
+        body: 'Faites glisser le curseur pour voir combien de nouveaux avis il vous faut pour dépasser vos voisins, et en combien de semaines.',
+      },
+      studio: {
+        title: 'Tout est prêt',
+        body: 'Offres, publications, réponses aux avis et plan sur 7 jours, rédigés et conçus pour votre entreprise. Vous n’avez qu’à valider.',
+      },
+      site: {
+        title: 'Un site avec réservations',
+        body: 'Arcton crée un site avec horaires, plan, avis et réservation en ligne. Les clients choisissent eux-mêmes un créneau libre.',
+      },
+      ask: {
+        title: 'Posez n’importe quelle question',
+        body: 'Le gérant demande avec ses mots, par exemple « Pourquoi avons-nous baissé ce mois-ci ? », et reçoit la réponse tirée de ses données.',
+      },
+      end: {
+        title: 'Voilà Arcton Ai',
+        body: 'Créez un compte pour voir tout cela sur votre entreprise, avec vos vraies données. Ou continuez à explorer la démo.',
+      },
+      go: 'Suivant',
+    },
   },
 };

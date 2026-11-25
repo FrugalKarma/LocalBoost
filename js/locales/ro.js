@@ -108,6 +108,7 @@ export default {
     apiSaved: 'Adresa serverului a fost salvată.',
     apiInvalid: 'Introdu o adresă completă https://.',
     err_daily_limit: 'Ai atins limita zilnică de întrebări pentru azi. Revino mâine.',
+    demoNote: 'În demo, asistentul nu răspunde la întrebări. Fă-ți cont ca să-l întrebi despre afacerea ta. Până atunci, te duc la ecranul potrivit.',
   },
   tag: {
     signal: 'semnal',
@@ -270,6 +271,7 @@ export default {
       plan_required: 'Ai nevoie de un plan ca să folosești asta. Alege Growth sau cere un test gratuit.',
       quota_reached: 'Ai atins limita de analize AI a planului tău.',
       daily_limit: 'Ai atins limita zilnică de cereri AI. Revino mâine.',
+      demo: 'În demo, analiza folosește regulile Arcton peste datele cafenelei de exemplu. Cu un cont, rulează AI-ul pe datele tale.',
     },
     needsOwner: [
       'Confirmă ce poți oferi în următoarele 48 de ore (oră, capacitate, preț).',
@@ -2633,5 +2635,59 @@ export default {
     liveTitle: 'Site personalizat activ.',
     liveBody: 'La adresa ta se vede site-ul făcut de echipa Arcton (încărcat {date}). Ce schimbi aici nu apare pe el; pentru modificări, scrie-ne.',
     asClient: 'Lucrezi pe site-ul clientului {email}. Ce publici apare la adresa lui.',
+  },
+  demo: {
+    barTitle: 'Demo.',
+    barBody: '{name} e o cafenea inventată. Apasă pe orice: nimic nu e real și nimic nu se publică.',
+    tourBtn: 'Turul ghidat',
+    signup: 'Creează-ți contul',
+    landBtn: 'Încearcă demo-ul',
+    blocked: 'În demo, asta e oprit. Fă-ți cont ca să o folosești pe afacerea ta.',
+    tour: {
+      label: 'Tur ghidat',
+      count: 'Pasul {n} din {total}',
+      skip: 'Închide turul',
+      back: 'Înapoi',
+      next: {
+        title: 'Mereu știi ce urmează',
+        body: 'Pe pagina de start vezi un singur lucru de făcut acum, plus nota și recenziile tale de pe Google.',
+      },
+      start: 'Începe turul',
+      explore: 'Explorez singur',
+      welcome: {
+        title: 'Bun venit în Arcton Ai',
+        body: 'Cafeneaua Aurora e o cafenea inventată din Iași. Îți arătăm în 8 pași ce face aplicația pentru o afacere locală. Poți închide turul oricând.',
+      },
+      signals: {
+        title: 'Ce spun clienții',
+        body: 'Arcton citește recenziile, profilul de Google și site-ul, apoi le grupează pe teme: ce laudă clienții și de ce se plâng.',
+      },
+      analysis: {
+        title: 'Analiza AI',
+        body: 'Un clic și afli unde pierzi clienți și care e oportunitatea săptămânii. Arcton desparte faptele de presupuneri.',
+      },
+      compare: { title: 'Tu față de concurență', body: 'Te compară cu fiecare loc din jur: notă, recenzii, site și distanță, față de media zonei.' },
+      goals: {
+        title: 'Ce-ți trebuie ca să urci',
+        body: 'Trage de cursor și vezi câte recenzii noi îți trebuie ca să treci de vecini și în câte săptămâni ajungi acolo.',
+      },
+      studio: {
+        title: 'Totul gata făcut',
+        body: 'Oferte, postări, răspunsuri la recenzii și un plan pe 7 zile, scrise și desenate pentru afacerea ta. Tu doar aprobi.',
+      },
+      site: {
+        title: 'Site cu rezervări',
+        body: 'Arcton îți face un site cu program, hartă, recenzii și rezervări online. Clienții aleg singuri ora din locurile libere.',
+      },
+      ask: {
+        title: 'Întreabă orice',
+        body: 'Patronul întreabă cu vorbele lui, de exemplu „De ce am scăzut luna asta?”, și primește răspunsul din datele afacerii lui.',
+      },
+      end: {
+        title: 'Asta e Arcton Ai',
+        body: 'Fă-ți cont și vezi toate acestea pe afacerea ta, cu datele tale reale. Sau explorează mai departe demo-ul.',
+      },
+      go: 'Mai departe',
+    },
   },
 };

@@ -22,6 +22,7 @@ import { BRAND } from './brand.js';
 import { needsConsent, showConsent } from './legal.js';
 import { applyDisplay } from './display.js';
 import { isExample, loadExample, clearExample } from './example.js';
+import { isDemo, startDemo, exitDemo, startTour, DEMO_BLOCKED, demoBlocked } from './demo.js';
 import { currentPlan, PAID_ACTS, noPlan, noPlanPrompt } from './plans.js';
 import { launchGate } from './launch.js';
 import { displayName, getBiz } from './business.js';
@@ -75,7 +76,9 @@ function updateChrome() {
     <span>${t(vc.disabled ? 'admin.viewingOff' : 'admin.viewingNote')}</span></p><button class="btn btn-sm" data-act="admin-exit">${t('admin.back')}</button></div>`.s : '';
   document.body.classList.toggle('is-viewing', !!vc);
   const ex = $('#example-slot');
-  if (ex) ex.innerHTML = isExample() && !vc ? html`<div class="example-bar" role="status">${icon('sparkle', 18)}<p><b>${t('example.barTitle')}</b> ${t('example.barBody', { name: displayName() })}</p>
+  if (ex && isDemo() && !vc) ex.innerHTML = html`<div class="example-bar demo-bar" role="status">${icon('sparkle', 18)}<p><b>${t('demo.barTitle')}</b> ${t('demo.barBody', { name: displayName() })}</p>
+    <div class="demo-bar-btns"><button class="btn btn-sm btn-secondary" data-act="demo-tour">${t('demo.tourBtn')}</button><button class="btn btn-sm btn-primary" data-act="demo-signup">${t('demo.signup')}</button></div></div>`.s;
+  else if (ex) ex.innerHTML = isExample() && !vc ? html`<div class="example-bar" role="status">${icon('sparkle', 18)}<p><b>${t('example.barTitle')}</b> ${t('example.barBody', { name: displayName() })}</p>
     <button class="btn btn-sm btn-secondary" data-act="example-clear">${t('example.clear')}</button></div>`.s : '';
   const promo = $('#side-promo');
   if (promo) promo.innerHTML = currentPlan() !== 'business' && !vc ? html`<div class="foot-promo"><b>${t('promo.title', { plan: t(`plans.${currentPlan() === 'free' ? 'pro' : 'business'}.name`) })}</b><span>${t(currentPlan() === 'free' ? 'promo.pro' : 'promo.business')}</span><a href="#/plans">${t('promo.cta')}</a></div>`.s : '';
@@ -173,7 +176,7 @@ function onRoute() {
     document.startViewTransition(() => renderView());
   } else renderView();
   if (!pendingAnchor) { window.scrollTo(0, 0); $('#main')?.focus({ preventScroll: true }); }
-  if (route !== 'info' && needsConsent()) showConsent();
+  if (route !== 'info' && needsConsent() && !isDemo()) showConsent();
 }
 
 // navigator.onLine can be wrong (some browsers report false on localhost), so confirm with a real request.
@@ -190,6 +193,7 @@ document.addEventListener('click', (e) => {
   if (menu && !menu.hidden && !e.target.closest('.menu-wrap')) menu.hidden = true;
   if (e.target.closest('#account-menu a, #account-menu button')) menu && (menu.hidden = true);
   if (!el) return;
+  if (isDemo() && DEMO_BLOCKED.has(el.dataset.act)) { e.preventDefault(); demoBlocked(); return; }
   if (PAID_ACTS.has(el.dataset.act) && noPlan()) { e.preventDefault(); noPlanPrompt(); return; }
   const fn = actions[el.dataset.act];
   if (!fn) { console.warn('[Arcton] no handler for', el.dataset.act); return; }
@@ -315,16 +319,27 @@ async function enterApp(kind = 'resume') {
 /** Front page for visitors; its buttons lead to sign-up, sign-in or the example business. */
 function openLanding() {
   screen = 'landing';
+  if (isExample()) clearExample(); // a demo left behind in this browser never becomes a new account's business
   const auth = (mode) => () => { screen = 'signin'; showSignin({ mode, onDone: enterApp, onBack: openLanding, backKey: 'signin.backHome' }); };
-  showLanding({ signup: auth('signup'), signin: auth('signin') });
+  showLanding({ signup: auth('signup'), signin: auth('signin'), demo: () => { startDemo(); startApp(); } });
 }
+
+/** Demo → real account: drop the example café, then sign up (or, with accounts off, start empty). */
+function demoSignup() {
+  exitDemo();
+  if (authOn() && !signedIn()) { screen = 'signin'; return showSignin({ mode: 'signup', onDone: enterApp, onBack: openLanding, backKey: 'signin.backHome' }); }
+  go('overview'); renderAll();
+}
+actions['demo-signup'] = demoSignup;
+actions['demo-tour'] = () => startTour(0);
+document.addEventListener('arcton:demo-signup', demoSignup);
 
 function startApp() {
   screen = 'app';
   route = parseRoute();
   renderAll();
   document.documentElement.dataset.ready = '1';
-  if (needsConsent()) showConsent(); // first visit, or the terms changed: ask before anything is used
+  if (needsConsent() && !isDemo()) showConsent(); // first visit, or the terms changed: ask before anything is used (the demo stores nothing of the visitor's)
 }
 
 /* ---------- boot ---------- */
@@ -335,11 +350,13 @@ async function boot() {
   if (q.get('theme') === 'dark' || q.get('theme') === 'light') { document.documentElement.dataset.theme = q.get('theme'); }
   registerSW();
   window.__arcton = window.__localboost = { go, getState }; // debug handle for QA
-  await launchGate(); // before launch day: the coming-soon page, until unlocked
+  const wantDemo = q.has('demo') || isDemo(); const tour = q.has('demo');
+  if (q.has('demo')) history.replaceState(null, '', location.pathname + location.hash); // a reload continues the demo without restarting the tour
+  if (!wantDemo) await launchGate(); // before launch day: the coming-soon page, until unlocked (the demo is open to everyone)
   useAppStyles(); // the app has its own stylesheet; the launch page keeps its own
   const link = readAuthHash(); // came back from an email link (confirm sign-up / reset password)
   const on = await loadAuthConfig();
-  if (!on) return startApp();
+  if (!on) { if (wantDemo) startDemo({ tour }); return startApp(); }
   if (link?.error) { screen = 'signin'; return showSignin({ notice: { kind: 'error', text: authErrorText(link.error) }, onDone: enterApp }); }
   if (link?.session) {
     const r = await adoptLinkSession(link.session);
@@ -347,7 +364,8 @@ async function boot() {
     if (link.type === 'recovery') { screen = 'signin'; return showSignin({ mode: 'newpw', onDone: enterApp }); }
     return enterApp('link');
   }
-  if (!signedIn()) return openLanding();
+  if (!signedIn()) { if (wantDemo) { startDemo({ tour }); return startApp(); } return openLanding(); }
+  if (isDemo()) exitDemo(); // signed in: their own business, not the demo
   return enterApp('resume');
 }
 boot();

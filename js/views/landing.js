@@ -47,7 +47,8 @@ function render() {
       <p class="eyebrow">${t('land.eyebrow')}</p>
       <h1>${t('land.h1a')}<span>${t('land.h1b')}</span></h1>
       <p class="lp-lede">${t('land.lede')}</p>
-      <div class="lp-cta"><button type="button" class="btn btn-primary btn-lg" data-land="signup">${t('land.cta')} ${icon('next', 18)}</button></div>
+      <div class="lp-cta"><button type="button" class="btn btn-primary btn-lg" data-land="signup">${t('land.cta')} ${icon('next', 18)}</button>
+        <button type="button" class="btn btn-secondary btn-lg" data-land="demo">${icon('sparkle', 18)} ${t('demo.landBtn')}</button></div>
       <p class="lp-note">${icon('check', 15)} ${t('land.note')}</p>
     </div>
     ${heroVisual()}
@@ -94,7 +95,8 @@ function render() {
 
   <section class="lp-final lp-reveal">
     <h2>${t('land.final.title')}</h2><p>${t('land.final.body')}</p>
-    <button type="button" class="btn btn-primary btn-lg" data-land="signup">${t('land.cta')} ${icon('next', 18)}</button>
+    <div class="lp-cta"><button type="button" class="btn btn-primary btn-lg" data-land="signup">${t('land.cta')} ${icon('next', 18)}</button>
+      <button type="button" class="btn btn-secondary btn-lg" data-land="demo">${icon('sparkle', 18)} ${t('demo.landBtn')}</button></div>
   </section>
   </main>
 

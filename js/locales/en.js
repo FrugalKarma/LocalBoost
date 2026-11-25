@@ -108,6 +108,7 @@ export default {
     apiSaved: 'Server address saved.',
     apiInvalid: 'Enter a full https:// address.',
     err_daily_limit: 'You have reached today\'s question limit. Come back tomorrow.',
+    demoNote: 'In the demo, the assistant doesn’t answer questions. Create an account to ask about your business. Meanwhile, here is the right screen.',
   },
   tag: {
     signal: 'signal',
@@ -270,6 +271,7 @@ export default {
       plan_required: 'You need a plan to use this. Pick Growth or ask for a free trial.',
       quota_reached: 'You reached your plan’s AI analysis limit.',
       daily_limit: 'You have reached today\'s AI limit. Come back tomorrow.',
+      demo: 'In the demo, the analysis uses Arcton’s rules on the example café’s data. With an account, the AI runs on your data.',
     },
     needsOwner: [
       'Confirm what you can offer in the next 48 hours (time, capacity, price).',
@@ -2626,5 +2628,56 @@ export default {
     liveTitle: 'Custom site live.',
     liveBody: 'Your address shows the site the Arcton team built (uploaded {date}). Changes made here do not appear on it; write to us for changes.',
     asClient: 'You are working on {email}’s site. What you publish appears at their address.',
+  },
+  demo: {
+    barTitle: 'Demo.',
+    barBody: '{name} is a made-up café. Click anything: nothing is real and nothing gets published.',
+    tourBtn: 'Guided tour',
+    signup: 'Create your account',
+    landBtn: 'Try the demo',
+    blocked: 'This is off in the demo. Create an account to use it on your business.',
+    tour: {
+      label: 'Guided tour',
+      count: 'Step {n} of {total}',
+      skip: 'Close the tour',
+      back: 'Back',
+      next: { title: 'You always know what’s next', body: 'The home page shows one thing to do now, plus your Google rating and reviews.' },
+      start: 'Start the tour',
+      explore: 'I’ll explore',
+      welcome: {
+        title: 'Welcome to Arcton Ai',
+        body: 'Cafeneaua Aurora is a made-up café in Iași. In 8 steps we show you what the app does for a local business. You can close the tour at any time.',
+      },
+      signals: {
+        title: 'What customers say',
+        body: 'Arcton reads your reviews, Google listing and website, then groups them by theme: what customers praise and what they complain about.',
+      },
+      analysis: {
+        title: 'AI analysis',
+        body: 'One click shows where you lose customers and this week’s opportunity. Arcton keeps facts apart from guesses.',
+      },
+      compare: {
+        title: 'You vs the competition',
+        body: 'It compares you with every place nearby: rating, reviews, website and distance, against the area average.',
+      },
+      goals: {
+        title: 'What it takes to move up',
+        body: 'Drag the slider to see how many new reviews you need to pass your neighbours, and in how many weeks.',
+      },
+      studio: {
+        title: 'Everything ready made',
+        body: 'Offers, posts, review replies and a 7-day plan, written and designed for your business. You just approve.',
+      },
+      site: {
+        title: 'A website with bookings',
+        body: 'Arcton builds you a site with hours, map, reviews and online booking. Customers pick a free time themselves.',
+      },
+      ask: {
+        title: 'Ask anything',
+        body: 'The owner asks in their own words, like “Why did we drop this month?”, and gets the answer from their business data.',
+      },
+      end: { title: 'That’s Arcton Ai', body: 'Create an account to see all this on your business, with your real data. Or keep exploring the demo.' },
+      go: 'Next',
+    },
   },
 };
