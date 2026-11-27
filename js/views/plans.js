@@ -3,7 +3,7 @@
 // and the admin switches the plan when the money arrives (Admin area). Card payments are not used.
 import { html, icon, openModal, toast, copyText, $ } from '../core.js';
 import { actions } from '../registry.js';
-import { BRAND } from '../brand.js';
+import { BRAND, paymentsOpen } from '../brand.js';
 import { t, ta, getLang } from '../i18n.js';
 import { pageHead } from './shared.js';
 import { catalog, MONTHLY, SETUP_FROM } from '../catalog.js';
@@ -61,8 +61,8 @@ export function creditsInfo(live = false) {
     </div>
     <h3>${t('credits.packsTitle')}</h3>
     <div class="credits-packs">${CREDIT_PACKS.map(([n, p]) => html`<div class="credits-pack"><b>+${creditsText(n)}</b><span>${money(p)} €</span>
-      ${!c ? '' : c.request === n ? html`<small>${icon('clock', 14)} ${t('credits.pending')}</small>` : html`<button type="button" class="btn btn-secondary btn-sm" data-act="credits-buy" data-pack="${n}">${t('credits.buyOne')}</button>`}</div>`)}</div>
-    <p class="small muted">${t('credits.packsNote')}</p>
+      ${!c ? '' : c.request === n ? html`<small>${icon('clock', 14)} ${t('credits.pending')}</small>` : html`<button type="button" class="btn btn-secondary btn-sm" data-act="credits-buy" data-pack="${n}">${t(paymentsOpen() ? 'credits.buyOne' : 'credits.askOne')}</button>`}</div>`)}</div>
+    <p class="small muted">${t(paymentsOpen() ? 'credits.packsNote' : 'credits.packsFree')}</p>
   </section>`;
 }
 const fmtN = (n) => n.toLocaleString(getLang());
@@ -77,14 +77,15 @@ export const plans = {
     const cur = currentPlan(); const accounts = authOn() && signedIn();
     const cell = (v) => (v === true ? html`<span class="pc-yes" aria-label="${t('pc.yes')}">${icon('check', 18)}</span>` : v === false ? html`<span class="pc-no" aria-label="${t('pc.no')}">—</span>` : html`<span>${t(v)}</span>`);
     const cta = (p) => {
+      if (!paymentsOpen() && p.price) return cur === 'free' ? html`<button type="button" class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" data-act="trial-ask">${t('noplan.ask')}</button>` : '';
       if (p.price) return html`<button type="button" class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" data-act="plan-pay" data-plan="${p.id}">${t('plans.ask', { plan: t(`plans.${p.id}.name`) })}</button>`;
       return html`<button type="button" class="btn btn-secondary" data-act="custom-ask">${t('plans.business.cta')}</button>`;
     };
     return html`${pageHead({ title: t('plans.title'), sub: t('plans.sub') })}
     ${accounts ? html`<div class="plan-now card"><div><p class="tag">${t('plans.yourPlan')}</p><h2>${t(`plans.${cur}.name`)}</h2>
         ${cur === 'free' ? html`<p class="muted">${t('plans.noPlanBody')}</p><button type="button" class="btn btn-secondary" data-act="trial-ask">${icon('star', 16)} ${t(planRequest() === 'trial' ? 'noplan.asked' : 'noplan.ask')}</button>` : ''}
-        ${cur !== 'free' && planUntil() ? html`<p class="plan-until">${t('plans.until', { date: planUntil().split('-').reverse().join('.') })} <button type="button" class="link-btn" data-act="${cur === 'pro' ? 'plan-pay' : 'custom-ask'}" data-plan="${cur}">${t('plans.renew')}</button></p>` : ''}</div>
-      ${cur !== 'business' ? html`<div class="plan-how"><b>${t('plans.howTitle')}</b><p class="muted">${t(supportEmail() ? 'plans.howBodyMail' : 'plans.howBody', { email: supportEmail() })}</p></div>` : html`<p class="muted">${t('plans.topPlan')}</p>`}</div>`
+        ${cur !== 'free' && planUntil() ? html`<p class="plan-until">${t('plans.until', { date: planUntil().split('-').reverse().join('.') })} ${paymentsOpen() ? html`<button type="button" class="link-btn" data-act="${cur === 'pro' ? 'plan-pay' : 'custom-ask'}" data-plan="${cur}">${t('plans.renew')}</button>` : ''}</p>` : ''}</div>
+      ${cur !== 'business' ? html`<div class="plan-how"><b>${t('plans.howTitle')}</b><p class="muted">${t(!paymentsOpen() ? 'plans.howFree' : supportEmail() ? 'plans.howBodyMail' : 'plans.howBody', { email: supportEmail() })}</p></div>` : html`<p class="muted">${t('plans.topPlan')}</p>`}</div>`
       : html`<p class="plans-soon" role="status">${icon('info', 18)} ${t('plans.noAccounts')}</p>`}
     <div class="plans">${PLANS.map((p) => { const isCur = accounts && p.id === cur; const lower = accounts && PLAN_RANK[p.id] < PLAN_RANK[cur]; return html`<article class="plan ${p.featured ? 'is-featured' : 'is-premium'} ${isCur ? 'is-current' : ''}">
       ${p.featured ? html`<span class="plan-flag">${t('plans.popular')}</span>` : ''}
@@ -94,7 +95,7 @@ export const plans = {
       <ul>${ta(`plans.${p.id}.features`).map((f) => html`<li>${icon('check', 16)}${f}</li>`)}</ul>
       ${isCur ? html`<span class="btn btn-secondary is-static">${icon('check', 16)} ${t('plans.current')}</span>`
         : lower || !accounts ? '' : planRequest() === p.id ? html`<span class="btn btn-secondary is-static">${icon('clock', 16)} ${t(p.price ? 'pay.pending' : 'plans.business.asked')}</span>` : cta(p)}
-      ${!isCur && !lower && accounts && p.price ? html`<p class="plan-terms">${t('pay.terms', { price: money(p.price) })}</p>` : ''}
+      ${!isCur && !lower && accounts && p.price && paymentsOpen() ? html`<p class="plan-terms">${t('pay.terms', { price: money(p.price) })}</p>` : ''}
     </article>`; })}</div>
     ${creditsInfo(accounts && cur !== 'free')}
     ${catalog()}
@@ -149,7 +150,12 @@ actions['trial-ask'] = () => noPlanPrompt();
 /** A credit pack, paid by bank transfer like the plans; the admin adds the credits when the money arrives. */
 actions['credits-buy'] = async (el) => {
   const pack = CREDIT_PACKS.find(([n]) => n === Number(el.dataset.pack)); if (!pack) return;
-  const [n, price] = pack; const ready = BRAND.iban && BRAND.cui;
+  const [n, price] = pack; const ready = paymentsOpen();
+  if (!ready) { // launch period: no payments yet, the team adds the credits for free
+    if (!(await openModal({ title: t('credits.askTitle', { n: creditsText(n) }), body: html`<p>${t('credits.askBody')}</p>`, actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: false }, { label: t('credits.askSend'), kind: 'btn-primary', value: true }] }))) return;
+    const j = await requestCredits(n);
+    return toast(t(j.creditRequest ? 'credits.askThanks' : j.error === 'rate_limited' ? 'noplan.rate' : 'pay.error'), j.creditRequest ? 'success' : 'error');
+  }
   const row = (k, v, copy) => html`<div><dt>${t(`pay.${k}`)}</dt><dd><span>${v}</span>${copy ? html`<button type="button" class="link-btn" data-copy="${v}">${t('actions.copy')}</button>` : ''}</dd></div>`;
   const body = html`<p>${t('credits.payIntro', { n: creditsText(n), price: money(price) })}</p>
     ${ready ? html`<dl class="pay-dl">${row('to', BRAND.company)}${row('iban', BRAND.iban, true)}${BRAND.bank ? row('bank', BRAND.bank) : ''}${row('amount', `${money(price)} EUR`)}${row('ref', `${payRef()}-C${n}`, true)}</dl>`

@@ -67,6 +67,9 @@ create index if not exists site_requests_owner on public.site_requests (owner, c
 -- a site the Arcton team built by hand (Custom Premium), served instead of the template
 alter table public.sites add column if not exists custom_html text check (char_length(custom_html) <= 3000000);
 alter table public.sites add column if not exists custom_at timestamptz;
+-- Custom Premium: the client's own domain (cafeneaua.ro), shown instead of /s/<slug>; one site per domain.
+alter table public.sites add column if not exists domain text;
+create unique index if not exists sites_domain on public.sites (domain);
 alter table public.site_requests drop constraint if exists site_requests_status_check;
 alter table public.site_requests add constraint site_requests_status_check check (status in ('new', 'confirmed', 'declined', 'done'));
 
@@ -140,6 +143,9 @@ alter table public.profiles add column if not exists credits_extra int not null 
 alter table public.profiles add column if not exists plan_trial boolean not null default false;
 alter table public.profiles add column if not exists credit_request int;
 alter table public.profiles add column if not exists credit_request_at timestamptz;
+-- Referrals: the first 8 characters of the referrer's id, saved at sign-up from arcton.site/?ref=CODE.
+alter table public.profiles add column if not exists referred_by text;
+create index if not exists profiles_referred_by on public.profiles (referred_by);
 
 -- Bank transfers recorded by the admin (Admin → "Plată primită"); a paid plan runs until profiles.plan_until (+7 days grace).
 alter table public.profiles add column if not exists plan_until date;

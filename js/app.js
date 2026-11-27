@@ -350,6 +350,10 @@ async function boot() {
   const q = new URLSearchParams(location.search);
   if (q.get('lang') && LANGS.some((l) => l.code === q.get('lang'))) { setLang(q.get('lang')); }
   if (q.get('theme') === 'dark' || q.get('theme') === 'light') { document.documentElement.dataset.theme = q.get('theme'); }
+  if (/^[0-9a-f]{8}$/i.test(q.get('ref') || '')) { // a referral link: remembered until sign-up
+    try { localStorage.setItem('arcton-ref', q.get('ref').toLowerCase()); } catch { /* storage blocked: no referral */ }
+    q.delete('ref'); history.replaceState(null, '', location.pathname + (q.size ? `?${q}` : '') + location.hash);
+  }
   registerSW();
   window.__arcton = window.__localboost = { go, getState }; // debug handle for QA
   const wantDemo = q.has('demo') || isDemo(); const tour = q.has('demo');

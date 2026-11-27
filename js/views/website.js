@@ -21,6 +21,7 @@ import { can, currentPlan, upgradePrompt } from '../plans.js';
 import { qrSvg } from '../qr.js';
 import { isExample } from '../example.js';
 import { confetti } from '../fun.js';
+import { domainBlock } from '../domain.js';
 
 const TABS = ['sections', 'design', 'details', 'booking', 'seo', 'publish'];
 const TAB_ICON = { sections: 'layers', design: 'palette', details: 'pin', booking: 'calendar', seo: 'globe', publish: 'external' };
@@ -300,6 +301,7 @@ function publishPanel() {
     <label class="check"><input type="checkbox" data-in="branding" ${st.branding !== false ? 'checked' : ''}><span>${t('bld.branding')}</span></label>
     ${online ? html`<p class="muted small">${t('website.updatedNote', { date: fmtDate(st.publishedAt) })}</p>
     ${qrBlock(publicSiteUrl(st.slug))}
+    ${domainBlock()}
     <h3 class="pub-h">${t('website.statsTitle')}</h3>
     <div class="pub-stats"><div><b>${fmtNumber(sum('views', 7))}</b><span>${t('website.views7')}</span></div><div><b>${fmtNumber(sum('clicks', 7))}</b><span>${t('website.clicks7')}</span></div><div><b>${fmtNumber(sum('requests', 30))}</b><span>${t('website.requests30')}</span></div></div>
     ${barSeries(stats.map((d) => d.views), t('website.views30'))}

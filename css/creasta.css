@@ -429,3 +429,33 @@
 .catalog-promises li { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem; }
 .xd-audit { list-style: none; margin: 0; padding: 12px; display: grid; gap: 8px; background: var(--xd-bg); color: var(--xd-ink); border-radius: 10px; }
 .xd-audit li { display: flex; gap: 8px; align-items: center; font-size: .85rem; } .xd-audit li svg { color: #2E7D4F; flex: none; margin: 0; } .xd-audit li.is-fix svg { color: var(--xd-red); }
+
+/* ---------- field report (Admin): a printable A4 page for business owners ---------- */
+.field-form { display: grid; grid-template-columns: 2fr 1.4fr auto; gap: 10px; align-items: end; }
+@media (max-width: 760px) { .field-form { grid-template-columns: 1fr; } }
+.field-results { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; } .field-results .link-btn { text-align: left; }
+.field-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+.fr-wrap { overflow-x: auto; border-radius: 12px; }
+.fr-page { background: #fff; color: #1B1414; width: 100%; max-width: 760px; padding: 28px 32px; border-radius: 12px; font-size: 13px; line-height: 1.45; box-sizing: border-box; }
+.fr-page h3 { margin: 0; font-size: 24px; color: #1B1414; } .fr-page h4 { margin: 18px 0 8px; font-size: 15px; color: #1B1414; }
+.fr-head { display: flex; gap: 12px; align-items: flex-start; border-bottom: 2px solid #B4233A; padding-bottom: 12px; }
+.fr-kicker { margin: 0; color: #B4233A; font-weight: 700; font-size: 12px; } .fr-addr { margin: 2px 0 0; color: #6B5F58; }
+.fr-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.fr-stat { border: 1px solid #E5DDD5; border-radius: 10px; padding: 10px 12px; } .fr-stat b { display: block; font-size: 22px; } .fr-stat span { color: #6B5F58; font-size: 12px; }
+.fr-area { margin: 10px 0 0; color: #3A2F2B; }
+.fr-fixes { margin: 0; padding-left: 20px; display: grid; gap: 8px; } .fr-fixes li b { display: block; } .fr-fixes li span { color: #3A2F2B; }
+.fr-top { width: 100%; border-collapse: collapse; } .fr-top th, .fr-top td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #E5DDD5; } .fr-top th { font-size: 12px; color: #6B5F58; }
+.fr-foot { display: flex; gap: 16px; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1px solid #E5DDD5; } .fr-foot p { margin: 0 0 4px; }
+.fr-qr { flex: none; width: 110px; } .fr-qr svg { width: 110px !important; height: 110px !important; display: block; }
+.fr-rep { font-weight: 700; } .fr-src { color: #6B5F58; font-size: 11px; }
+@media print { #print-root .fr-page { max-width: none; padding: 0; border-radius: 0; font-size: 12.5px; } #print-root .fr-qr svg { width: 110px !important; height: 110px !important; } }
+
+/* ---------- own domain (Website → Publish, Custom Premium) ---------- */
+.dom-form { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; } .dom-form .field { flex: 1 1 220px; margin: 0; }
+.dom-state { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--glass-line, var(--line)); margin-bottom: 10px; }
+.dom-state div { display: grid; } .dom-state span { font-size: .85rem; color: var(--muted); }
+.dom-state.is-live svg { color: #3FA36B; } .dom-state.is-pending svg, .dom-state.is-dns svg { color: #D9A441; }
+.dom-table { width: 100%; border-collapse: collapse; font-size: .88rem; } .dom-table th, .dom-table td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--glass-line, var(--line)); vertical-align: top; }
+.dom-table code { overflow-wrap: anywhere; }
+.dom-help { margin: 10px 0; } .dom-help summary { cursor: pointer; font-weight: 600; } .dom-help ul { padding-left: 18px; display: grid; gap: 6px; margin: 8px 0; font-size: .9rem; }
+.dom-up a { color: inherit; text-decoration: underline; }

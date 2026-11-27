@@ -68,7 +68,8 @@ export async function signIn(email, password) {
   return j;
 }
 export async function signUp(email, password, terms) {
-  const j = await post({ op: 'signup', email, password, terms, redirectTo: redirectTo() });
+  let ref = ''; try { ref = localStorage.getItem('arcton-ref') || ''; } catch { /* storage blocked: no referral */ }
+  const j = await post({ op: 'signup', email, password, terms, redirectTo: redirectTo(), ref });
   if (j.session) setSession(j.session);
   return j;
 }
@@ -147,7 +148,7 @@ export async function refreshMe() {
   if (!signedIn()) return null;
   const tok = await freshToken(); if (!tok) return null;
   const j = await post({ op: 'me' }, tok);
-  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit, termsVersion: j.termsVersion, termsAt: j.termsAt, planRequest: j.planRequest || null, planUntil: j.planUntil || null, credits: j.credits || null }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
+  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit, termsVersion: j.termsVersion, termsAt: j.termsAt, planRequest: j.planRequest || null, planUntil: j.planUntil || null, credits: j.credits || null, refCode: j.refCode || null, referrals: j.referrals ?? null }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
   return j;
 }
 

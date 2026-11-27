@@ -2,6 +2,7 @@
 import { html, icon, openModal, $, toast } from './core.js';
 import { t, ta, getLang, fmtNumber } from './i18n.js';
 import { authOn, signedIn, getSession, isAdmin, requestTrial, planRequest, credits } from './auth.js';
+import { paymentsOpen } from './brand.js';
 
 export const PLAN_RANK = { free: 0, pro: 1, business: 2 };
 /** Feature → lowest plan that has it. */
@@ -57,8 +58,8 @@ export function creditsPrompt() {
   const c = credits();
   return openModal({
     title: t('credits.outTitle'),
-    body: html`<p>${t(c?.trial ? 'credits.outTrial' : 'credits.outBody', { n: creditsText(c?.allow || 0) })}</p><p class="muted">${t('credits.outHow')}</p>`,
-    actions: [{ label: t('common.close'), kind: 'btn-ghost', value: null }, { label: t('credits.buy'), kind: 'btn-primary', value: 'buy' }],
+    body: html`<p>${t(c?.trial ? 'credits.outTrial' : 'credits.outBody', { n: creditsText(c?.allow || 0) })}</p><p class="muted">${t(paymentsOpen() ? 'credits.outHow' : 'credits.outHowFree')}</p>`,
+    actions: [{ label: t('common.close'), kind: 'btn-ghost', value: null }, { label: t(paymentsOpen() ? 'credits.buy' : 'credits.askMore'), kind: 'btn-primary', value: 'buy' }],
   }).then((v) => { if (v === 'buy') location.hash = '#/plans?credits'; });
 }
 

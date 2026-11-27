@@ -12,6 +12,7 @@ import { handleAccount, aiAccess } from './lib/auth-core.mjs';
 import { handleData } from './lib/places-core.mjs';
 import { handleDigest } from './lib/digest-core.mjs';
 import { handleSite, originOf, PUBLIC_CORS } from './lib/site-core.mjs';
+import { OWN_HOST } from './lib/domains.mjs';
 import { health } from './lib/health.mjs';
 import { APP_HEADERS } from './lib/security-headers.mjs';
 const PAGE_HEADERS = Object.fromEntries(Object.entries(APP_HEADERS).map(([k, v]) => [k.toLowerCase(), v]));
@@ -102,6 +103,7 @@ http.createServer(async (req, res) => {
       if (p === '/api/site') return handleSiteReq(req, res, url, cors);
       if (p === '/api/digest') { const r = await handleDigest({ method: req.method, query: Object.fromEntries(url.searchParams), headers: req.headers, origin: originOf(req.headers) }); return typeof r.body === 'string' ? send(res, r.status, r.body, 'text/html; charset=utf-8', r.headers) : send(res, r.status, JSON.stringify(r.body)); }
     }
+    if (!OWN_HOST.test(String(req.headers.host || '')) && String(req.headers.host || '') !== new URL(originOf(req.headers)).host) { url.searchParams.set('op', 'host'); url.searchParams.set('p', p); return handleSiteReq(req, res, url, {}); } // a client's own domain (Vercel: middleware.js)
     if (/^\/s\/[^/]+\/?$/.test(p)) { url.searchParams.set('op', 'page'); url.searchParams.set('slug', p.split('/')[2]); return handleSiteReq(req, res, url, {}); }
     if (p === '/') p = '/index.html';
     if (!PUBLIC.test(p) || p.includes('..') || p.includes('/.')) return notFound(res);

@@ -9,6 +9,7 @@ import { pageHead } from './shared.js';
 import { pushState, subscribe, unsubscribe } from '../push.js';
 import { setCustomSite, removeCustomSite, clientSite } from '../sources.js';
 import { CREDIT_PACKS, creditsText } from '../plans.js';
+import { fieldSection } from '../fieldReport.js';
 
 let clients = null; // null = not loaded yet
 let loadErr = null;
@@ -57,13 +58,19 @@ function stagePill(stage) {
   return html`<span class="stage-pill" data-stage="${s}"><span class="stage-dots" aria-hidden="true">${[2, 3, 4, 5].map((i) => html`<i class="${n >= i ? 'on' : ''}"></i>`)}</span>${t(`admin.stage.${s}`)}</span>`;
 }
 
+/** Who recommended this client, and how many this client recommended (codes = first 8 characters of an id). */
+function refLine(c) {
+  const by = c.referredBy && (clients || []).find((x) => x.id.startsWith(c.referredBy));
+  const n = (clients || []).filter((x) => x.referredBy && c.id.startsWith(x.referredBy)).length;
+  return by || n ? html`<small class="ref-line">${by ? t('admin.refBy', { email: by.email }) : ''}${by && n ? ' · ' : ''}${n ? t('admin.refCount', { n }) : ''}</small>` : '';
+}
 function row(c) {
   const b = c.business; const admin = c.role === 'admin'; const busy = busyId === c.id;
   return html`<li class="client ${c.disabled ? 'is-off' : ''}">
     <div class="client-main">
       <span class="client-av" aria-hidden="true">${(b?.name || c.email || '?').slice(0, 1).toUpperCase()}</span>
       <div class="client-txt"><strong>${b?.name || html`<em>${t('admin.noBusiness')}</em>`}</strong>
-        <small>${c.email}${b?.city ? ` · ${b.city}` : ''}</small></div>
+        <small>${c.email}${b?.city ? ` · ${b.city}` : ''}</small>${refLine(c)}</div>
     </div>
     <div class="client-stage">${stagePill(b?.stage)}</div>
     <div class="client-when"><small>${t('admin.colUpdated')}</small>${fmt(b?.updated_at)}${c.planUntil && !admin ? html`<small class="${until(c.planUntil) < 0 ? 'until-late' : until(c.planUntil) <= 7 ? 'until-soon' : ''}">${t(until(c.planUntil) < 0 ? 'admin.pay.expired' : 'admin.pay.until', { date: dmy(c.planUntil) })}</small>` : ''}</div>
@@ -109,6 +116,7 @@ export const admin = {
     return html`${pageHead({ note: 'A', title: t('admin.title'), sub: t('admin.sub') })}
       ${demo() ? html`<div class="example-bar demo-admin" role="status">${icon('sparkle', 18)}<p><b>${t('admin.demoTitle')}</b> ${t('admin.demoBody')}</p></div>` : ''}
       <div id="admin-leads">${leadsSec()}</div>
+      ${demo() ? '' : fieldSection()}
       <div class="admin-bar">
         <div class="admin-kpis" id="admin-kpis">${kpis()}</div>
         <label class="field admin-search"><span class="sr-only">${t('admin.search')}</span>${icon('signals', 18)}
@@ -366,7 +374,7 @@ actions['admin-trial'] = async (el) => {
     title: t('admin.trial.title', { email: c.email }),
     body: html`<div class="pay-form">${c.planRequestNote ? html`<p>„${c.planRequestNote}”</p>` : ''}<p class="muted">${t('admin.trial.body')}</p>
       <div class="field-pair"><label class="field"><span>${t('admin.plan')}</span><select id="tf-plan">${['pro', 'business'].map((p) => html`<option value="${p}">${t(`plans.${p}.name`)}</option>`)}</select></label>
-        <label class="field"><span>${t('admin.trial.days')}</span><select id="tf-days">${[7, 14, 30].map((d) => html`<option value="${d}" ${d === 14 ? 'selected' : ''}>${d}</option>`)}</select></label></div></div>`,
+        <label class="field"><span>${t('admin.trial.days')}</span><select id="tf-days">${[7, 14, 30, 60, 90].map((d) => html`<option value="${d}" ${d === 14 ? 'selected' : ''}>${d}</option>`)}</select></label></div></div>`,
     actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: null }, { label: t('admin.trial.confirm'), kind: 'btn-primary', collect: () => ({ plan: $('#tf-plan').value, days: Number($('#tf-days').value) }) }],
   });
   if (!v) return;

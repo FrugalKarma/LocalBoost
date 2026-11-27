@@ -22,3 +22,5 @@ export const BRAND = {
 export const LEGAL_VERSION = '2026-11-16';
 export const LEGAL_UPDATED = '2026-11-08';
 export const contactEmail = () => BRAND.privacyEmail || BRAND.email;
+/** Paid plans open once the company's bank details are filled in; until then clients use Arcton Ai on free trials. */
+export const paymentsOpen = () => !!(BRAND.iban && BRAND.cui);

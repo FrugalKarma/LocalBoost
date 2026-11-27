@@ -58,6 +58,12 @@
           "key": "Cross-Origin-Opener-Policy",
           "value": "same-origin"
         }
+      ],
+      "has": [
+        {
+          "type": "host",
+          "value": "((www\\.)?arcton\\.site|.+\\.vercel\\.app|localhost)"
+        }
       ]
     }
   ],

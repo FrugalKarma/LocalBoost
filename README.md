@@ -64,6 +64,7 @@ Business demo: **Cafeneaua Copou** (Iași), fictiv. Toate cifrele sunt etichetat
 | `LOCALBOOST_FREE_AI_PER_MONTH` | AI analyses per month on the Free plan (default 3) |
 | `LOCALBOOST_SUPPORT_EMAIL` | optional: where owners ask for a plan change (shown on the Plans page) |
 | `RESEND_API_KEY` / `ARCTON_MAIL_FROM` | optional: booking emails to owners and customers, and the weekly digest (Resend; sender must be a verified domain) |
+| `VERCEL_TOKEN` / `VERCEL_PROJECT_ID` / `VERCEL_TEAM_ID` | optional: Custom Premium clients connect their own domain from Website → Publish; the app adds it to this Vercel project. Without them the domain is saved and the team adds it in Vercel by hand. Needs Vercel Pro (Hobby allows 50 domains and no commercial use) |
 | `CRON_SECRET` | weekly digest: any random text of 16+ characters. Vercel's cron (Mondays 08:00 Romania) sends it; it also signs the unsubscribe links |
 | `ARCTON_ADMIN_HASH` / `ARCTON_ADMIN_SECRET` / `ARCTON_PREVIEW_HASH` / `LOCALBOOST_PUBLIC_URL` | admin password, session key, testers' early-access password, public address: set them before launch ([docs/SECURITY.md](docs/SECURITY.md)) |
 | `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` | turn on accounts and the admin area ([docs/ACCOUNTS.md](docs/ACCOUNTS.md)); the last one is secret, server only |

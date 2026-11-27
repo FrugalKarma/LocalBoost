@@ -1,10 +1,11 @@
-import { html, limit, icon, toast, confirmDialog, $, openModal } from '../core.js';
+import { html, limit, icon, toast, confirmDialog, $, openModal, copyText } from '../core.js';
 import { t, getLang } from '../i18n.js';
 import { getState, update } from '../store.js';
 import { inputs, actions } from '../registry.js';
 import { displayName } from '../business.js';
 import { pageHead } from './shared.js';
-import { authOn, signedIn, userEmail, isAdmin, changePassword, api, signOut } from '../auth.js';
+import { authOn, signedIn, userEmail, isAdmin, changePassword, api, signOut, getSession } from '../auth.js';
+import { paymentsOpen } from '../brand.js';
 import { cloudStatus, onCloud, flush, viewingClient } from '../cloud.js';
 import { currentPlan } from '../plans.js';
 import { authErrorText } from './signin.js';
@@ -49,10 +50,24 @@ export const account = {
         <div class="set-ctl"><dl class="facts"><div><dt>${t('account.plan')}</dt><dd>${t(`plans.${currentPlan()}.name`)} · <a href="#/plans">${t('account.seePlans')}</a></dd></div>
           <div><dt>${t('account.dataMode')}</dt><dd>${t(live ? 'account.dataCloud' : 'account.dataDevice')}</dd></div></dl></div></section>
     </div>
+    ${live && !isAdmin() && !viewingClient() && getSession()?.refCode ? referSection() : ''}
     ${live && !isAdmin() && !viewingClient() ? html`<section class="danger-zone"><div><h2>${t('account.deleteTitle')}</h2><p>${t('account.deleteBody')}</p></div>
       <button class="btn btn-secondary danger" data-act="delete-account">${icon('trash', 18)} ${t('account.deleteTitle')}</button></section>` : ''}`;
   },
 };
+
+/** Referral link: a business that signs up through it is credited to this account. */
+const refLink = () => `${location.origin}/?ref=${getSession().refCode}`;
+function referSection() {
+  const n = getSession().referrals;
+  return html`<section class="card refer-card"><div class="tool-head"><span class="tool-ic">${icon('share', 22)}</span><div><h2>${t('refer.title')}</h2>
+      <p class="muted">${t(paymentsOpen() ? 'refer.bodyPaid' : 'refer.bodyFree')}</p></div></div>
+    <div class="ask-link"><code>${refLink().replace(/^https?:\/\//, '')}</code>
+      <button class="btn btn-secondary btn-sm" data-act="refer-copy">${icon('copy', 15)} ${t('actions.copy')}</button>
+      <a class="btn btn-primary btn-sm" href="https://wa.me/?text=${encodeURIComponent(t('refer.msg', { link: refLink() }))}" target="_blank" rel="noopener">${icon('share', 15)} WhatsApp</a></div>
+    ${n != null ? html`<p class="small muted">${t(n === 1 ? 'refer.countOne' : 'refer.count', { n })}</p>` : ''}</section>`;
+}
+actions['refer-copy'] = async () => { const ok = await copyText(refLink()); toast(t(ok ? 'common.copied' : 'common.copyFailed'), ok ? 'success' : 'error'); };
 
 inputs['profile-name'] = (el) => { update({ profile: { name: limit(el.value, 40) } }); };
 

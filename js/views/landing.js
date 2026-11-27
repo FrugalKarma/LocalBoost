@@ -3,7 +3,7 @@
 // and leads to "Create a free account". Everything on the hero mock-up is the fictional example café, and says so.
 import { html, icon } from '../core.js';
 import { t, ta, LANGS, getLang, setLang } from '../i18n.js';
-import { BRAND } from '../brand.js';
+import { BRAND, paymentsOpen } from '../brand.js';
 import { openLegal } from '../legalText.js';
 import { PLANS, priceLine, planVideo, catalog, creditsInfo } from './plans.js';
 import { mountain } from '../mountain.js';
@@ -81,7 +81,7 @@ function render() {
       <button type="button" class="btn ${p.featured ? 'btn-primary' : 'btn-secondary'}" data-land="signup">${t(p.price ? 'land.plans.start' : 'plans.business.cta')}</button></article>`)}</div>
     ${creditsInfo()}
     ${catalog()}
-    <p class="lp-pay">${icon('info', 16)} ${t('land.plans.pay')}</p>
+    <p class="lp-pay">${icon('info', 16)} ${t(paymentsOpen() ? 'land.plans.pay' : 'land.plans.payFree')}</p>
   </section>
 
   <section class="lp-sec lp-faq" id="faq" aria-labelledby="faq-h">

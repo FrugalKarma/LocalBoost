@@ -56,6 +56,9 @@ export const addBooking = (b) => call('/api/site', { method: 'POST', body: { op:
 /** Admin: put up (or take down) a site the team built by hand for this client. */
 export const setCustomSite = (as, html, slug, name) => call('/api/site', { method: 'POST', body: { op: 'custom-set', as, html, slug, name } });
 export const removeCustomSite = (as) => call('/api/site', { method: 'POST', body: { op: 'custom-remove', as } });
+export const domainStatus = () => call('/api/site?op=domain-status');
+export const setDomain = (domain) => call('/api/site', { method: 'POST', body: { op: 'domain-set', domain } });
+export const removeDomain = () => call('/api/site', { method: 'POST', body: { op: 'domain-remove' } });
 export const clientSite = (as) => call(`/api/site?op=mine&as=${encodeURIComponent(as)}`);
 export const bookingPush = (op, extra = {}) => call('/api/site', { method: 'POST', body: { op: `push-${op}`, ...extra } });
 /** Public address of the published site (same server as the app). */

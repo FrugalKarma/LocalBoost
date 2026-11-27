@@ -85,7 +85,7 @@ const vercel = JSON.parse(readFileSync(vercelPath, 'utf8'));
 const want = Object.entries(APP_HEADERS).map(([key, value]) => ({ key, value }));
 const appRule = (vercel.headers || []).find((h) => h.source === '/((?!s/).*)');
 if (process.argv.includes('--fix-headers')) {
-  vercel.headers = [...(vercel.headers || []).filter((h) => h !== appRule && h.source !== '/(.*)'), { source: '/((?!s/).*)', headers: want }];
+  vercel.headers = [...(vercel.headers || []).filter((h) => h !== appRule && h.source !== '/(.*)'), { ...appRule, source: '/((?!s/).*)', headers: want }];
   (await import('node:fs')).writeFileSync(vercelPath, JSON.stringify(vercel, null, 2) + '\n'); ok('vercel.json headers rewritten');
 } else if (!appRule || JSON.stringify(appRule.headers) !== JSON.stringify(want)) fail('vercel.json headers differ from lib/security-headers.mjs (run: node scripts/check.mjs --fix-headers)');
 else ok('vercel.json sends the same security headers as the local server');
