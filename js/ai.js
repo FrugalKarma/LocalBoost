@@ -9,6 +9,7 @@ import { evidenceForAi, competitorList, ruleProblems, OPP_OF, siteGaps } from '.
 import { localNames } from './names.js';
 import { apiUrl, onApiBaseChange } from './api.js';
 import { isDemo } from './demo.js';
+import { noCredits } from './plans.js';
 
 export const AI_TIMEOUT_MS = 25000; // total budget for one step (the analysis makes two calls)
 const CALL_TIMEOUT_MS = 16000; // budget for a single call; the server has its own 15 s upstream limit
@@ -137,7 +138,8 @@ async function callRole(role, payload, signal) {
     }
     if (!res.ok) throw new AiError('http', `HTTP ${res.status}`);
     const body = await res.json();
-    if (body.error) throw new AiError(body.error === 'ai_not_configured' || body.error === 'auth_required' ? 'not_configured' : ['timeout', 'plan_required', 'quota_reached', 'daily_limit'].includes(body.error) ? body.error : 'http', body.error);
+    if (body.error) throw new AiError(body.error === 'ai_not_configured' || body.error === 'auth_required' ? 'not_configured' : ['timeout', 'plan_required', 'quota_reached', 'daily_limit', 'no_credits'].includes(body.error) ? body.error : 'http', body.error);
+    if (body.error === 'no_credits') noCredits();
     const parsed = repairJSON(body.text ?? body.json);
     const valid = validators[role](parsed);
     if (!valid) throw new AiError('invalid_json');
@@ -315,5 +317,5 @@ export async function runNames() {
 
 export function reasonKey(reason) {
   if (isDemo() && reason === 'not_configured') return 'ai.reason.demo';
-  return ['timeout', 'not_configured', 'invalid_json', 'unreachable', 'http', 'not_run', 'plan_required', 'quota_reached', 'daily_limit'].includes(reason) ? `ai.reason.${reason}` : 'ai.reason.error';
+  return ['timeout', 'not_configured', 'invalid_json', 'unreachable', 'http', 'not_run', 'plan_required', 'quota_reached', 'daily_limit', 'no_credits'].includes(reason) ? `ai.reason.${reason}` : 'ai.reason.error';
 }

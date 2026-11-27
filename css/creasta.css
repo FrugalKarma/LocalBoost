@@ -405,3 +405,27 @@
 .st-variants button:hover { border-color: #E2576C; } .st-variants button:active { transform: scale(.97); }
 .st-variants button:focus-visible { outline: 3px solid #E2576C; outline-offset: 2px; }
 .st-variants svg { width: 100%; height: auto; max-width: 110px; }
+
+/* ---------- credits (plans page and front page) ---------- */
+.credits { margin: 22px 0; padding: 22px; }
+.credits h2 { margin: 0 0 6px; } .credits h3 { margin: 18px 0 10px; font-size: 1.05rem; }
+.credits-intro { margin: 0; max-width: 68ch; }
+.credits-now { margin-top: 16px; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--glass-line, var(--line)); }
+.credits-big { margin: 0 0 8px; } .credits-big b { font-family: var(--f-display); font-stretch: 62%; font-weight: 800; font-size: 2.2rem; color: var(--head); line-height: 1; margin-left: 4px; }
+.credits-meter { height: 10px; border-radius: 99px; background: rgba(237, 230, 220, .12); overflow: hidden; margin-bottom: 8px; }
+.credits-meter span { display: block; height: 100%; background: #E2576C; border-radius: inherit; }
+:root[data-theme='light'] .credits-meter { background: rgba(0, 0, 0, .08); }
+.credits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px 28px; }
+.credits-list { list-style: none; padding: 0; margin: 0; display: grid; }
+.credits-list li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--glass-line, var(--line)); font-size: .93rem; }
+.credits-list b { white-space: nowrap; color: var(--head); }
+.credits-packs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.credits-pack { display: grid; gap: 4px; justify-items: start; padding: 14px; border-radius: 14px; border: 1px solid var(--glass-line, var(--line)); }
+.credits-pack b { font-size: 1.05rem; color: var(--head); } .credits-pack span { color: var(--muted); } .credits-pack .btn { margin-top: 6px; }
+.lp .credits { max-width: 1240px; margin-left: auto; margin-right: auto; text-align: left; }
+
+/* catalog: promises, and the security check example */
+.catalog-promises { list-style: none; padding: 14px 16px; margin-top: 18px; display: grid; gap: 7px; border-radius: 14px; border: 1px solid var(--glass-line, var(--line)); }
+.catalog-promises li { display: flex; gap: 8px; align-items: flex-start; font-size: .92rem; }
+.xd-audit { list-style: none; margin: 0; padding: 12px; display: grid; gap: 8px; background: var(--xd-bg); color: var(--xd-ink); border-radius: 10px; }
+.xd-audit li { display: flex; gap: 8px; align-items: center; font-size: .85rem; } .xd-audit li svg { color: #2E7D4F; flex: none; margin: 0; } .xd-audit li.is-fix svg { color: var(--xd-red); }

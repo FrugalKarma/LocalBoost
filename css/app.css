@@ -2833,6 +2833,7 @@ body.trail-open #trail-root { pointer-events: auto; }
 /* every keyboard stop shows a ring, inputs included (a border colour change alone is too faint) */
 :where(input, select, textarea):focus-visible { outline: 2px solid var(--ox-text) !important; outline-offset: 2px; }
 .pay-flag.is-trial { background: var(--bronze, #C9A27A); color: #120E0E; } .trial-note { display: block; margin: 4px 0; font-size: .8rem; color: var(--muted); max-width: 32ch; overflow-wrap: anywhere; }
+.cred-line { display: block; margin: 4px 0 0; font-size: .8rem; color: var(--muted); }
 /* two plans (Growth, Custom Premium), each with a short video */
 .plans, .lp-plans { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 980px; }
 @media (max-width: 760px) { .plans, .lp-plans { grid-template-columns: minmax(0, 1fr); } }

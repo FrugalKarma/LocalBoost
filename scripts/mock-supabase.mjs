@@ -33,7 +33,7 @@ function authRoute(method, p, q, body, h) {
     if (byEmail(body.email)) return CONFIRM ? [200, { id: randomUUID(), email: body.email }] : err(422, 'user_already_exists', 'User already registered');
     if (String(body.password).length < 8) return err(422, 'weak_password', 'Password should be at least 8 characters.');
     const u = { id: randomUUID(), email: body.email, password: body.password, confirmed: !CONFIRM, banned: false };
-    users.set(u.id, u); profiles.set(u.id, { id: u.id, email: u.email, role: 'client', disabled: false, created_at: new Date().toISOString() });
+    users.set(u.id, u); profiles.set(u.id, { id: u.id, email: u.email, role: 'client', disabled: false, credits_used: 0, credits_extra: 0, plan_trial: false, created_at: new Date().toISOString() });
     if (CONFIRM) { mail.push({ type: 'signup', email: u.email, redirect: q.get('redirect_to') }); return [200, { id: u.id, email: u.email }]; }
     return [200, issue(u)];
   }
@@ -63,7 +63,7 @@ function authRoute(method, p, q, body, h) {
     if (byEmail(body.email)) return err(422, 'email_exists', 'A user with this email address has already been registered');
     if (String(body.password).length < 8) return err(422, 'weak_password', 'Password should be at least 8 characters.');
     const u = { id: randomUUID(), email: body.email, password: body.password, confirmed: !!body.email_confirm, banned: false };
-    users.set(u.id, u); profiles.set(u.id, { id: u.id, email: u.email, role: 'client', disabled: false, created_at: new Date().toISOString() });
+    users.set(u.id, u); profiles.set(u.id, { id: u.id, email: u.email, role: 'client', disabled: false, credits_used: 0, credits_extra: 0, plan_trial: false, created_at: new Date().toISOString() });
     return [200, { id: u.id, email: u.email }];
   }
   const m = p.match(/^\/auth\/v1\/admin\/users\/([\w-]+)$/);
@@ -127,7 +127,7 @@ function restRoute(method, table, q, body, h) {
       if (prefer.includes('merge-duplicates')) { Object.assign(store.get(row[pk]), row); return [201, [store.get(row[pk])]]; }
       return [409, { code: '23505', message: 'duplicate key value violates unique constraint' }];
     }
-    const full = table === 'profiles' ? { role: 'client', disabled: false, created_at: new Date().toISOString(), ...row } : row;
+    const full = table === 'profiles' ? { role: 'client', disabled: false, credits_used: 0, credits_extra: 0, plan_trial: false, created_at: new Date().toISOString(), ...row } : row;
     store.set(row[pk], full); return [201, prefer.includes('return=representation') ? [full] : []];
   }
   if (method === 'PATCH') {

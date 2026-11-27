@@ -133,6 +133,13 @@ alter table public.profiles add column if not exists places_month text;
 alter table public.profiles add column if not exists places_count int not null default 0;
 alter table public.profiles add column if not exists ai_day text;
 alter table public.profiles add column if not exists ai_day_count int not null default 0;
+-- Credits for everything that costs money (AI, Google): allowance per month or per trial, plus bought packs (lib/auth-core.mjs CREDITS).
+alter table public.profiles add column if not exists credits_period text;
+alter table public.profiles add column if not exists credits_used int not null default 0;
+alter table public.profiles add column if not exists credits_extra int not null default 0;
+alter table public.profiles add column if not exists plan_trial boolean not null default false;
+alter table public.profiles add column if not exists credit_request int;
+alter table public.profiles add column if not exists credit_request_at timestamptz;
 
 -- Bank transfers recorded by the admin (Admin → "Plată primită"); a paid plan runs until profiles.plan_until (+7 days grace).
 alter table public.profiles add column if not exists plan_until date;

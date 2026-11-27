@@ -7,11 +7,12 @@ import { t, ta, getLang } from './i18n.js';
 export const MONTHLY = 74.99;
 export const SETUP_FROM = 100;
 const TIERS = [{ id: 'start', from: 100, to: 250 }, { id: 'plus', from: 250, to: 450 }, { id: 'pro', from: 450 }];
-// [id, price, unit] — unit: once (default) | month | from; price 0 = included
-export const EXTRAS = [['domain', 0], ['email', 3, 'month'], ['page', 25], ['lang', 5], ['logo', 50], ['photo', 50, 'from'], ['edit', 10]];
+// [id, price, unit] — unit: once (default) | month | from | own (the client pays the provider directly); price 0 = included
+export const EXTRAS = [['domain', 0, 'own'], ['email', 3, 'month'], ['page', 25], ['lang', 5], ['logo', 50], ['photo', 50, 'from'], ['edit', 10], ['audit', 49], ['redesign', 100, 'from']];
+const CLIPS = new Set(['domain', 'email', 'page', 'lang', 'logo', 'photo', 'edit']); // extras that have a clip in /media
 
 const money = (n) => n.toLocaleString(getLang(), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const extraPrice = ([, n, unit]) => (n ? t(`catalog.${unit || 'once'}`, { p: n }) : t('catalog.included'));
+const extraPrice = ([, n, unit]) => (unit === 'own' ? t('catalog.own') : n ? t(`catalog.${unit || 'once'}`, { p: n }) : t('catalog.included'));
 const ba = (before, after) => html`<div class="xd-ba"><div class="xd-side is-before"><span class="xd-lbl">${t('catalog.before')}</span>${before}</div>
   <span class="xd-arrow" aria-hidden="true">${icon('next', 18)}</span><div class="xd-side is-after"><span class="xd-lbl">${t('catalog.after')}</span>${after}</div></div>`;
 
@@ -27,13 +28,14 @@ export function demo(id) {
       <p class="xd-h">Cafea de specialitate în Copou</p><p class="xd-h is-after xd-en">Specialty coffee in Copou</p></div>`,
     logo: () => ba(html`<div class="xd-logo-plain">Cafeneaua Aurora</div>`, html`<div class="xd-logo"><span class="xd-mark" aria-hidden="true"><i></i></span><span><b>AURORA</b><small>${D('logoSub')}</small></span></div>`),
     photo: () => ba(html`<div class="xd-photo is-dull"></div><small class="xd-cap">${D('photoBefore')}</small>`, html`<div class="xd-photo is-pro"><i></i></div><small class="xd-cap">${D('photoAfter')}</small>`),
+    audit: () => html`<ul class="xd-audit">${ta('catalog.demo.auditRows').map((r, i) => html`<li class="${i === 2 ? 'is-fix' : ''}">${icon(i === 2 ? 'info' : 'check', 14)}<span>${r}</span></li>`)}</ul>`,
     edit: () => html`<div class="xd-edit"><p class="xd-bubble"><small>${D('you')}</small>${D('editAsk')}</p>
       <div class="xd-price-row"><span>Cappuccino</span><s>12 lei</s><b class="is-after">14 lei</b></div></div>`,
   }[id];
-  return html`<div class="xd xd--${id}" aria-hidden="true">${body()}</div>`;
+  return body ? html`<div class="xd xd--${id}" aria-hidden="true">${body()}</div>` : '';
 }
 
-const clip = (id) => html`<video class="xd-video" controls preload="none" playsinline poster="/media/extra-${id}.jpg" aria-label="${t('catalog.clip', { name: t(`catalog.extras.${id}`) })}"><source src="/media/extra-${id}.mp4" type="video/mp4"></video>`;
+const clip = (id) => !CLIPS.has(id) ? '' : html`<video class="xd-video" controls preload="none" playsinline poster="/media/extra-${id}.jpg" aria-label="${t('catalog.clip', { name: t(`catalog.extras.${id}`) })}"><source src="/media/extra-${id}.mp4" type="video/mp4"></video>`;
 
 /** What Custom Premium includes and costs: website tiers (paid once), the monthly fee, extras that open with an example. */
 export function catalog() {
@@ -49,6 +51,7 @@ export function catalog() {
     <p class="muted small catalog-x-hint">${t('catalog.extrasHint')}</p>
     <div class="catalog-extras">${EXTRAS.map((e) => html`<details class="xrow"><summary><span>${t(`catalog.extras.${e[0]}`)}</span><b>${extraPrice(e)}</b>${icon('down', 16)}</summary>
       <div class="xrow-body"><p>${t(`catalog.info.${e[0]}`)}</p>${demo(e[0])}${clip(e[0])}</div></details>`)}</div>
+    <ul class="catalog-promises">${ta('catalog.promises').map((f) => html`<li>${icon('check', 16)}<span>${f}</span></li>`)}</ul>
     <ul class="catalog-notes muted small">${ta('catalog.notes').map((f) => html`<li>${f}</li>`)}</ul>
   </details>`;
 }

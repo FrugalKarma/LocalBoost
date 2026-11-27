@@ -8,6 +8,7 @@ import { openClient } from '../cloud.js';
 import { pageHead } from './shared.js';
 import { pushState, subscribe, unsubscribe } from '../push.js';
 import { setCustomSite, removeCustomSite, clientSite } from '../sources.js';
+import { CREDIT_PACKS, creditsText } from '../plans.js';
 
 let clients = null; // null = not loaded yet
 let loadErr = null;
@@ -67,7 +68,7 @@ function row(c) {
     <div class="client-stage">${stagePill(b?.stage)}</div>
     <div class="client-when"><small>${t('admin.colUpdated')}</small>${fmt(b?.updated_at)}${c.planUntil && !admin ? html`<small class="${until(c.planUntil) < 0 ? 'until-late' : until(c.planUntil) <= 7 ? 'until-soon' : ''}">${t(until(c.planUntil) < 0 ? 'admin.pay.expired' : 'admin.pay.until', { date: dmy(c.planUntil) })}</small>` : ''}</div>
     <div class="client-plan">${admin ? '' : html`<label><span class="sr-only">${t('admin.plan')}: ${c.email}</span><select data-in="admin-plan" data-id="${c.id}" ${busy ? 'disabled' : ''}>${['free', 'pro', 'business'].map((p) => html`<option value="${p}" ${c.plan === p ? 'selected' : ''}>${t(`plans.${p}.name`)}</option>`)}</select></label>`}${c.planRequest === 'trial' ? html`<span class="pay-flag is-trial" title="${c.planRequestNote}">${t('admin.trial.flag')}</span>${c.planRequestNote ? html`<small class="trial-note">„${c.planRequestNote}”</small>` : ''}<button type="button" class="link-btn pay-btn" data-act="admin-trial" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('star', 14)} ${t('admin.trial.button')}</button>`
-      : c.planRequest ? html`<span class="pay-flag" title="${c.planRequestAt ? new Date(c.planRequestAt).toLocaleString(getLang()) : ''}">${c.planRequest === 'business' ? t('admin.customFlag') : t('pay.adminFlag', { plan: t(`plans.${c.planRequest}.name`) })}</span>${c.planRequestNote ? html`<small class="trial-note">„${c.planRequestNote}”</small>` : ''}` : ''}${admin ? '' : html`<button type="button" class="link-btn pay-btn" data-act="admin-paid" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('check', 14)} ${t('admin.pay.button')}</button>`}</div>
+      : c.planRequest ? html`<span class="pay-flag" title="${c.planRequestAt ? new Date(c.planRequestAt).toLocaleString(getLang()) : ''}">${c.planRequest === 'business' ? t('admin.customFlag') : t('pay.adminFlag', { plan: t(`plans.${c.planRequest}.name`) })}</span>${c.planRequestNote ? html`<small class="trial-note">„${c.planRequestNote}”</small>` : ''}` : ''}${admin ? '' : html`<button type="button" class="link-btn pay-btn" data-act="admin-paid" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('check', 14)} ${t('admin.pay.button')}</button>`}${admin || !c.credits ? '' : creditCell(c, busy)}</div>
     <div class="client-status">${admin ? html`<span class="badge badge-admin">${t('admin.roleAdmin')}</span>`
       : html`<span class="badge ${c.disabled ? 'badge-off' : 'badge-on'}">${t(c.disabled ? 'admin.statusDisabled' : 'admin.statusActive')}</span>`}</div>
     <div class="client-acts">
@@ -330,6 +331,33 @@ actions['admin-paid'] = async (el) => {
     toast(`${t('admin.pay.done', { plan: t(`plans.${r.body.plan}.name`), date: dmy(r.body.planUntil) })} ${t(r.body.emailed ? 'admin.pay.emailed' : 'admin.pay.notEmailed')}`, 'success');
     loadExtra();
   } else toast(t(r.body.error === 'bad_amount' ? 'admin.pay.badAmount' : 'common.errorGeneric'), 'error');
+  paintBody();
+};
+/** Credits left, an open pack request, and the button that adds credits. */
+function creditCell(c, busy) {
+  const k = c.credits; const left = Math.max(0, k.allow - k.used) + k.extra;
+  return html`<small class="cred-line">${t('admin.credits.left', { n: creditsText(left) })}${k.trial ? ` · ${t('admin.credits.trial')}` : ''}</small>
+    ${k.request ? html`<span class="pay-flag">${t('admin.credits.flag', { n: creditsText(k.request) })}</span>` : ''}
+    <button type="button" class="link-btn pay-btn" data-act="admin-credits" data-id="${c.id}" ${busy ? 'disabled' : ''}>${icon('plus', 14)} ${t('admin.credits.button')}</button>`;
+}
+actions['admin-credits'] = async (el) => {
+  const c = find(el.dataset.id); if (!c?.credits) return;
+  const pack = CREDIT_PACKS.find(([n]) => n === c.credits.request);
+  const v = await openModal({
+    title: t('admin.credits.title', { email: c.email }),
+    body: html`<div class="pay-form"><p class="muted">${t(pack ? 'admin.credits.bodyReq' : 'admin.credits.body', { n: pack ? creditsText(pack[0]) : '', price: pack ? pack[1] : '' })}</p>
+      <label class="field"><span>${t('admin.credits.amount')}</span><input id="cf-n" type="number" min="1" max="10000" step="1" value="${pack ? pack[0] : 100}"></label>
+      <p class="muted small">${t('admin.pay.mailNote')}</p></div>`,
+    actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: null }, { label: t('admin.credits.confirm'), kind: 'btn-primary', collect: () => ({ amount: Math.round(Number($('#cf-n').value)) }) }],
+  });
+  if (!v) return;
+  if (!(v.amount >= 1 && v.amount <= 10000)) return toast(t('admin.pay.badAmount'), 'error');
+  if (demo()) { c.credits = { ...c.credits, extra: c.credits.extra + v.amount, request: null }; return paintBody(); }
+  busyId = c.id; paintBody();
+  const r = await api('/api/admin', { method: 'POST', body: { op: 'credits-add', id: c.id, amount: v.amount } });
+  busyId = null;
+  if (r.status === 200) { c.credits = { ...c.credits, extra: r.body.extra, request: null }; toast(`${t('admin.credits.done', { n: creditsText(v.amount) })} ${t(r.body.emailed ? 'admin.pay.emailed' : 'admin.pay.notEmailed')}`, 'success'); }
+  else toast(t(r.body.error === 'schema_old' ? 'admin.credits.schema' : 'common.errorGeneric'), 'error');
   paintBody();
 };
 actions['admin-trial'] = async (el) => {

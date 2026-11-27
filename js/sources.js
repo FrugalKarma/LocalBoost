@@ -4,6 +4,7 @@ import { apiUrl, onApiBaseChange } from './api.js';
 import { authHeaders, api, signedIn, authOn } from './auth.js';
 import { getLang } from './i18n.js';
 import { viewingClient } from './cloud.js';
+import { noCredits } from './plans.js';
 
 let caps = null; // what the server can do: { ai, places, accounts, sites, sitecheck }
 export const resetCaps = () => { caps = null; };
@@ -16,7 +17,12 @@ export function serverCaps() {
   return caps;
 }
 
-async function call(path, { method = 'GET', body } = {}) {
+async function call(path, opts) {
+  const r = await send(path, opts);
+  if (r.error === 'no_credits') noCredits();
+  return r;
+}
+async function send(path, { method = 'GET', body } = {}) {
   const vc = path.startsWith('/api/site') && viewingClient(); // the admin working on a client's site acts as that client
   if (vc) { if (method === 'GET') path += `${path.includes('?') ? '&' : '?'}as=${encodeURIComponent(vc.id)}`; else body = { ...(body || {}), as: vc.id }; }
   if (authOn() && signedIn()) {

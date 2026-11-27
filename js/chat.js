@@ -2,7 +2,7 @@
 // States: idle -> sending (typing dots) -> streaming -> done | stopped | error (retry) | fallback (no AI: links to screens).
 import { html, raw, esc, icon, $, toast } from './core.js';
 import { authHeaders } from './auth.js';
-import { can, upgradePrompt } from './plans.js';
+import { can, upgradePrompt, noCredits } from './plans.js';
 import { t, getLang } from './i18n.js';
 import { getState, update } from './store.js';
 import { actions, go } from './registry.js';
@@ -145,7 +145,8 @@ async function ask(text) {
         else if (ev.type === 'error') {
           if (ev.error === 'ai_not_configured' || ev.error === 'auth_required') { live = false; return finish({ fallback: routeFor(q) }); }
           if (ev.error === 'aborted') return finish({ stopped: true });
-          throw Object.assign(new Error(ev.error), { kind: ['rate_limited', 'timeout', 'too_long', 'daily_limit'].includes(ev.error) ? ev.error : 'http' });
+          if (ev.error === 'no_credits') noCredits();
+          throw Object.assign(new Error(ev.error), { kind: ['rate_limited', 'timeout', 'too_long', 'daily_limit', 'no_credits'].includes(ev.error) ? ev.error : 'http' });
         }
       }
     }

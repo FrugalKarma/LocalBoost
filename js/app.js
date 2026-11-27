@@ -23,7 +23,7 @@ import { needsConsent, showConsent } from './legal.js';
 import { applyDisplay } from './display.js';
 import { isExample, loadExample, clearExample } from './example.js';
 import { isDemo, startDemo, exitDemo, startTour, DEMO_BLOCKED, demoBlocked } from './demo.js';
-import { currentPlan, PAID_ACTS, noPlan, noPlanPrompt } from './plans.js';
+import { currentPlan, PAID_ACTS, noPlan, noPlanPrompt, creditsPrompt } from './plans.js';
 import { launchGate } from './launch.js';
 import { displayName, getBiz } from './business.js';
 import './chat.js'; // "Ask Arcton" panel (registers its own actions)
@@ -333,6 +333,8 @@ function demoSignup() {
 actions['demo-signup'] = demoSignup;
 actions['demo-tour'] = () => startTour(0);
 document.addEventListener('arcton:demo-signup', demoSignup);
+let creditsOpen = false; // one explanation at a time, even when several calls are refused together
+document.addEventListener('arcton:no-credits', () => { if (creditsOpen) return; creditsOpen = true; refreshMe().catch(() => {}); creditsPrompt().finally(() => { creditsOpen = false; }); });
 
 function startApp() {
   screen = 'app';

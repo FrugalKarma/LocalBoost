@@ -8,8 +8,8 @@ import { t, ta, getLang } from '../i18n.js';
 import { pageHead } from './shared.js';
 import { catalog, MONTHLY, SETUP_FROM } from '../catalog.js';
 export { catalog };
-import { currentPlan, PLAN_RANK, noPlanPrompt } from '../plans.js';
-import { authOn, signedIn, userEmail, userId, supportEmail, requestPlan, planRequest, planUntil } from '../auth.js';
+import { currentPlan, PLAN_RANK, noPlanPrompt, CREDITS, CREDIT_USES, CREDIT_PACKS, creditsText } from '../plans.js';
+import { authOn, signedIn, userEmail, userId, supportEmail, requestPlan, planRequest, planUntil, credits, requestCredits, refreshMe } from '../auth.js';
 
 // No free plan: a new account sees everything but needs a plan (or a free trial the owner grants) to use it.
 // Internal ids stay 'pro' and 'business' (database, server): 'pro' is shown as Growth, 'business' as Custom Premium.
@@ -26,7 +26,8 @@ export const priceLine = (p, cls) => html`<p class="${cls}"><b>${priceText(p)}</
 
 // rows of the comparison table: [key, Growth, Custom Premium] (true / false / text key)
 const ROWS = [
-  ['analysis', 'pc.v.noMonthly', 'pc.v.noMonthly'],
+  ['credits', 'pc.v.cr400', 'pc.v.cr800'],
+  ['analysis', true, true],
   ['designer', true, true],
   ['publish', 'pc.v.ownSite', 'pc.v.premiumSite'],
   ['domain', false, true],
@@ -42,6 +43,31 @@ const ROWS = [
   ['managing', false, true],
   ['support', 'pc.v.supEmail', 'pc.v.supFull'],
 ];
+/** Credits explained: what uses them, how many each plan has, the packs. live: the signed-in client's balance and buy buttons. */
+export function creditsInfo(live = false) {
+  const c = live ? credits() : null; const left = c ? Math.max(0, c.allow - c.used) : 0;
+  const row = (name, val) => html`<li><span>${name}</span><b>${val}</b></li>`;
+  return html`<section class="card credits" id="credits" aria-labelledby="cr-h">
+    <h2 id="cr-h">${t('credits.title')}</h2><p class="credits-intro">${t('credits.intro')}</p>
+    ${c ? html`<div class="credits-now"><p class="credits-big">${t('credits.leftWord')} <b>${fmtN(left + c.extra)}</b></p>
+      <div class="credits-meter" role="meter" aria-valuemin="0" aria-valuemax="${c.allow}" aria-valuenow="${left}" aria-label="${t('credits.meterLabel')}"><span style="width:${c.allow ? Math.round((left / c.allow) * 100) : 0}%"></span></div>
+      <p class="small muted">${t(c.trial ? 'credits.nowTrial' : 'credits.nowMonth', { left: fmtN(left), allow: fmtN(c.allow) })}${c.extra ? ` ${t('credits.nowExtra', { n: creditsText(c.extra) })}` : ''}</p></div>` : ''}
+    <div class="credits-grid">
+      <div><h3>${t('credits.allowTitle')}</h3><ul class="credits-list">
+        ${row(t('plans.pro.name'), t('credits.perMonth', { n: creditsText(CREDITS.pro) }))}${row(t('plans.business.name'), t('credits.perMonth', { n: creditsText(CREDITS.business) }))}${row(t('credits.trialName'), t('credits.whole', { n: creditsText(CREDITS.trial) }))}</ul>
+        <p class="small muted">${t('credits.allowNote')}</p></div>
+      <div><h3>${t('credits.costTitle')}</h3><ul class="credits-list">${CREDIT_USES.map(([k, n]) => row(t(`credits.use.${k}`), creditsText(n)))}</ul>
+        <p class="small muted">${t('credits.costNote')}</p></div>
+    </div>
+    <h3>${t('credits.packsTitle')}</h3>
+    <div class="credits-packs">${CREDIT_PACKS.map(([n, p]) => html`<div class="credits-pack"><b>+${creditsText(n)}</b><span>${money(p)} €</span>
+      ${!c ? '' : c.request === n ? html`<small>${icon('clock', 14)} ${t('credits.pending')}</small>` : html`<button type="button" class="btn btn-secondary btn-sm" data-act="credits-buy" data-pack="${n}">${t('credits.buyOne')}</button>`}</div>`)}</div>
+    <p class="small muted">${t('credits.packsNote')}</p>
+  </section>`;
+}
+const fmtN = (n) => n.toLocaleString(getLang());
+let creditsAt = 0; // last balance refresh, so a redraw does not ask the server again
+
 /** Short ad that shows what the plan does. Music only, the words are on screen. */
 export const planVideo = (p) => html`<figure class="plan-video"><video controls preload="none" playsinline poster="/media/plan-${p.video}.jpg" aria-label="${t('plans.videoLabel', { plan: t(`plans.${p.id}.name`) })}"><source src="/media/plan-${p.video}.mp4" type="video/mp4"></video></figure>`;
 
@@ -70,11 +96,16 @@ export const plans = {
         : lower || !accounts ? '' : planRequest() === p.id ? html`<span class="btn btn-secondary is-static">${icon('clock', 16)} ${t(p.price ? 'pay.pending' : 'plans.business.asked')}</span>` : cta(p)}
       ${!isCur && !lower && accounts && p.price ? html`<p class="plan-terms">${t('pay.terms', { price: money(p.price) })}</p>` : ''}
     </article>`; })}</div>
+    ${creditsInfo(accounts && cur !== 'free')}
     ${catalog()}
     <section class="card pc-card"><h2>${t('pc.title')}</h2>
       <div class="table-wrap"><table class="pc-table"><thead><tr><th scope="col">${t('pc.feature')}</th>${PLANS.map((p) => html`<th scope="col" class="${accounts && p.id === cur ? 'is-current' : ''}">${t(`plans.${p.id}.name`)}<small>${priceText(p)}</small></th>`)}</tr></thead>
         <tbody>${ROWS.map(([k, ...vals]) => html`<tr><th scope="row">${t(`pc.r.${k}`)}</th>${vals.map((v, i) => html`<td class="${accounts && PLANS[i].id === cur ? 'is-current' : ''}">${cell(v)}</td>`)}</tr>`)}</tbody></table></div></section>
     <p class="muted small plans-note">${t('plans.note')}</p>`;
+  },
+  mount() {
+    if (authOn() && signedIn() && Date.now() - creditsAt > 60_000) { creditsAt = Date.now(); refreshMe().catch(() => {}); } // the balance changes with every AI call
+    if (location.hash.includes('?credits')) document.getElementById('credits')?.scrollIntoView({ block: 'start' });
   },
 };
 
@@ -114,3 +145,21 @@ actions['plan-pay'] = async (el) => {
 };
 
 actions['trial-ask'] = () => noPlanPrompt();
+
+/** A credit pack, paid by bank transfer like the plans; the admin adds the credits when the money arrives. */
+actions['credits-buy'] = async (el) => {
+  const pack = CREDIT_PACKS.find(([n]) => n === Number(el.dataset.pack)); if (!pack) return;
+  const [n, price] = pack; const ready = BRAND.iban && BRAND.cui;
+  const row = (k, v, copy) => html`<div><dt>${t(`pay.${k}`)}</dt><dd><span>${v}</span>${copy ? html`<button type="button" class="link-btn" data-copy="${v}">${t('actions.copy')}</button>` : ''}</dd></div>`;
+  const body = html`<p>${t('credits.payIntro', { n: creditsText(n), price: money(price) })}</p>
+    ${ready ? html`<dl class="pay-dl">${row('to', BRAND.company)}${row('iban', BRAND.iban, true)}${BRAND.bank ? row('bank', BRAND.bank) : ''}${row('amount', `${money(price)} EUR`)}${row('ref', `${payRef()}-C${n}`, true)}</dl>`
+      : html`<p class="auth-notice auth-info">${t('pay.notReady', { email: supportEmail() || BRAND.email })}</p>`}
+    <p class="muted small">${t('credits.payAfter')}</p>`;
+  const onCopy = (e) => { const b = e.target.closest('[data-copy]'); if (b) copyText(b.dataset.copy); };
+  document.addEventListener('click', onCopy);
+  const ok = await openModal({ title: t('credits.payTitle', { n: creditsText(n) }), body, actions: [{ label: t('common.cancel'), kind: 'btn-ghost', value: false }, ...(ready ? [{ label: t('pay.sent'), kind: 'btn-primary', value: true }] : [])] });
+  document.removeEventListener('click', onCopy);
+  if (!ok) return;
+  const j = await requestCredits(n);
+  toast(t(j.creditRequest ? 'credits.thanks' : j.error === 'rate_limited' ? 'noplan.rate' : 'pay.error'), j.creditRequest ? 'success' : 'error');
+};

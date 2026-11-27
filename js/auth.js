@@ -26,7 +26,7 @@ export const userId = () => session?.user?.id || '';
 export const onAuthChange = (fn) => listeners.add(fn);
 
 export function setSession(s, reason = 'signin') {
-  session = s?.access_token ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Number(s.expires_at) || 0, user: s.user || {}, role: s.role || 'client', plan: s.plan || 'free', aiUsed: Number(s.aiUsed) || 0, aiLimit: Number(s.aiLimit) || 3, termsVersion: s.termsVersion || null, termsAt: s.termsAt || null, owner: !!s.owner } : null;
+  session = s?.access_token ? { access_token: s.access_token, refresh_token: s.refresh_token, expires_at: Number(s.expires_at) || 0, user: s.user || {}, role: s.role || 'client', plan: s.plan || 'free', aiUsed: Number(s.aiUsed) || 0, aiLimit: Number(s.aiLimit) || 3, termsVersion: s.termsVersion || null, termsAt: s.termsAt || null, owner: !!s.owner, credits: s.credits || null } : null;
   write(SKEY, session);
   listeners.forEach((fn) => fn(session, reason));
 }
@@ -147,7 +147,7 @@ export async function refreshMe() {
   if (!signedIn()) return null;
   const tok = await freshToken(); if (!tok) return null;
   const j = await post({ op: 'me' }, tok);
-  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit, termsVersion: j.termsVersion, termsAt: j.termsAt, planRequest: j.planRequest || null, planUntil: j.planUntil || null }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
+  if (j.user && session) { session = { ...session, role: j.role, plan: j.plan, aiUsed: j.aiUsed, aiLimit: j.aiLimit, termsVersion: j.termsVersion, termsAt: j.termsAt, planRequest: j.planRequest || null, planUntil: j.planUntil || null, credits: j.credits || null }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
   return j;
 }
 
@@ -166,6 +166,15 @@ export async function requestTrial(note) {
   return j;
 }
 export const planRequest = () => session?.planRequest || null;
+/** Credits for AI and Google: { allow, used, extra, trial, request } or null (accounts off, or an older database). */
+export const credits = () => session?.credits || null;
+/** Tells Arcton Ai the client is paying for a credit pack by bank transfer; the admin adds the credits when the money arrives. */
+export async function requestCredits(pack) {
+  const tok = await freshToken(); if (!tok) return { error: 'auth_required' };
+  const j = await post({ op: 'credits-request', pack }, tok);
+  if (j.creditRequest && session?.credits) { session = { ...session, credits: { ...session.credits, request: j.creditRequest } }; write(SKEY, session); listeners.forEach((fn) => fn(session, 'plan')); }
+  return j;
+}
 export const planUntil = () => session?.planUntil || null; // a paid plan's end date (YYYY-MM-DD), set when the admin records a transfer
 
 /** Records on the account that the current Terms / Privacy / AI notice were accepted. */
